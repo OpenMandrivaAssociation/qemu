@@ -1,6 +1,6 @@
 %define qemu_name	qemu
 %define qemu_version	0.9.0
-%define qemu_rel	5.1
+%define qemu_rel	6
 #define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 %define qemu_release	%mkrel %{qemu_rel}
 %define qemu_snapshot	20070214
@@ -82,6 +82,7 @@ Patch19:	qemu-0.9.0-not-rh-toolchain.patch
 Patch20:	qemu-0.9.0-increase-initrd-load-addr.patch
 Patch21:	qemu-0.9.0-fix-x86-fprem.patch
 Patch22:	qemu-0.9.0-qcow2-fixes.patch
+Patch23:	qemu-0.9.0-fix-pgtable-calculation.patch
 Patch200:	qemu-0.9.0-kvm.patch
 Source201:	kvm_bios.bin
 Patch201:	qemu-0.9.0-kvm-bios.patch
@@ -177,6 +178,7 @@ create, commit, convert and get information from a disk image.
 %patch20 -p1 -b .increase-initrd-load-addr
 %patch21 -p1 -b .fix-x86-fprem
 %patch22 -p1 -b .qcow2-fixes
+%patch23 -p1 -b .fix-pgtable-calculation
 
 # kvm patches
 %patch200 -p1 -b .kvm
