@@ -81,6 +81,7 @@ Patch18:	qemu-0.9.0-migration.patch
 Patch19:	qemu-0.9.0-not-rh-toolchain.patch
 Patch20:	qemu-0.9.0-increase-initrd-load-addr.patch
 Patch21:	qemu-0.9.0-fix-x86-fprem.patch
+Patch22:	qemu-0.9.0-qcow2-fixes.patch
 Patch200:	qemu-0.9.0-kvm.patch
 Source201:	kvm_bios.bin
 Patch201:	qemu-0.9.0-kvm-bios.patch
@@ -175,6 +176,7 @@ create, commit, convert and get information from a disk image.
 %patch19 -p1 -b .not-rh-toolchain
 %patch20 -p1 -b .increase-initrd-load-addr
 %patch21 -p1 -b .fix-x86-fprem
+%patch22 -p1 -b .qcow2-fixes
 
 # kvm patches
 %patch200 -p1 -b .kvm
