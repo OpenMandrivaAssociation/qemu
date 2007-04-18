@@ -1,6 +1,6 @@
 %define qemu_name	qemu
 %define qemu_version	0.9.0
-%define qemu_rel	5
+%define qemu_rel	5.1
 #define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 %define qemu_release	%mkrel %{qemu_rel}
 %define qemu_snapshot	20070214
@@ -9,7 +9,7 @@
 %define kqemu_name	kqemu
 %define kqemu_version	1.3.0
 %define kqemu_reldelta	3
-%define kqemu_rel	%(echo $((%{qemu_rel} - %{kqemu_reldelta})))
+%define kqemu_rel	%(perl -e 'print %{qemu_rel} - %{kqemu_reldelta}')
 %define kqemu_snapshot	pre11
 %define kqemu_fullver	%{kqemu_version}%{?kqemu_snapshot:%{kqemu_snapshot}}
 %define kqemu_dkmsver	%{kqemu_fullver}-%{kqemu_rel}
@@ -316,5 +316,3 @@ set -x
 %{_usr}/src/%{kqemu_name}-%{kqemu_dkmsver}/*
 %_sysconfdir/udev/rules.d/65-%{kqemu_name}.rules
 %endif
-
-
