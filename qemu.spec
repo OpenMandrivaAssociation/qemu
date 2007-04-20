@@ -1,6 +1,6 @@
 %define qemu_name	qemu
 %define qemu_version	0.9.0
-%define qemu_rel	6
+%define qemu_rel	7
 #define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 %define qemu_release	%mkrel %{qemu_rel}
 %define qemu_snapshot	20070214
@@ -48,14 +48,6 @@ containing virtualization extensions (AMD-v or Intel VT).
 
 %define __find_requires %{_builddir}/%{name}-%{version}/find_requires.sh
 
-# QEMU doesn't build on x86 with gcc4 at this time
-%if %{mdkversion} >= 200600
-%ifarch %{ix86}
-%define __cc	gcc-$(gcc3.3-version)
-BuildRequires:	gcc3.3
-%endif
-%endif
-
 Summary:	QEMU CPU Emulator
 Name:		%{qemu_name}
 Version:	%{qemu_version}
@@ -63,12 +55,10 @@ Release:	%{qemu_release}
 Source0:	%{name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.bz2
 Source1:	kqemu-%{kqemu_fullver}.tar.bz2
 Source2:	qemu.init
-Patch1:		qemu-0.8.3-gcc4.patch
+Patch1:		qemu-0.9.0-gcc4.patch
 Patch2:		qemu-0.7.0-gcc4-dot-syms.patch
-Patch3:		qemu-0.8.0-gcc4-hacks.patch
-Patch4:		qemu-0.7.2-dyngen-check-stack-clobbers.patch
-Patch5:		qemu-0.8.3-enforce-16byte-boundaries.patch
-Patch6:		qemu-0.8.3-osx-intel-port.patch
+Patch3:		qemu-0.8.3-enforce-16byte-boundaries.patch
+Patch4:		qemu-0.9.0-osx-intel-port.patch
 Patch10:	qemu-0.7.0-cross64-mingw32-fixes.patch
 Patch11:	qemu-0.9.0-kernel-option-vga.patch
 Patch12:	qemu-0.7.2-no-nptl.patch
@@ -159,10 +149,8 @@ create, commit, convert and get information from a disk image.
 %setup -q -a 1
 %patch1 -p1 -b .gcc4
 %patch2 -p1 -b .gcc4-dot-syms
-%patch3 -p1 -b .gcc4-hacks
-%patch4 -p1 -b .dyngen-check-stack-clobbers
-%patch5 -p1 -b .enforce-16byte-boundaries
-%patch6 -p1 -b .osx-intel-port
+%patch3 -p1 -b .enforce-16byte-boundaries
+%patch4 -p1 -b .osx-intel-port
 %patch10 -p1 -b .cross64-mingw32-fixes
 %patch11 -p1 -b .kernel-option-vga
 %if %{mdkversion} < 200700
