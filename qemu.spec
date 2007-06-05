@@ -55,6 +55,7 @@ Release:	%{qemu_release}
 Source0:	%{name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.bz2
 Source1:	kqemu-%{kqemu_fullver}.tar.bz2
 Source2:	qemu.init
+Source3:	qemu.completion
 Patch1:		qemu-0.9.0-gcc4.patch
 Patch2:		qemu-0.7.0-gcc4-dot-syms.patch
 Patch3:		qemu-0.8.3-enforce-16byte-boundaries.patch
@@ -236,6 +237,10 @@ cat > $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/65-kvm.rules << EOF
 KERNEL=="kvm", MODE="0666"
 EOF
 %endif
+
+# bash completion
+install -d -m 755 %{buildroot}%{_sysconfdir}/bash_completion.d
+install -m 644 %{SOURCE3} %{buildroot}%{_sysconfdir}/bash_completion.d/%{name}
 
 # remove unpackaged files
 rm -rf $RPM_BUILD_ROOT%{_docdir}/qemu
