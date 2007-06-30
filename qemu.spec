@@ -46,7 +46,7 @@ containing virtualization extensions (AMD-v or Intel VT).
 %define all_targets i386-linux-user arm-linux-user armeb-linux-user arm-softmmu sparc-linux-user ppc-linux-user i386-softmmu ppc-softmmu sparc-softmmu x86_64-softmmu mips-softmmu
 %{expand: %{!?targets: %%global targets %{all_targets}}}
 
-%define __find_requires %{_builddir}/%{name}-%{version}/find_requires.sh
+%define __find_requires %{_builddir}/%{qemu_name}-%{version}/find_requires.sh
 
 Summary:	QEMU CPU Emulator
 Name:		%{qemu_name}
