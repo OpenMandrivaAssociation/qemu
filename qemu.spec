@@ -1,6 +1,6 @@
 %define qemu_name	qemu
 %define qemu_version	0.9.0
-%define qemu_rel	7
+%define qemu_rel	8
 #define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 %define qemu_release	%mkrel %{qemu_rel}
 %define qemu_snapshot	20070214
@@ -294,6 +294,7 @@ set -x
 %{_datadir}/qemu/video.x
 %{_datadir}/qemu/openbios-sparc32
 %{_initrddir}/%{name}
+%{_sysconfdir}/bash_completion.d/%{name}
 %ifarch %{kvm_arches}
 %_sysconfdir/udev/rules.d/65-kvm.rules
 %endif
