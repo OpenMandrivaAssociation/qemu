@@ -293,7 +293,7 @@ set -x
 %{_datadir}/qemu/keymaps
 %{_datadir}/qemu/video.x
 %{_datadir}/qemu/openbios-sparc32
-%config %{_initrddir}/%{name}
+%{_initrddir}/%{name}
 %ifarch %{kvm_arches}
 %_sysconfdir/udev/rules.d/65-kvm.rules
 %endif
