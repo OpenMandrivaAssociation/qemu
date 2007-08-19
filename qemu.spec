@@ -70,7 +70,6 @@ Patch16:	qemu-0.9.0-ppc.patch
 Patch17:	qemu-0.9.0-fix-cpus-chaining.patch
 Patch18:	qemu-0.9.0-migration.patch
 Patch19:	qemu-0.9.0-not-rh-toolchain.patch
-Patch20:	qemu-0.9.0-increase-initrd-load-addr.patch
 Patch21:	qemu-0.9.0-fix-x86-fprem.patch
 Patch22:	qemu-0.9.0-qcow2-fixes.patch
 Patch23:	qemu-0.9.0-fix-pgtable-calculation.patch
@@ -169,7 +168,6 @@ create, commit, convert and get information from a disk image.
 %patch17 -p1 -b .fix-cpus-chaining
 %patch18 -p1 -b .migration
 %patch19 -p1 -b .not-rh-toolchain
-%patch20 -p1 -b .increase-initrd-load-addr
 %patch21 -p1 -b .fix-x86-fprem
 %patch22 -p1 -b .qcow2-fixes
 %patch23 -p1 -b .fix-pgtable-calculation
