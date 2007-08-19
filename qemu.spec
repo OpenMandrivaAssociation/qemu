@@ -1,6 +1,6 @@
 %define qemu_name	qemu
 %define qemu_version	0.9.0
-%define qemu_rel	9
+%define qemu_rel	10
 #define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 %define qemu_release	%mkrel %{qemu_rel}
 %define qemu_snapshot	20070214
@@ -74,7 +74,7 @@ Patch20:	qemu-0.9.0-increase-initrd-load-addr.patch
 Patch21:	qemu-0.9.0-fix-x86-fprem.patch
 Patch22:	qemu-0.9.0-qcow2-fixes.patch
 Patch23:	qemu-0.9.0-fix-pgtable-calculation.patch
-
+Patch24:	qemu-0.9.0-usb-multi-configs.patch
 Patch30:	qemu-oack-tftp.patch
 Patch31:	qemu-tftp-root.patch
 Patch32:	qemu-slirp-bootp.patch
@@ -173,6 +173,7 @@ create, commit, convert and get information from a disk image.
 %patch21 -p1 -b .fix-x86-fprem
 %patch22 -p1 -b .qcow2-fixes
 %patch23 -p1 -b .fix-pgtable-calculation
+%patch24 -p0 -b .usb-configs
 
 %patch30 -p1 -b .oack-tftp
 %patch31 -p1 -b .tftp-root
