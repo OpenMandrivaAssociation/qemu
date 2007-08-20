@@ -1,6 +1,6 @@
 %define qemu_name	qemu
 %define qemu_version	0.9.0
-%define qemu_rel	10
+%define qemu_rel	11
 #define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 %define qemu_release	%mkrel %{qemu_rel}
 %define qemu_snapshot	20070214
@@ -97,7 +97,7 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 # XXX: move up if some qemu-bridge is implemented for networking
 Requires(post):   rpm-helper
 Requires(preun):  rpm-helper
-Requires:	  dkms-%{kqemu_name} >= %{kqemu_version}-%{kqemu_release}
+Suggests:	  dkms-%{kqemu_name} >= %{kqemu_version}-%{kqemu_release}
 %endif
 
 %description
