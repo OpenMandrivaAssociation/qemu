@@ -1,6 +1,6 @@
 %define qemu_name	qemu
 %define qemu_version	0.9.0
-%define qemu_rel	12
+%define qemu_rel	13
 #define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 %define qemu_release	%mkrel %{qemu_rel}
 %define qemu_snapshot	20070214
@@ -43,7 +43,7 @@ containing virtualization extensions (AMD-v or Intel VT).
 %endif
 
 # Define targets to enable, allow redefinition from rpm build
-%define all_targets i386-linux-user arm-linux-user armeb-linux-user arm-softmmu sparc-linux-user ppc-linux-user i386-softmmu ppc-softmmu sparc-softmmu x86_64-softmmu mips-softmmu
+%define all_targets i386-linux-user arm-linux-user armeb-linux-user arm-softmmu sparc-linux-user ppc-linux-user i386-softmmu ppc-softmmu sparc-softmmu x86_64-softmmu mips-softmmu mipsel-softmmu
 %{expand: %{!?targets: %%global targets %{all_targets}}}
 
 %define __find_requires %{_builddir}/%{qemu_name}-%{qemu_version}/find_requires.sh
@@ -295,6 +295,7 @@ set -x
 %{_bindir}/qemu-system-arm
 %{_bindir}/qemu-system-ppc
 %{_bindir}/qemu-system-mips
+%{_bindir}/qemu-system-mipsel
 %{_bindir}/qemu-system-sparc
 %{_bindir}/qemu-system-i386
 %{_bindir}/qemu-system-x86_64
