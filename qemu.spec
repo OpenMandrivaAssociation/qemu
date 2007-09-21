@@ -1,6 +1,6 @@
 %define qemu_name	qemu
 %define qemu_version	0.9.0
-%define qemu_rel	13
+%define qemu_rel	14
 #define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 %define qemu_release	%mkrel %{qemu_rel}
 %define qemu_snapshot	20070214
@@ -198,7 +198,7 @@ chmod +x find_requires.sh
 if ! echo | %{__cc} -mtune=generic -xc -c - -o /dev/null 2> /dev/null; then
   CFLAGS=`echo "$RPM_OPT_FLAGS" | sed -e "s/-mtune=generic/-mtune=pentiumpro/g"`
 fi
-%configure2_5x --cc=%{__cc} --disable-gcc-check --target-list="%{targets}" --disable-gcc-check
+%configure2_5x --cc=%{__cc} --disable-gcc-check --target-list="%{targets}" --enable-alsa
 %make
 
 %install
