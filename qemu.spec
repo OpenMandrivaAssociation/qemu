@@ -1,6 +1,6 @@
 %define qemu_name	qemu
 %define qemu_version	0.9.0
-%define qemu_rel	14
+%define qemu_rel	15
 #define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 %define qemu_release	%mkrel %{qemu_rel}
 %define qemu_snapshot	20070214
@@ -79,6 +79,7 @@ Patch31:	qemu-tftp-root.patch
 Patch32:	qemu-slirp-bootp.patch
 # from qemu CVS, Novell #291775, Ubuntu #120316
 Patch33:	qemu-0.9.0-ATAPI-bugs.patch
+Patch34:	qemu-0.9.0-completion.patch
 
 Patch200:	qemu-0.9.0-kvm.patch
 Source201:	kvm_bios.bin
@@ -179,6 +180,7 @@ create, commit, convert and get information from a disk image.
 %patch31 -p1 -b .tftp-root
 %patch32 -p1 -b .slirp-bootp
 %patch33 -p1 -b .ATAPI-bugs
+%patch34 -p0 -b .completion
 
 # kvm patches
 %patch200 -p1 -b .kvm
