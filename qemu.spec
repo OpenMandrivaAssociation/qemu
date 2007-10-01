@@ -1,6 +1,6 @@
 %define qemu_name	qemu
 %define qemu_version	0.9.0
-%define qemu_rel	15
+%define qemu_rel	16
 #define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 %define qemu_release	%mkrel %{qemu_rel}
 %define qemu_snapshot	20070214
@@ -249,6 +249,7 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/
 cat > $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/65-kvm.rules << EOF
 KERNEL=="kvm", MODE="0666"
 EOF
+ln -sf %{_bindir}/qemu $RPM_BUILD_ROOT%{_bindir}/qemu-kvm
 %endif
 
 # bash completion
@@ -289,6 +290,7 @@ set -x
 %defattr(-,root,root)
 %doc README qemu-doc.html qemu-tech.html
 %{_bindir}/qemu
+%{_bindir}/qemu-kvm
 %{_bindir}/qemu-arm
 %{_bindir}/qemu-armeb
 %{_bindir}/qemu-i386
