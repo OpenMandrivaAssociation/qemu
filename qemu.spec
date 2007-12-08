@@ -73,7 +73,7 @@ Patch19:	qemu-0.9.0-not-rh-toolchain.patch
 Patch21:	qemu-0.9.0-fix-x86-fprem.patch
 Patch22:	qemu-0.9.0-qcow2-fixes.patch
 Patch23:	qemu-0.9.0-fix-pgtable-calculation.patch
-Patch24:	qemu-0.9.0-usb-multi-configs.patch
+#Patch24:	qemu-0.9.0-usb-multi-configs.patch
 Patch30:	qemu-oack-tftp.patch
 Patch31:	qemu-tftp-root.patch
 Patch32:	qemu-slirp-bootp.patch
@@ -175,13 +175,14 @@ create, commit, convert and get information from a disk image.
 %patch21 -p1 -b .fix-x86-fprem
 %patch22 -p1 -b .qcow2-fixes
 %patch23 -p1 -b .fix-pgtable-calculation
-%patch24 -p0 -b .usb-configs
+#%patch24 -p0 -b .usb-configs
 
 %patch30 -p1 -b .oack-tftp
 %patch31 -p1 -b .tftp-root
 %patch32 -p1 -b .slirp-bootp
 %patch33 -p1 -b .ATAPI-bugs
 %patch34 -p0 -b .completion
+%patch35 -p1 -b .usb_iso_transfers
 
 # kvm patches
 %patch200 -p1 -b .kvm
