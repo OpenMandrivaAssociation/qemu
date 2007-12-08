@@ -80,6 +80,7 @@ Patch32:	qemu-slirp-bootp.patch
 # from qemu CVS, Novell #291775, Ubuntu #120316
 Patch33:	qemu-0.9.0-ATAPI-bugs.patch
 Patch34:	qemu-0.9.0-completion.patch
+Patch35:	qemu-0.9.0-git-usb-iso-transfers.patch
 
 Patch200:	qemu-0.9.0-kvm.patch
 Source201:	kvm_bios.bin
@@ -93,7 +94,7 @@ Requires:	qemu-img = %{version}-%{release}
 BuildRequires:	libSDL-devel, tetex-texi2html
 # XXXX: -luuid
 BuildRequires:	e2fsprogs-devel
-ExclusiveArch:	%{ix86} ppc x86_64 amd64 sparc
+ExclusiveArch:	%{ix86} ppc x86_64 amd64 %{sunsparc}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %ifarch %{kqemu_arches}
