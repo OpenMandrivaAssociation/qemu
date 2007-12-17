@@ -95,7 +95,6 @@ BuildRequires:	libSDL-devel, tetex-texi2html
 # XXXX: -luuid
 BuildRequires:	e2fsprogs-devel
 ExclusiveArch:	%{ix86} ppc x86_64 amd64 %{sunsparc}
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %ifarch %{kqemu_arches}
 # XXX: move up if some qemu-bridge is implemented for networking
