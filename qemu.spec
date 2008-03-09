@@ -191,6 +191,7 @@ cp %{SOURCE201} pc-bios/kvm_bios.bin
 %patch202 -p1 -b .kvm-kqemu-window-caption
 
 # nuke explicit dependencies on GLIBC_PRIVATE
+# (Anssi 03/2008) FIXME: use _requires_exceptions
 cat >find_requires.sh << EOF
 #!/bin/sh
 %{_prefix}/lib/rpm/find-requires %{buildroot} %{_target_cpu} | grep -v GLIBC_PRIVATE
