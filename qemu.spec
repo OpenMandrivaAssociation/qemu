@@ -1,6 +1,6 @@
 %define qemu_name	qemu
 %define qemu_version	0.9.0
-%define qemu_rel	17
+%define qemu_rel	18
 #define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 %define qemu_release	%mkrel %{qemu_rel}
 %define qemu_snapshot	20070214
@@ -81,6 +81,8 @@ Patch32:	qemu-slirp-bootp.patch
 Patch33:	qemu-0.9.0-ATAPI-bugs.patch
 Patch34:	qemu-0.9.0-completion.patch
 Patch35:	qemu-0.9.0-git-usb-iso-transfers.patch
+# Try SDL, then alsa, then oss instead of oss, alsa, SDL
+Patch36:	qemu-0.9.0-audio-set-sdl-default.patch
 
 Patch200:	qemu-0.9.0-kvm.patch
 Source201:	kvm_bios.bin
@@ -183,6 +185,7 @@ create, commit, convert and get information from a disk image.
 %patch33 -p1 -b .ATAPI-bugs
 %patch34 -p0 -b .completion
 %patch35 -p1 -b .usb_iso_transfers
+%patch36 -p0 -b .audio_sdl_default
 
 # kvm patches
 %patch200 -p1 -b .kvm
