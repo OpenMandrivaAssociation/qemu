@@ -1,16 +1,15 @@
 %define qemu_name	qemu
-%define qemu_version	0.9.0
-%define qemu_rel	18
-#define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
-%define qemu_release	%mkrel %{qemu_rel}
-%define qemu_snapshot	20070214
+%define qemu_version	0.9.1
+%define qemu_rel	1
+%define qemu_snapshot	r5137
+%define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
 # XXX add service
 %define kqemu_name	kqemu
-%define kqemu_version	1.3.0
-%define kqemu_reldelta	3
+%define kqemu_version	1.4.0
+%define kqemu_reldelta	1
 %define kqemu_rel	%(perl -e 'print %{qemu_rel} - %{kqemu_reldelta}')
-%define kqemu_snapshot	pre11
+%define kqemu_snapshot	pre1
 %define kqemu_fullver	%{kqemu_version}%{?kqemu_snapshot:%{kqemu_snapshot}}
 %define kqemu_dkmsver	%{kqemu_fullver}-%{kqemu_rel}
 %define kqemu_release	%mkrel %{?kqemu_snapshot:0.%{kqemu_snapshot}.}%{kqemu_rel}
@@ -22,8 +21,6 @@
 %define kqemu_program	qemu-system-x86_64
 %endif
 
-%define kvm_arches	%{ix86} x86_64
-
 # Additionnal packaging notes
 # XXX defined as macros so that to avoid extraneous empty lines
 %ifarch %{kqemu_arches}
@@ -33,18 +30,6 @@ module.
 %else
 %define kqemu_note %{nil}
 %endif
-%ifarch %{kvm_arches}
-%define kvm_note \
-This QEMU package provides support for KVM (Kernel-based Virtual \
-Machine), a full virtualization solution for Linux on x86 hardware \
-containing virtualization extensions (AMD-v or Intel VT).
-%else
-%define kvm_note %{nil}
-%endif
-
-# Define targets to enable, allow redefinition from rpm build
-%define all_targets i386-linux-user arm-linux-user armeb-linux-user arm-softmmu sparc-linux-user ppc-linux-user i386-softmmu ppc-softmmu sparc-softmmu x86_64-softmmu mips-softmmu mipsel-softmmu
-%{expand: %{!?targets: %%global targets %{all_targets}}}
 
 %define __find_requires %{_builddir}/%{qemu_name}-%{qemu_version}/find_requires.sh
 
@@ -52,50 +37,21 @@ Summary:	QEMU CPU Emulator
 Name:		%{qemu_name}
 Version:	%{qemu_version}
 Release:	%{qemu_release}
-Source0:	%{name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.bz2
-Source1:	kqemu-%{kqemu_fullver}.tar.bz2
+Source0:	http://bellard.org/qemu/%{name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
+Source1:	http://bellard.org/qemu/kqemu-%{kqemu_fullver}.tar.gz
 Source2:	qemu.init
 Source3:	qemu.completion
-Patch1:		qemu-0.9.0-gcc4.patch
-Patch2:		qemu-0.7.0-gcc4-dot-syms.patch
-Patch3:		qemu-0.8.3-enforce-16byte-boundaries.patch
-Patch4:		qemu-0.9.0-osx-intel-port.patch
-Patch10:	qemu-0.7.0-cross64-mingw32-fixes.patch
-Patch11:	qemu-0.9.0-kernel-option-vga.patch
-Patch12:	qemu-0.7.2-no-nptl.patch
-Patch13:	qemu-0.8.1-fix-errno-tls.patch
-Patch14:	qemu-0.8.3-dont-strip.patch
-Patch15:	qemu-0.8.3-x86_64-opts.patch
-Patch16:	qemu-0.9.0-ppc.patch
-Patch17:	qemu-0.9.0-fix-cpus-chaining.patch
-Patch18:	qemu-0.9.0-migration.patch
-Patch19:	qemu-0.9.0-not-rh-toolchain.patch
-Patch21:	qemu-0.9.0-fix-x86-fprem.patch
-Patch22:	qemu-0.9.0-qcow2-fixes.patch
-Patch23:	qemu-0.9.0-fix-pgtable-calculation.patch
-#Patch24:	qemu-0.9.0-usb-multi-configs.patch
-Patch30:	qemu-oack-tftp.patch
-Patch31:	qemu-tftp-root.patch
-Patch32:	qemu-slirp-bootp.patch
-# from qemu CVS, Novell #291775, Ubuntu #120316
-Patch33:	qemu-0.9.0-ATAPI-bugs.patch
-Patch34:	qemu-0.9.0-completion.patch
-Patch35:	qemu-0.9.0-git-usb-iso-transfers.patch
-# Try SDL, then alsa, then oss instead of oss, alsa, SDL
-Patch36:	qemu-0.9.0-audio-set-sdl-default.patch
-
-Patch200:	qemu-0.9.0-kvm.patch
-Source201:	kvm_bios.bin
-Patch201:	qemu-0.9.0-kvm-bios.patch
-Patch202:	qemu-0.9.0-kvm-kqemu-window-caption.patch
+Patch11:	qemu-0.9.1-kernel-option-vga.patch
+Patch36:	qemu-0.9.1-dirent.patch
 
 License:	GPL
-URL:		http://fabrice.bellard.free.fr/qemu/
+URL:		http://bellard.org/qemu/
 Group:		Emulators
 Requires:	qemu-img = %{version}-%{release}
 BuildRequires:	libSDL-devel, tetex-texi2html
 # XXXX: -luuid
 BuildRequires:	e2fsprogs-devel
+BuildRequires:  kernel-headers	
 ExclusiveArch:	%{ix86} ppc x86_64 amd64 %{sunsparc}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
@@ -124,7 +80,6 @@ CPUs. QEMU has two operating modes:
   used to provide virtual hosting of several virtual PC on a single
   server.
 %kqemu_note
-%kvm_note
 
 %package -n dkms-%{kqemu_name}
 Summary:	QEMU Accelerator Module
@@ -157,41 +112,9 @@ This package contains the QEMU disk image utility that is used to
 create, commit, convert and get information from a disk image.
 
 %prep
-%setup -q -a 1
-%patch1 -p1 -b .gcc4
-%patch2 -p1 -b .gcc4-dot-syms
-%patch3 -p1 -b .enforce-16byte-boundaries
-%patch4 -p1 -b .osx-intel-port
-%patch10 -p1 -b .cross64-mingw32-fixes
+%setup -q -a 1 
 %patch11 -p1 -b .kernel-option-vga
-%if %{mdkversion} < 200700
-%patch12 -p1 -b .no-nptl
-%endif
-%patch13 -p1 -b .fix-errno-tls
-%patch14 -p1 -b .dont-strip
-%patch15 -p1 -b .x86_64-opts
-%patch16 -p1 -b .ppc
-%patch17 -p1 -b .fix-cpus-chaining
-%patch18 -p1 -b .migration
-%patch19 -p1 -b .not-rh-toolchain
-%patch21 -p1 -b .fix-x86-fprem
-%patch22 -p1 -b .qcow2-fixes
-%patch23 -p1 -b .fix-pgtable-calculation
-#%patch24 -p0 -b .usb-configs
-
-%patch30 -p1 -b .oack-tftp
-%patch31 -p1 -b .tftp-root
-%patch32 -p1 -b .slirp-bootp
-%patch33 -p1 -b .ATAPI-bugs
-%patch34 -p0 -b .completion
-%patch35 -p1 -b .usb_iso_transfers
-%patch36 -p0 -b .audio_sdl_default
-
-# kvm patches
-%patch200 -p1 -b .kvm
-cp %{SOURCE201} pc-bios/kvm_bios.bin
-%patch201 -p1 -b .kvm-bios
-%patch202 -p1 -b .kvm-kqemu-window-caption
+%patch36 -p1 -b .dirent
 
 # nuke explicit dependencies on GLIBC_PRIVATE
 # (Anssi 03/2008) FIXME: use _requires_exceptions
@@ -206,8 +129,15 @@ chmod +x find_requires.sh
 if ! echo | %{__cc} -mtune=generic -xc -c - -o /dev/null 2> /dev/null; then
   CFLAGS=`echo "$RPM_OPT_FLAGS" | sed -e "s/-mtune=generic/-mtune=pentiumpro/g"`
 fi
-%configure2_5x --cc=%{__cc} --disable-gcc-check --target-list="%{targets}" --enable-alsa
-%make
+./configure --cc=%{__cc} \
+	--disable-gcc-check \
+	--audio-drv-list="pa alsa sdl oss" \
+	--prefix=%_prefix \
+	--target-list=" i386-softmmu x86_64-softmmu arm-softmmu cris-softmmu m68k-softmmu mips-softmmu mipsel-softmmu mips64-softmmu mips64el-softmmu sh4-softmmu sh4eb-softmmu sparc-softmmu i386-linux-user x86_64-linux-user alpha-linux-user arm-linux-user armeb-linux-user cris-linux-user m68k-linux-user mips-linux-user mipsel-linux-user sh4-linux-user sh4eb-linux-user sparc-linux-user sparc64-linux-user sparc32plus-linux-user"
+#	do not build ppc-softmmu ppcemb-softmmu ppc64-softmmu ppc-linux-user ppc64-linux-user ppc64abi32-linux-user
+#	--enable-system \
+#	--enable-linux-user
+make
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -249,15 +179,6 @@ KERNEL=="%{kqemu_name}", MODE="0666"
 EOF
 %endif
 
-%ifarch %{kvm_arches}
-# install udev rules
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/
-cat > $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/65-kvm.rules << EOF
-KERNEL=="kvm", MODE="0666"
-EOF
-ln -sf %{_bindir}/qemu $RPM_BUILD_ROOT%{_bindir}/qemu-kvm
-%endif
-
 # bash completion
 install -d -m 755 %{buildroot}%{_sysconfdir}/bash_completion.d
 install -m 644 %{SOURCE3} %{buildroot}%{_sysconfdir}/bash_completion.d/%{name}
@@ -296,30 +217,36 @@ set -x
 %defattr(-,root,root)
 %doc README qemu-doc.html qemu-tech.html
 %{_bindir}/qemu
-%{_bindir}/qemu-kvm
-%{_bindir}/qemu-arm
-%{_bindir}/qemu-armeb
+%{_bindir}/qemu-alpha
+%{_bindir}/qemu-arm*
+%{_bindir}/qemu-cris
 %{_bindir}/qemu-i386
-%{_bindir}/qemu-ppc
-%{_bindir}/qemu-sparc
+%{_bindir}/qemu-m68k
+%{_bindir}/qemu-mips*
+%{_bindir}/qemu-nbd
+#%{_bindir}/qemu-ppc*
+%{_bindir}/qemu-sh4*
+%{_bindir}/qemu-sparc*
+%{_bindir}/qemu-x86_64
 %{_bindir}/qemu-system-arm
-%{_bindir}/qemu-system-ppc
-%{_bindir}/qemu-system-mips
-%{_bindir}/qemu-system-mipsel
+%{_bindir}/qemu-system-cris
+%{_bindir}/qemu-system-m68k
+%{_bindir}/qemu-system-sh4*
+#%{_bindir}/qemu-system-ppc*
+%{_bindir}/qemu-system-mips*
 %{_bindir}/qemu-system-sparc
 %{_bindir}/qemu-system-i386
 %{_bindir}/qemu-system-x86_64
 %{_mandir}/man1/qemu.1*
+%{_mandir}/man8/qemu-nbd.8.*
 %dir %{_datadir}/qemu
 %{_datadir}/qemu/*.bin
 %{_datadir}/qemu/keymaps
 %{_datadir}/qemu/video.x
 %{_datadir}/qemu/openbios-sparc32
+%{_datadir}/qemu/openbios-sparc64
 %{_initrddir}/%{name}
 %{_sysconfdir}/bash_completion.d/%{name}
-%ifarch %{kvm_arches}
-%_sysconfdir/udev/rules.d/65-kvm.rules
-%endif
 
 %files img
 %defattr(-,root,root)
