@@ -53,6 +53,7 @@ BuildRequires:	libSDL-devel, tetex-texi2html
 BuildRequires:	e2fsprogs-devel
 BuildRequires:  kernel-headers	
 BuildRequires:	pulseaudio-devel
+BuildRequires:	zlib-devel
 ExclusiveArch:	%{ix86} ppc x86_64 amd64 %{sunsparc}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
