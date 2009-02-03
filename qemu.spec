@@ -1,6 +1,6 @@
 %define qemu_name	qemu
 %define qemu_version	0.9.1
-%define qemu_rel	1
+%define qemu_rel	2
 %define qemu_snapshot	r5137
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
@@ -40,7 +40,6 @@ Release:	%{qemu_release}
 Source0:	http://bellard.org/qemu/%{name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
 Source1:	http://bellard.org/qemu/kqemu-%{kqemu_fullver}.tar.gz
 Source2:	qemu.init
-Source3:	qemu.completion
 Patch11:	qemu-0.9.1-kernel-option-vga.patch
 Patch36:	qemu-0.9.1-dirent.patch
 
@@ -181,10 +180,6 @@ KERNEL=="%{kqemu_name}", MODE="0666"
 EOF
 %endif
 
-# bash completion
-install -d -m 755 %{buildroot}%{_sysconfdir}/bash_completion.d
-install -m 644 %{SOURCE3} %{buildroot}%{_sysconfdir}/bash_completion.d/%{name}
-
 # remove unpackaged files
 rm -rf $RPM_BUILD_ROOT%{_docdir}/qemu
 
@@ -248,7 +243,6 @@ set -x
 %{_datadir}/qemu/openbios-sparc32
 %{_datadir}/qemu/openbios-sparc64
 %{_initrddir}/%{name}
-%{_sysconfdir}/bash_completion.d/%{name}
 
 %files img
 %defattr(-,root,root)
