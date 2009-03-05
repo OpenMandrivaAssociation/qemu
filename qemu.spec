@@ -1,7 +1,7 @@
 %define qemu_name	qemu
-%define qemu_version	0.9.1
+%define qemu_version	0.10.0
 %define qemu_rel	2
-%define qemu_snapshot	r5137
+#define qemu_snapshot	r6685
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
 # XXX add service
@@ -40,8 +40,7 @@ Release:	%{qemu_release}
 Source0:	http://bellard.org/qemu/%{name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
 Source1:	http://bellard.org/qemu/kqemu-%{kqemu_fullver}.tar.gz
 Source2:	qemu.init
-Patch11:	qemu-0.9.1-kernel-option-vga.patch
-Patch36:	qemu-0.9.1-dirent.patch
+Patch11:	qemu-kernel-option-vga.patch
 
 License:	GPL
 URL:		http://bellard.org/qemu/
@@ -115,7 +114,6 @@ create, commit, convert and get information from a disk image.
 %prep
 %setup -q -a 1 
 %patch11 -p1 -b .kernel-option-vga
-%patch36 -p1 -b .dirent
 
 # nuke explicit dependencies on GLIBC_PRIVATE
 # (Anssi 03/2008) FIXME: use _requires_exceptions
@@ -130,15 +128,13 @@ chmod +x find_requires.sh
 if ! echo | %{__cc} -mtune=generic -xc -c - -o /dev/null 2> /dev/null; then
   CFLAGS=`echo "$RPM_OPT_FLAGS" | sed -e "s/-mtune=generic/-mtune=pentiumpro/g"`
 fi
+#	--enable-bsd-user \
 ./configure --cc=%{__cc} \
-	--disable-gcc-check \
 	--audio-drv-list="pa alsa sdl oss" \
 	--prefix=%_prefix \
-	--target-list=" i386-softmmu x86_64-softmmu arm-softmmu cris-softmmu m68k-softmmu mips-softmmu mipsel-softmmu mips64-softmmu mips64el-softmmu sh4-softmmu sh4eb-softmmu sparc-softmmu i386-linux-user x86_64-linux-user alpha-linux-user arm-linux-user armeb-linux-user cris-linux-user m68k-linux-user mips-linux-user mipsel-linux-user sh4-linux-user sh4eb-linux-user sparc-linux-user sparc64-linux-user sparc32plus-linux-user"
-#	do not build ppc-softmmu ppcemb-softmmu ppc64-softmmu ppc-linux-user ppc64-linux-user ppc64abi32-linux-user
-#	--enable-system \
-#	--enable-linux-user
-make
+	--enable-system \
+	--enable-linux-user
+%make
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -221,7 +217,7 @@ set -x
 %{_bindir}/qemu-m68k
 %{_bindir}/qemu-mips*
 %{_bindir}/qemu-nbd
-#%{_bindir}/qemu-ppc*
+%{_bindir}/qemu-ppc*
 %{_bindir}/qemu-sh4*
 %{_bindir}/qemu-sparc*
 %{_bindir}/qemu-x86_64
@@ -229,7 +225,7 @@ set -x
 %{_bindir}/qemu-system-cris
 %{_bindir}/qemu-system-m68k
 %{_bindir}/qemu-system-sh4*
-#%{_bindir}/qemu-system-ppc*
+%{_bindir}/qemu-system-ppc*
 %{_bindir}/qemu-system-mips*
 %{_bindir}/qemu-system-sparc
 %{_bindir}/qemu-system-i386
@@ -242,6 +238,8 @@ set -x
 %{_datadir}/qemu/video.x
 %{_datadir}/qemu/openbios-sparc32
 %{_datadir}/qemu/openbios-sparc64
+%{_datadir}/qemu/openbios-ppc
+%{_datadir}/qemu/bamboo.dtb
 %{_initrddir}/%{name}
 
 %files img
