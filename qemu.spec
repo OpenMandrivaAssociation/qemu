@@ -8,7 +8,7 @@
 %define kqemu_name	kqemu
 %define kqemu_version	1.4.0
 %define kqemu_reldelta	1
-%define kqemu_rel	%(perl -e 'print %{qemu_rel} - %{kqemu_reldelta}')
+%define kqemu_rel	%(perl -e 'print %{qemu_rel} + %{kqemu_reldelta}')
 %define kqemu_snapshot	pre1
 %define kqemu_fullver	%{kqemu_version}%{?kqemu_snapshot:%{kqemu_snapshot}}
 %define kqemu_dkmsver	%{kqemu_fullver}-%{kqemu_rel}
