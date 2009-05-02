@@ -1,6 +1,6 @@
 %define qemu_name	qemu
-%define qemu_version	0.10.1
-%define qemu_rel	3
+%define qemu_version	0.10.3
+%define qemu_rel	4
 #define qemu_snapshot	r6685
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
@@ -130,7 +130,7 @@ if ! echo | %{__cc} -mtune=generic -xc -c - -o /dev/null 2> /dev/null; then
 fi
 #	--enable-bsd-user \
 ./configure --cc=%{__cc} \
-	--audio-drv-list="pa alsa sdl oss" \
+	--audio-drv-list="pa sdl alsa oss" \
 	--prefix=%_prefix \
 	--enable-system \
 	--enable-linux-user
