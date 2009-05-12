@@ -1,6 +1,6 @@
 %define qemu_name	qemu
-%define qemu_version	0.10.3
-%define qemu_rel	4
+%define qemu_version	0.10.4
+%define qemu_rel	5
 #define qemu_snapshot	r6685
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
@@ -231,7 +231,7 @@ set -x
 %{_bindir}/qemu-system-i386
 %{_bindir}/qemu-system-x86_64
 %{_mandir}/man1/qemu.1*
-%{_mandir}/man8/qemu-nbd.8.*
+%{_mandir}/man8/qemu-nbd.8*
 %dir %{_datadir}/qemu
 %{_datadir}/qemu/*.bin
 %{_datadir}/qemu/keymaps
