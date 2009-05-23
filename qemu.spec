@@ -21,12 +21,18 @@ Group:		Emulators
 Provides:	kvm
 Obsoletes:	kvm < 86
 Requires:	qemu-img = %{version}-%{release}
-BuildRequires:	libSDL-devel, tetex-texi2html
+BuildRequires:	libSDL-devel
+BuildRequires:	tetex-texi2html
 # XXXX: -luuid
 BuildRequires:	e2fsprogs-devel
 BuildRequires:  kernel-headers	
 BuildRequires:	pulseaudio-devel
 BuildRequires:	zlib-devel
+BuildRequires:	brlapi-devel
+BuildRequires:	gnutls-devel
+BuildRequires:	vde-devel
+BuildRequires:	dev86
+BuildRequires:	iasl
 ExclusiveArch:	%{ix86} ppc x86_64 amd64 %{sunsparc}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
