@@ -1,50 +1,25 @@
-%define qemu_name	qemu
+%define qemu_name	qemu-kvm
 %define qemu_version	0.10.4
-%define qemu_rel	5
+%define qemu_rel	6
 #define qemu_snapshot	r6685
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
-
-# XXX add service
-%define kqemu_name	kqemu
-%define kqemu_version	1.4.0
-%define kqemu_reldelta	1
-%define kqemu_rel	%(perl -e 'print %{qemu_rel} + %{kqemu_reldelta}')
-%define kqemu_snapshot	pre1
-%define kqemu_fullver	%{kqemu_version}%{?kqemu_snapshot:%{kqemu_snapshot}}
-%define kqemu_dkmsver	%{kqemu_fullver}-%{kqemu_rel}
-%define kqemu_release	%mkrel %{?kqemu_snapshot:0.%{kqemu_snapshot}.}%{kqemu_rel}
-%define kqemu_arches	%{ix86} x86_64
-%ifarch %{ix86}
-%define kqemu_program	qemu
-%endif
-%ifarch x86_64
-%define kqemu_program	qemu-system-x86_64
-%endif
-
-# Additionnal packaging notes
-# XXX defined as macros so that to avoid extraneous empty lines
-%ifarch %{kqemu_arches}
-%define kqemu_note \
-This QEMU package provides support for KQEMU, the QEMU Accelerator\
-module.
-%else
-%define kqemu_note %{nil}
-%endif
 
 %define __find_requires %{_builddir}/%{qemu_name}-%{qemu_version}/find_requires.sh
 
 Summary:	QEMU CPU Emulator
-Name:		%{qemu_name}
+Name:		qemu
 Version:	%{qemu_version}
 Release:	%{qemu_release}
-Source0:	http://bellard.org/qemu/%{name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
-Source1:	http://bellard.org/qemu/kqemu-%{kqemu_fullver}.tar.gz
-Source2:	qemu.init
+Source0:	http://kent.dl.sourceforge.net/sourceforge/kvm/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
+Source1:	kvm.modules
+Patch0:		qemu-kvm-fix-kerneldir-includes.patch
+Patch1:		kvm-upstream-ppc.patch
 Patch11:	qemu-kernel-option-vga.patch
-
 License:	GPL
 URL:		http://bellard.org/qemu/
 Group:		Emulators
+Provides:	kvm
+Obsoletes:	kvm < 86
 Requires:	qemu-img = %{version}-%{release}
 BuildRequires:	libSDL-devel, tetex-texi2html
 # XXXX: -luuid
@@ -54,13 +29,6 @@ BuildRequires:	pulseaudio-devel
 BuildRequires:	zlib-devel
 ExclusiveArch:	%{ix86} ppc x86_64 amd64 %{sunsparc}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
-
-%ifarch %{kqemu_arches}
-# XXX: move up if some qemu-bridge is implemented for networking
-Requires(post):   rpm-helper
-Requires(preun):  rpm-helper
-Suggests:	  dkms-%{kqemu_name} >= %{kqemu_version}-%{kqemu_release}
-%endif
 
 %description
 QEMU is a FAST! processor emulator. By using dynamic translation it
@@ -79,26 +47,6 @@ CPUs. QEMU has two operating modes:
   enables easier testing and debugging of system code. It can also be
   used to provide virtual hosting of several virtual PC on a single
   server.
-%kqemu_note
-
-%package -n dkms-%{kqemu_name}
-Summary:	QEMU Accelerator Module
-Group:		System/Kernel and hardware
-Version:	%{kqemu_version}
-Release:	%{kqemu_release}
-Requires(post):	 dkms
-Requires(preun): dkms
-
-%description -n dkms-%{kqemu_name}
-QEMU Accelerator (KQEMU) is a driver allowing the QEMU PC emulator to
-run much faster when emulating a PC on an x86 host.
-
-Full virtualization mode can also be enabled (with -kernel-kqemu) for
-best performance. This mode only works with the following guest OSes:
-Linux 2.4, Linux 2.6, Windows 2000 and Windows XP. WARNING: for
-Windows 2000/XP, you cannot use it during installation.
-
-Use "%{kqemu_program}" to benefit from the QEMU Accelerator Module.
 
 %package img
 Summary:	QEMU disk image utility
@@ -112,7 +60,9 @@ This package contains the QEMU disk image utility that is used to
 create, commit, convert and get information from a disk image.
 
 %prep
-%setup -q -a 1 
+%setup -q -n %{qemu_name}-%{qemu_version}
+%patch0 -p1 -b .includes
+%patch1 -p1 -b .kvm-upstream
 %patch11 -p1 -b .kernel-option-vga
 
 # nuke explicit dependencies on GLIBC_PRIVATE
@@ -128,53 +78,73 @@ chmod +x find_requires.sh
 if ! echo | %{__cc} -mtune=generic -xc -c - -o /dev/null 2> /dev/null; then
   CFLAGS=`echo "$RPM_OPT_FLAGS" | sed -e "s/-mtune=generic/-mtune=pentiumpro/g"`
 fi
-#	--enable-bsd-user \
-./configure --cc=%{__cc} \
-	--audio-drv-list="pa sdl alsa oss" \
-	--prefix=%_prefix \
-	--enable-system \
-	--enable-linux-user
-%make
+ 
+extraldflags="-Wl,--build-id";
+buildldflags="VL_LDFLAGS=-Wl,--build-id"
+
+%ifarch %{ix86} x86_64
+# sdl outputs to alsa or pulseaudio depending on system config, but it's broken (#495964)
+# alsa works, but causes huge CPU load due to bugs
+# oss works, but is very problematic because it grabs exclusive control of the device causing other apps to go haywire
+./configure --target-list=x86_64-softmmu \
+            --prefix=%{_prefix} \
+            --audio-drv-list=pa,sdl,alsa,oss \
+            --extra-ldflags=$extraldflags \
+            --extra-cflags="$CFLAGS"
+
+make V=1 %{?_smp_mflags} $buildldflags
+cp -a x86_64-softmmu/qemu-system-x86_64 qemu-kvm
+make clean
+
+make -C kvm/extboot extboot.bin
+
+cd kvm/user
+./configure --prefix=%{_prefix} --kerneldir=$(pwd)/../kernel/
+make kvmtrace
+cd ../../
+%endif
+
+./configure \
+    --target-list="i386-softmmu x86_64-softmmu arm-softmmu cris-softmmu m68k-softmmu \
+                mips-softmmu mipsel-softmmu mips64-softmmu mips64el-softmmu ppc-softmmu \
+                ppcemb-softmmu ppc64-softmmu sh4-softmmu sh4eb-softmmu sparc-softmmu \
+                i386-linux-user x86_64-linux-user alpha-linux-user arm-linux-user \
+                armeb-linux-user cris-linux-user m68k-linux-user mips-linux-user \
+                mipsel-linux-user ppc-linux-user ppc64-linux-user ppc64abi32-linux-user \
+                sh4-linux-user sh4eb-linux-user sparc-linux-user sparc64-linux-user \
+                sparc32plus-linux-user" \
+    --prefix=%{_prefix} \
+    --interp-prefix=%{_prefix}/qemu-%%M \
+    --audio-drv-list=pa,sdl,alsa,oss \
+    --disable-kvm \
+    --extra-ldflags=$extraldflags \
+    --extra-cflags="$CFLAGS"
+
+%make V=1 $buildldflags
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
+%ifarch %{ix86} x86_64
+mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/modules
+mkdir -p $RPM_BUILD_ROOT%{_bindir}/
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/%{name}
+
+install -m 0755 %{SOURCE1} $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/modules/kvm.modules
+install -m 0755 kvm/extboot/extboot.bin $RPM_BUILD_ROOT%{_datadir}/%{name}
+install -m 0755 kvm/user/kvmtrace $RPM_BUILD_ROOT%{_bindir}/
+install -m 0755 kvm/user/kvmtrace_format $RPM_BUILD_ROOT%{_bindir}/
+install -m 0755 kvm/kvm_stat $RPM_BUILD_ROOT%{_bindir}/
+install -m 0755 qemu-kvm $RPM_BUILD_ROOT%{_bindir}/
+%endif
+
+
 %makeinstall_std
 
-# make sure to use the right accelerator-capable qemu binary on x86_64
-cd $RPM_BUILD_ROOT%{_bindir}
-mv qemu qemu-system-i386
-%ifarch x86_64
-ln -s qemu-system-x86_64 qemu
-%else
-ln -s qemu-system-i386 qemu
-%endif
-cd -
+chmod -x ${RPM_BUILD_ROOT}%{_mandir}/man1/*
 
-%ifarch %{kqemu_arches}
-# install kqemu sources
-mkdir -p $RPM_BUILD_ROOT%{_usr}/src/%{kqemu_name}-%{kqemu_dkmsver}
-(cd kqemu-%{kqemu_fullver} && tar cf - .) | \
-(cd $RPM_BUILD_ROOT%{_usr}/src/%{kqemu_name}-%{kqemu_dkmsver} && tar xf -)
-cat > $RPM_BUILD_ROOT%{_usr}/src/%{kqemu_name}-%{kqemu_dkmsver}/dkms.conf << EOF
-PACKAGE_NAME=%{kqemu_name}
-PACKAGE_VERSION=%{kqemu_dkmsver}
-MAKE[0]="./configure --kernel-path=/lib/modules/\${kernelver}/source && make"
-DEST_MODULE_LOCATION[0]=/kernel/3rdparty/%{kqemu_name}
-BUILT_MODULE_NAME[0]=%{kqemu_name}
-AUTOINSTALL=yes
-EOF
+#install -D -p -m 0644 qemu.sasl $RPM_BUILD_ROOT%{_sysconfdir}/sasl2/qemu.conf
 
-# install service
-mkdir -p $RPM_BUILD_ROOT%{_initrddir}
-install -m755 %{SOURCE2} $RPM_BUILD_ROOT%{_initrddir}/%{name}
-
-# install udev rules
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/
-cat > $RPM_BUILD_ROOT%{_sysconfdir}/udev/rules.d/65-%{kqemu_name}.rules << EOF
-KERNEL=="%{kqemu_name}", MODE="0666"
-EOF
-%endif
 
 # remove unpackaged files
 rm -rf $RPM_BUILD_ROOT%{_docdir}/qemu
@@ -182,33 +152,21 @@ rm -rf $RPM_BUILD_ROOT%{_docdir}/qemu
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post
-%_post_service %{name}
-
-%preun
-%_preun_service %{name}
-
-%postun
-if [ "$1" -ge "1" ]; then
-  /sbin/service %{name} condrestart > /dev/null 2>&1 || :
-fi
-
-%post -n dkms-%{kqemu_name}
-set -x
-/usr/sbin/dkms --rpm_safe_upgrade add -m %{kqemu_name} -v %{kqemu_dkmsver}
-/usr/sbin/dkms --rpm_safe_upgrade build -m %{kqemu_name} -v %{kqemu_dkmsver}
-/usr/sbin/dkms --rpm_safe_upgrade install -m %{kqemu_name} -v %{kqemu_dkmsver}
-/sbin/modprobe %{kqemu_name} >/dev/null 2>&1 || :
-
-%preun -n dkms-%{kqemu_name}
-# rmmod can fail
-/sbin/rmmod %{kqemu_name} >/dev/null 2>&1
-set -x
-/usr/sbin/dkms --rpm_safe_upgrade remove -m %{kqemu_name} -v %{kqemu_dkmsver} --all || :
+%post 
+%ifarch %{ix86} x86_64
+# load kvm modules now, so we can make sure no reboot is needed.
+# If there's already a kvm module installed, we don't mess with it
+sh /%{_sysconfdir}/sysconfig/modules/kvm.modules
+%endif
 
 %files
 %defattr(-,root,root)
 %doc README qemu-doc.html qemu-tech.html
+%{_sysconfdir}/sysconfig/modules/kvm.modules
+%{_bindir}/kvm_stat
+%{_bindir}/kvmtrace
+%{_bindir}/kvmtrace_format
+%{_bindir}/qemu-kvm
 %{_bindir}/qemu
 %{_bindir}/qemu-alpha
 %{_bindir}/qemu-arm*
@@ -228,7 +186,6 @@ set -x
 %{_bindir}/qemu-system-ppc*
 %{_bindir}/qemu-system-mips*
 %{_bindir}/qemu-system-sparc
-%{_bindir}/qemu-system-i386
 %{_bindir}/qemu-system-x86_64
 %{_mandir}/man1/qemu.1*
 %{_mandir}/man8/qemu-nbd.8*
@@ -240,20 +197,8 @@ set -x
 %{_datadir}/qemu/openbios-sparc64
 %{_datadir}/qemu/openbios-ppc
 %{_datadir}/qemu/bamboo.dtb
-%{_initrddir}/%{name}
 
 %files img
 %defattr(-,root,root)
 %{_bindir}/qemu-img
 %{_mandir}/man1/qemu-img.1*
-
-%ifarch %{kqemu_arches}
-%files -n dkms-%{kqemu_name}
-%defattr(-,root,root)
-%doc kqemu-%{kqemu_fullver}/README
-%doc kqemu-%{kqemu_fullver}/kqemu-doc.html
-%doc kqemu-%{kqemu_fullver}/kqemu-tech.html
-%dir %{_usr}/src/%{kqemu_name}-%{kqemu_dkmsver}
-%{_usr}/src/%{kqemu_name}-%{kqemu_dkmsver}/*
-%_sysconfdir/udev/rules.d/65-%{kqemu_name}.rules
-%endif
