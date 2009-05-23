@@ -30,7 +30,8 @@ BuildRequires:	pulseaudio-devel
 BuildRequires:	zlib-devel
 BuildRequires:	brlapi-devel
 BuildRequires:	gnutls-devel
-BuildRequires:	vde-devel
+# not in main
+#BuildRequires:	vde-devel
 BuildRequires:	dev86
 BuildRequires:	iasl
 ExclusiveArch:	%{ix86} ppc x86_64 amd64 %{sunsparc}
