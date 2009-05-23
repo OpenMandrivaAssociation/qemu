@@ -83,7 +83,7 @@ extraldflags="-Wl,--build-id";
 buildldflags="VL_LDFLAGS=-Wl,--build-id"
 
 %ifarch %{ix86} x86_64
-# sdl outputs to alsa or pulseaudio depending on system config, but it's broken (#495964)
+# sdl outputs to alsa or pulseaudio depending on system config, but it's broken (RH bug #495964)
 # alsa works, but causes huge CPU load due to bugs
 # oss works, but is very problematic because it grabs exclusive control of the device causing other apps to go haywire
 ./configure --target-list=x86_64-softmmu \
@@ -158,6 +158,9 @@ rm -rf $RPM_BUILD_ROOT
 # If there's already a kvm module installed, we don't mess with it
 sh /%{_sysconfdir}/sysconfig/modules/kvm.modules
 %endif
+
+%triggerpostun -- qemu < 0.10.4-6
+rm -f /etc/rc.d/*/{K,S}??qemu
 
 %files
 %defattr(-,root,root)
