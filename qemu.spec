@@ -44,6 +44,8 @@ Group:		Emulators
 Provides:	kvm
 Obsoletes:	kvm < 86
 Requires:	qemu-img = %{version}-%{release}
+# for %%{_sysconfdir}/sasl2
+Requires:	cyrus-sasl
 BuildRequires:	libSDL-devel
 BuildRequires:	tetex-texi2html
 # XXXX: -luuid
@@ -53,6 +55,7 @@ BuildRequires:	pulseaudio-devel
 BuildRequires:	zlib-devel
 BuildRequires:	brlapi-devel
 BuildRequires:	gnutls-devel
+BuildRequires:	libgsasl-devel
 # not in main
 #BuildRequires:	vde-devel
 BuildRequires:	dev86
@@ -195,7 +198,7 @@ install -m 0755 qemu-kvm $RPM_BUILD_ROOT%{_bindir}/
 
 chmod -x ${RPM_BUILD_ROOT}%{_mandir}/man1/*
 
-#install -D -p -m 0644 qemu.sasl $RPM_BUILD_ROOT%{_sysconfdir}/sasl2/qemu.conf
+install -D -p -m 0644 qemu.sasl $RPM_BUILD_ROOT%{_sysconfdir}/sasl2/qemu.conf
 
 
 # remove unpackaged files
@@ -218,6 +221,7 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %defattr(-,root,root)
 %doc README qemu-doc.html qemu-tech.html
 %{_sysconfdir}/sysconfig/modules/kvm.modules
+%{_sysconfdir}/sasl2/qemu.conf
 %{_bindir}/kvm_stat
 %{_bindir}/kvmtrace
 %{_bindir}/kvmtrace_format
