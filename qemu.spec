@@ -12,9 +12,32 @@ Version:	%{qemu_version}
 Release:	%{qemu_release}
 Source0:	http://kent.dl.sourceforge.net/sourceforge/kvm/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
 Source1:	kvm.modules
-Patch0:		qemu-kvm-fix-kerneldir-includes.patch
-Patch1:		kvm-upstream-ppc.patch
-Patch11:	qemu-kernel-option-vga.patch
+Patch0:		qemu-kernel-option-vga.patch
+Patch1:		01-tls-handshake-fix.patch
+Patch2:		02-vnc-monitor-info.patch
+Patch3:		03-display-keymaps.patch
+Patch4:		04-vnc-struct.patch
+Patch5:		05-vnc-tls-vencrypt.patch
+Patch6:		06-vnc-sasl.patch
+Patch7:		07-vnc-monitor-authinfo.patch
+Patch8:		08-vnc-acl-mgmt.patch
+
+Patch9:		kvm-upstream-ppc.patch
+Patch10:	qemu-fix-debuginfo.patch
+Patch11:	qemu-fix-gcc.patch
+Patch12:	qemu-roms-more-room.patch
+Patch13:	qemu-roms-more-room-fix-vga-align.patch
+Patch14:	qemu-bios-bigger-roms.patch
+Patch15:	qemu-kvm-fix-kerneldir-includes.patch
+Patch16:	qemu-fix-load-linux.patch
+Patch17:	qemu-dma-aio-cancellation1.patch
+Patch18:	qemu-dma-aio-cancellation2.patch
+Patch19:	qemu-dma-aio-cancellation3.patch
+Patch20:	qemu-dma-aio-cancellation4.patch
+Patch21:	qemu-make-x86-cpuid-feature-names-available-in-file-scope.patch
+Patch22:	qemu-fix-x86-feature-modifications-for-features-that-set.patch
+Patch23:	qemu-trim-cpu-features-not-supported-by-kvm.patch
+
 License:	GPL
 URL:		http://bellard.org/qemu/
 Group:		Emulators
@@ -68,9 +91,31 @@ create, commit, convert and get information from a disk image.
 
 %prep
 %setup -q -n %{qemu_name}-%{qemu_version}
-%patch0 -p1 -b .includes
-%patch1 -p1 -b .kvm-upstream
-%patch11 -p1 -b .kernel-option-vga
+%patch0 -p1 -b .kernel-option-vga
+
+%patch1 -p1
+%patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1
+%patch6 -p1
+%patch7 -p1
+%patch8 -p1
+%patch9 -p1
+%patch10 -p1
+%patch11 -p1
+%patch12 -p1
+%patch13 -p1
+%patch14 -p1
+%patch15 -p1
+%patch16 -p1
+%patch17 -p1
+%patch18 -p1
+%patch19 -p1
+%patch20 -p1
+%patch21 -p1
+#%patch22 -p1
+#%patch23 -p1
 
 # nuke explicit dependencies on GLIBC_PRIVATE
 # (Anssi 03/2008) FIXME: use _requires_exceptions
