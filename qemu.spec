@@ -56,7 +56,7 @@ BuildRequires:	pulseaudio-devel
 BuildRequires:	zlib-devel
 BuildRequires:	brlapi-devel
 BuildRequires:	gnutls-devel
-BuildRequires:	libgsasl-devel
+BuildRequires:	libsasl2-devel
 # not in main
 #BuildRequires:	vde-devel
 BuildRequires:	dev86
