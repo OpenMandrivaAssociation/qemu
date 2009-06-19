@@ -1,6 +1,6 @@
 %define qemu_name	qemu-kvm
-%define qemu_version	0.10.4
-%define qemu_rel	7
+%define qemu_version	0.10.5
+%define qemu_rel	1
 #define qemu_snapshot	r6685
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
@@ -25,16 +25,10 @@ Patch8:		08-vnc-acl-mgmt.patch
 
 Patch9:		kvm-upstream-ppc.patch
 Patch10:	qemu-fix-debuginfo.patch
-Patch11:	qemu-fix-gcc.patch
 Patch12:	qemu-roms-more-room.patch
 Patch13:	qemu-roms-more-room-fix-vga-align.patch
 Patch14:	qemu-bios-bigger-roms.patch
 Patch15:	qemu-kvm-fix-kerneldir-includes.patch
-Patch16:	qemu-fix-load-linux.patch
-Patch17:	qemu-dma-aio-cancellation1.patch
-Patch18:	qemu-dma-aio-cancellation2.patch
-Patch19:	qemu-dma-aio-cancellation3.patch
-Patch20:	qemu-dma-aio-cancellation4.patch
 Patch21:	qemu-make-x86-cpuid-feature-names-available-in-file-scope.patch
 Patch22:	qemu-fix-x86-feature-modifications-for-features-that-set.patch
 Patch23:	qemu-trim-cpu-features-not-supported-by-kvm.patch
@@ -107,17 +101,11 @@ create, commit, convert and get information from a disk image.
 %patch8 -p1
 %patch9 -p1
 %patch10 -p1
-%patch11 -p1
 %patch12 -p1
 %patch13 -p1
 %patch14 -p1
 %patch15 -p1
-%patch16 -p1
-%patch17 -p1
-%patch18 -p1
-%patch19 -p1
-%patch20 -p1
-%patch21 -p1
+#%patch21 -p1
 #%patch22 -p1
 #%patch23 -p1
 
