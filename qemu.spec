@@ -33,6 +33,8 @@ Patch21:	qemu-make-x86-cpuid-feature-names-available-in-file-scope.patch
 Patch22:	qemu-fix-x86-feature-modifications-for-features-that-set.patch
 Patch23:	qemu-trim-cpu-features-not-supported-by-kvm.patch
 
+Patch24:	qemu-kvm-allow-kqemu.patch
+
 License:	GPL
 URL:		http://bellard.org/qemu/
 Group:		Emulators
@@ -108,6 +110,7 @@ create, commit, convert and get information from a disk image.
 #%patch21 -p1
 #%patch22 -p1
 #%patch23 -p1
+%patch24 -p1 -b .kqemu
 
 # nuke explicit dependencies on GLIBC_PRIVATE
 # (Anssi 03/2008) FIXME: use _requires_exceptions
