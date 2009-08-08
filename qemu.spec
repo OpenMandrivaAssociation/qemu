@@ -12,7 +12,6 @@ Version:	%{qemu_version}
 Release:	%{qemu_release}
 Source0:	http://kent.dl.sourceforge.net/sourceforge/kvm/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
 Source1:	kvm.modules
-Source2:	README.install.urpmi
 Patch0:		qemu-kernel-option-vga.patch
 Patch1:		01-tls-handshake-fix.patch
 Patch2:		02-vnc-monitor-info.patch
@@ -194,8 +193,6 @@ install -D -p -m 0644 qemu.sasl $RPM_BUILD_ROOT%{_sysconfdir}/sasl2/qemu.conf
 # remove unpackaged files
 rm -rf $RPM_BUILD_ROOT%{_docdir}/qemu
 
-install -m 644 %{SOURCE1} README.install.urpmi
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -211,7 +208,7 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 
 %files
 %defattr(-,root,root)
-%doc README README.install.urpmi qemu-doc.html qemu-tech.html
+%doc README qemu-doc.html qemu-tech.html
 %config(noreplace)%{_sysconfdir}/sasl2/qemu.conf
 %{_sysconfdir}/sysconfig/modules/kvm.modules
 %{_bindir}/kvm_stat
