@@ -191,11 +191,6 @@ chmod -x ${RPM_BUILD_ROOT}%{_mandir}/man1/*
 
 install -D -p -m 0644 qemu.sasl $RPM_BUILD_ROOT%{_sysconfdir}/sasl2/qemu.conf
 
-mkdir -p %{buildroot}%{_sysconfdir}/udev/rules.d/
-cat > %{buildroot}%{_sysconfdir}/udev/rules.d/65-kvm.rules << EOF
-KERNEL=="kvm", MODE="0666"
-EOF
-
 # remove unpackaged files
 rm -rf $RPM_BUILD_ROOT%{_docdir}/qemu
 
@@ -217,7 +212,6 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %files
 %defattr(-,root,root)
 %doc README README.install.urpmi qemu-doc.html qemu-tech.html
-%config(noreplace)%{_sysconfdir}/udev/rules.d/65-kvm.rules
 %config(noreplace)%{_sysconfdir}/sasl2/qemu.conf
 %{_sysconfdir}/sysconfig/modules/kvm.modules
 %{_bindir}/kvm_stat
