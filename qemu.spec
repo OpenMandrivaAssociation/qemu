@@ -1,10 +1,10 @@
 %define qemu_name	qemu-kvm
-%define qemu_version	0.10.6
+%define qemu_version	0.11.0
 %define qemu_rel	1
-#define qemu_snapshot	r6685
+%define qemu_snapshot	rc2
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
-%define __find_requires %{_builddir}/%{qemu_name}-%{qemu_version}/find_requires.sh
+%define __find_requires %{_builddir}/%{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}/find_requires.sh
 
 Summary:	QEMU CPU Emulator
 Name:		qemu
@@ -15,22 +15,8 @@ Source1:	kvm.modules
 Patch0:		qemu-kernel-option-vga.patch
 Patch1:		01-tls-handshake-fix.patch
 Patch2:		02-vnc-monitor-info.patch
-Patch3:		03-display-keymaps.patch
-Patch4:		04-vnc-struct.patch
-Patch5:		05-vnc-tls-vencrypt.patch
-Patch6:		06-vnc-sasl.patch
-Patch7:		07-vnc-monitor-authinfo.patch
-Patch8:		08-vnc-acl-mgmt.patch
 
-Patch9:		kvm-upstream-ppc.patch
-Patch10:	qemu-fix-debuginfo.patch
-Patch12:	qemu-roms-more-room.patch
-Patch13:	qemu-roms-more-room-fix-vga-align.patch
 Patch14:	qemu-bios-bigger-roms.patch
-Patch15:	qemu-kvm-fix-kerneldir-includes.patch
-Patch21:	qemu-make-x86-cpuid-feature-names-available-in-file-scope.patch
-Patch22:	qemu-fix-x86-feature-modifications-for-features-that-set.patch
-Patch23:	qemu-trim-cpu-features-not-supported-by-kvm.patch
 
 Patch24:	qemu-kvm-allow-kqemu.patch
 
@@ -89,26 +75,8 @@ This package contains the QEMU disk image utility that is used to
 create, commit, convert and get information from a disk image.
 
 %prep
-%setup -q -n %{qemu_name}-%{qemu_version}
-%patch0 -p1 -b .kernel-option-vga
-
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch12 -p1
-%patch13 -p1
+%setup -q -n %{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
 %patch14 -p1
-%patch15 -p1
-#%patch21 -p1
-#%patch22 -p1
-#%patch23 -p1
 %patch24 -p1 -b .kqemu
 
 # nuke explicit dependencies on GLIBC_PRIVATE
@@ -141,8 +109,6 @@ buildldflags="VL_LDFLAGS=-Wl,--build-id"
 make V=1 %{?_smp_mflags} $buildldflags
 cp -a x86_64-softmmu/qemu-system-x86_64 qemu-kvm
 make clean
-
-make -C kvm/extboot extboot.bin
 
 cd kvm/user
 ./configure --prefix=%{_prefix} --kerneldir=$(pwd)/../kernel/
@@ -177,7 +143,6 @@ mkdir -p $RPM_BUILD_ROOT%{_bindir}/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 install -m 0755 %{SOURCE1} $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/modules/kvm.modules
-install -m 0755 kvm/extboot/extboot.bin $RPM_BUILD_ROOT%{_datadir}/%{name}
 install -m 0755 kvm/user/kvmtrace $RPM_BUILD_ROOT%{_bindir}/
 install -m 0755 kvm/user/kvmtrace_format $RPM_BUILD_ROOT%{_bindir}/
 install -m 0755 kvm/kvm_stat $RPM_BUILD_ROOT%{_bindir}/
@@ -214,6 +179,7 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_bindir}/kvm_stat
 %{_bindir}/kvmtrace
 %{_bindir}/kvmtrace_format
+%{_bindir}/qemu-io
 %{_bindir}/qemu-kvm
 %{_bindir}/qemu
 %{_bindir}/qemu-alpha
@@ -245,6 +211,7 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_datadir}/qemu/openbios-sparc64
 %{_datadir}/qemu/openbios-ppc
 %{_datadir}/qemu/bamboo.dtb
+%{_datadir}/qemu/petalogix-s3adsp1800.dtb
 
 %files img
 %defattr(-,root,root)
