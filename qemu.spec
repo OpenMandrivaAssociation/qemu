@@ -1,7 +1,7 @@
 %define qemu_name	qemu-kvm
 %define qemu_version	0.11.0
-%define qemu_rel	2
-%define qemu_snapshot	rc2
+%define qemu_rel	1
+#define qemu_snapshot	0
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
 %define __find_requires %{_builddir}/%{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}/find_requires.sh
