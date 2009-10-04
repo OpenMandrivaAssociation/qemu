@@ -1,6 +1,6 @@
 %define qemu_name	qemu-kvm
 %define qemu_version	0.11.0
-%define qemu_rel	1
+%define qemu_rel	2
 #define qemu_snapshot	0
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
@@ -19,6 +19,24 @@ Patch2:		02-vnc-monitor-info.patch
 Patch14:	qemu-bios-bigger-roms.patch
 
 Patch24:	qemu-kvm-allow-kqemu.patch
+
+# Fedora patches
+# Allow the pulseudio backend to be the default
+Patch1003: qemu-allow-pulseaudio-to-be-the-default.patch
+
+# Add KSM support - see https://fedoraproject.org/wiki/Features/KSM
+# Disabled in Mandriva: needs Linux 2.6.32 or patched 2.6.31
+#Patch1004: qemu-add-ksm-support.patch
+
+# Fix issue causing NIC hotplug confusion when no model is specified (RH bug #524022)
+Patch1005: qemu-correctly-free-nic-info-structure.patch
+
+# Do not exit during PCI hotplug when an invalid NIC model is passed (RH bug #524022)
+Patch1006: qemu-do-not-exit-on-pci-hotplug-invalid-nic1.patch
+Patch1007: qemu-do-not-exit-on-pci-hotplug-invalid-nic2.patch
+
+# Improve error reporting on file access
+Patch1008: qemu-improve-error-reporting-on-file-access.patch
 
 License:	GPL
 URL:		http://bellard.org/qemu/
@@ -78,6 +96,11 @@ create, commit, convert and get information from a disk image.
 %setup -q -n %{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
 %patch14 -p1
 %patch24 -p1 -b .kqemu
+%patch1003 -p1
+%patch1005 -p1
+%patch1006 -p1
+%patch1007 -p1
+%patch1008 -p1
 
 # nuke explicit dependencies on GLIBC_PRIVATE
 # (Anssi 03/2008) FIXME: use _requires_exceptions
