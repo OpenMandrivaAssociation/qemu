@@ -1,6 +1,6 @@
 %define qemu_name	qemu-kvm
 %define qemu_version	0.11.0
-%define qemu_rel	2
+%define qemu_rel	3
 #define qemu_snapshot	0
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
@@ -37,6 +37,9 @@ Patch1007: qemu-do-not-exit-on-pci-hotplug-invalid-nic2.patch
 
 # Improve error reporting on file access
 Patch1008: qemu-improve-error-reporting-on-file-access.patch
+
+# Fix fs errors with virtio and qcow2 backing file (RH bug #524734)
+Patch1009: qemu-fix-qcow2-backing-file-with-virtio.patch
 
 License:	GPL
 URL:		http://bellard.org/qemu/
@@ -101,6 +104,7 @@ create, commit, convert and get information from a disk image.
 %patch1006 -p1
 %patch1007 -p1
 %patch1008 -p1
+%patch1009 -p1
 
 # nuke explicit dependencies on GLIBC_PRIVATE
 # (Anssi 03/2008) FIXME: use _requires_exceptions
