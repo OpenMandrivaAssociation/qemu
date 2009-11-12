@@ -1,6 +1,6 @@
 %define qemu_name	qemu-kvm
 %define qemu_version	0.11.0
-%define qemu_rel	3
+%define qemu_rel	4
 #define qemu_snapshot	0
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
@@ -63,6 +63,8 @@ BuildRequires:	libsasl2-devel
 #BuildRequires:	vde-devel
 BuildRequires:	dev86
 BuildRequires:	iasl
+# glibc-devel with fixed preadv/pwritev prototypes
+BuildRequires:	glibc-devel >= 6:2.10.1-7mnb2
 ExclusiveArch:	%{ix86} ppc x86_64 amd64 %{sunsparc}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
