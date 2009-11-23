@@ -1,6 +1,6 @@
 %define qemu_name	qemu-kvm
 %define qemu_version	0.11.0
-%define qemu_rel	4
+%define qemu_rel	5
 #define qemu_snapshot	0
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
@@ -17,8 +17,6 @@ Patch1:		01-tls-handshake-fix.patch
 Patch2:		02-vnc-monitor-info.patch
 
 Patch14:	qemu-bios-bigger-roms.patch
-
-Patch24:	qemu-kvm-allow-kqemu.patch
 
 # Fedora patches
 # Allow the pulseudio backend to be the default
@@ -100,7 +98,6 @@ create, commit, convert and get information from a disk image.
 %prep
 %setup -q -n %{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
 %patch14 -p1
-%patch24 -p1 -b .kqemu
 %patch1003 -p1
 %patch1005 -p1
 %patch1006 -p1
