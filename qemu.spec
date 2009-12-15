@@ -1,6 +1,6 @@
 %define qemu_name	qemu-kvm
-%define qemu_version	0.11.0
-%define qemu_rel	5
+%define qemu_version	0.11.1
+%define qemu_rel	1
 #define qemu_snapshot	0
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
@@ -12,6 +12,14 @@ Version:	%{qemu_version}
 Release:	%{qemu_release}
 Source0:	http://kent.dl.sourceforge.net/sourceforge/kvm/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
 Source1:	kvm.modules
+
+# KSM control scripts
+Source4: ksm.init
+Source5: ksm.sysconfig
+Source6: ksmtuned.init
+Source7: ksmtuned
+Source8: ksmtuned.conf
+
 Patch0:		qemu-kernel-option-vga.patch
 Patch1:		01-tls-handshake-fix.patch
 Patch2:		02-vnc-monitor-info.patch
@@ -163,6 +171,13 @@ cd ../../
 %install
 rm -rf $RPM_BUILD_ROOT
 
+install -D -p -m 0755 %{SOURCE4} $RPM_BUILD_ROOT%{_initddir}/ksm
+install -D -p -m 0644 %{SOURCE5} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/ksm
+
+install -D -p -m 0755 %{SOURCE6} $RPM_BUILD_ROOT%{_initddir}/ksmtuned
+install -D -p -m 0755 %{SOURCE7} $RPM_BUILD_ROOT%{_sbindir}/ksmtuned
+install -D -p -m 0644 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/ksmtuned.conf
+
 %ifarch %{ix86} x86_64
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/modules
 mkdir -p $RPM_BUILD_ROOT%{_bindir}/
@@ -193,6 +208,12 @@ rm -rf $RPM_BUILD_ROOT
 # If there's already a kvm module installed, we don't mess with it
 sh /%{_sysconfdir}/sysconfig/modules/kvm.modules
 %endif
+%_post_service ksmtuned
+%_post_service ksm
+
+%preun
+%_preun_service ksm
+%_preun_service ksmtuned
 
 %triggerpostun -- qemu < 0.10.4-6
 rm -f /etc/rc.d/*/{K,S}??qemu
@@ -201,6 +222,11 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %defattr(-,root,root)
 %doc README qemu-doc.html qemu-tech.html
 %config(noreplace)%{_sysconfdir}/sasl2/qemu.conf
+%{_initddir}/ksm
+%config(noreplace) %{_sysconfdir}/sysconfig/ksm
+%{_initddir}/ksmtuned
+%{_sbindir}/ksmtuned
+%config(noreplace) %{_sysconfdir}/ksmtuned.conf
 %{_sysconfdir}/sysconfig/modules/kvm.modules
 %{_bindir}/kvm_stat
 %{_bindir}/kvmtrace
