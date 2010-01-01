@@ -1,5 +1,5 @@
 %define qemu_name	qemu-kvm
-%define qemu_version	0.11.1
+%define qemu_version	0.12.1.2
 %define qemu_rel	1
 #define qemu_snapshot	0
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
@@ -20,33 +20,6 @@ Source6: ksmtuned.init
 Source7: ksmtuned
 Source8: ksmtuned.conf
 
-Patch0:		qemu-kernel-option-vga.patch
-Patch1:		01-tls-handshake-fix.patch
-Patch2:		02-vnc-monitor-info.patch
-
-Patch14:	qemu-bios-bigger-roms.patch
-
-# Fedora patches
-# Allow the pulseudio backend to be the default
-Patch1003: qemu-allow-pulseaudio-to-be-the-default.patch
-
-# Add KSM support - see https://fedoraproject.org/wiki/Features/KSM
-# Disabled in Mandriva: needs Linux 2.6.32 or patched 2.6.31
-#Patch1004: qemu-add-ksm-support.patch
-
-# Fix issue causing NIC hotplug confusion when no model is specified (RH bug #524022)
-Patch1005: qemu-correctly-free-nic-info-structure.patch
-
-# Do not exit during PCI hotplug when an invalid NIC model is passed (RH bug #524022)
-Patch1006: qemu-do-not-exit-on-pci-hotplug-invalid-nic1.patch
-Patch1007: qemu-do-not-exit-on-pci-hotplug-invalid-nic2.patch
-
-# Improve error reporting on file access
-Patch1008: qemu-improve-error-reporting-on-file-access.patch
-
-# Fix fs errors with virtio and qcow2 backing file (RH bug #524734)
-Patch1009: qemu-fix-qcow2-backing-file-with-virtio.patch
-
 License:	GPL
 URL:		http://bellard.org/qemu/
 Group:		Emulators
@@ -65,6 +38,7 @@ BuildRequires:	zlib-devel
 BuildRequires:	brlapi-devel
 BuildRequires:	gnutls-devel
 BuildRequires:	libsasl2-devel
+BuildRequires:	pciutils-devel
 # not in main
 #BuildRequires:	vde-devel
 BuildRequires:	dev86
@@ -105,13 +79,6 @@ create, commit, convert and get information from a disk image.
 
 %prep
 %setup -q -n %{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
-%patch14 -p1
-%patch1003 -p1
-%patch1005 -p1
-%patch1006 -p1
-%patch1007 -p1
-%patch1008 -p1
-%patch1009 -p1
 
 # nuke explicit dependencies on GLIBC_PRIVATE
 # (Anssi 03/2008) FIXME: use _requires_exceptions
@@ -140,7 +107,7 @@ buildldflags="VL_LDFLAGS=-Wl,--build-id"
             --extra-ldflags=$extraldflags \
             --extra-cflags="$CFLAGS"
 
-make V=1 %{?_smp_mflags} $buildldflags
+%make V=1 $buildldflags
 cp -a x86_64-softmmu/qemu-system-x86_64 qemu-kvm
 make clean
 
