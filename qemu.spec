@@ -21,7 +21,7 @@ Source7: ksmtuned
 Source8: ksmtuned.conf
 
 License:	GPL
-URL:		http://bellard.org/qemu/
+URL:		http://wiki.qemu.org/Main_Page
 Group:		Emulators
 Provides:	kvm
 Obsoletes:	kvm < 86
