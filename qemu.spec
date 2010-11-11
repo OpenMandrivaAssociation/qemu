@@ -1,5 +1,5 @@
 %define qemu_name	qemu-kvm
-%define qemu_version	0.12.5
+%define qemu_version	0.13.0
 %define qemu_rel	1
 #define qemu_snapshot	0
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
@@ -32,7 +32,7 @@ BuildRequires:	libSDL-devel
 BuildRequires:	tetex-texi2html
 # XXXX: -luuid
 BuildRequires:	e2fsprogs-devel
-BuildRequires:  kernel-headers	
+BuildRequires:	kernel-headers	
 BuildRequires:	pulseaudio-devel
 BuildRequires:	zlib-devel
 BuildRequires:	brlapi-devel
@@ -111,10 +111,10 @@ buildldflags="VL_LDFLAGS=-Wl,--build-id"
 cp -a x86_64-softmmu/qemu-system-x86_64 qemu-kvm
 make clean
 
-cd kvm/user
-./configure --prefix=%{_prefix} --kerneldir=$(pwd)/../kernel/
-make kvmtrace
-cd ../../
+#cd kvm/user
+#./configure --prefix=%{_prefix} --kerneldir=$(pwd)/../kernel/
+#make kvmtrace
+#cd ../../
 %endif
 
 ./configure \
