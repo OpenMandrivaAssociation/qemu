@@ -12,6 +12,7 @@ Version:	%{qemu_version}
 Release:	%{qemu_release}
 Source0:	http://kent.dl.sourceforge.net/sourceforge/kvm/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
 Source1:	kvm.modules
+Patch0:		qemu-kvm-compile-fix.patch
 
 # KSM control scripts
 Source4: ksm.init
@@ -79,6 +80,7 @@ create, commit, convert and get information from a disk image.
 
 %prep
 %setup -q -n %{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
+%patch0 -p0
 
 # nuke explicit dependencies on GLIBC_PRIVATE
 # (Anssi 03/2008) FIXME: use _requires_exceptions
@@ -111,10 +113,14 @@ buildldflags="VL_LDFLAGS=-Wl,--build-id"
 cp -a x86_64-softmmu/qemu-system-x86_64 qemu-kvm
 make clean
 
-#cd kvm/user
-#./configure --prefix=%{_prefix} --kerneldir=$(pwd)/../kernel/
-#make kvmtrace
-#cd ../../
+#pushd kvm
+#./configure \
+#	--prefix=%{_prefix} \
+#	--kerneldir="`pwd`/../kernel/" \
+#	--with-kvm-trace
+##make kvmtrace
+#make
+#popd
 %endif
 
 ./configure \
