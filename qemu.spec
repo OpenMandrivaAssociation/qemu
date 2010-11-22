@@ -157,8 +157,8 @@ mkdir -p $RPM_BUILD_ROOT%{_bindir}/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 install -m 0755 %{SOURCE1} $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/modules/kvm.modules
-install -m 0755 kvm/user/kvmtrace $RPM_BUILD_ROOT%{_bindir}/
-install -m 0755 kvm/user/kvmtrace_format $RPM_BUILD_ROOT%{_bindir}/
+#install -m 0755 kvm/user/kvmtrace $RPM_BUILD_ROOT%{_bindir}/
+#install -m 0755 kvm/user/kvmtrace_format $RPM_BUILD_ROOT%{_bindir}/
 install -m 0755 kvm/kvm_stat $RPM_BUILD_ROOT%{_bindir}/
 install -m 0755 qemu-kvm $RPM_BUILD_ROOT%{_bindir}/
 %endif
@@ -202,8 +202,8 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %config(noreplace) %{_sysconfdir}/ksmtuned.conf
 %{_sysconfdir}/sysconfig/modules/kvm.modules
 %{_bindir}/kvm_stat
-%{_bindir}/kvmtrace
-%{_bindir}/kvmtrace_format
+#%{_bindir}/kvmtrace
+#%{_bindir}/kvmtrace_format
 %{_bindir}/qemu-io
 %{_bindir}/qemu-kvm
 %{_bindir}/qemu
