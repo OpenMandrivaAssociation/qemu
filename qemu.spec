@@ -163,14 +163,14 @@ install -m 0755 kvm/kvm_stat $RPM_BUILD_ROOT%{_bindir}/
 install -m 0755 qemu-kvm $RPM_BUILD_ROOT%{_bindir}/
 %endif
 
-%makeinstall_std
+%makeinstall_std BUILD_DOCS="yes"
 
-install -d ${RPM_BUILD_ROOT}%{_mandir}/man1
-install -d ${RPM_BUILD_ROOT}%{_mandir}/man8
-install qemu.1 ${RPM_BUILD_ROOT}%{_mandir}/man1
-install qemu-img.1 ${RPM_BUILD_ROOT}%{_mandir}/man1
-install qemu-nbd.8 ${RPM_BUILD_ROOT}%{_mandir}/man8
-chmod -x ${RPM_BUILD_ROOT}%{_mandir}/man1/*
+#install -d ${RPM_BUILD_ROOT}%{_mandir}/man1
+#install -d ${RPM_BUILD_ROOT}%{_mandir}/man8
+#install -D -p -m 0644 qemu.1 ${RPM_BUILD_ROOT}%{_mandir}/man1
+#install -D -p -m 0644 qemu-img.1 ${RPM_BUILD_ROOT}%{_mandir}/man1
+#install -D -p -m 0644 qemu-nbd.8 ${RPM_BUILD_ROOT}%{_mandir}/man8
+#chmod -x ${RPM_BUILD_ROOT}%{_mandir}/man1/*
 
 install -D -p -m 0644 qemu.sasl $RPM_BUILD_ROOT%{_sysconfdir}/sasl2/qemu.conf
 
