@@ -40,6 +40,7 @@ BuildRequires:	brlapi-devel
 BuildRequires:	gnutls-devel
 BuildRequires:	libsasl2-devel
 BuildRequires:	pciutils-devel
+BuildRequires:	texinfo
 # not in main
 #BuildRequires:	vde-devel
 BuildRequires:	dev86
