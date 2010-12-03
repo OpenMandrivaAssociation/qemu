@@ -106,7 +106,7 @@ buildldflags="VL_LDFLAGS=-Wl,--build-id"
 # oss works, but is very problematic because it grabs exclusive control of the device causing other apps to go haywire
 ./configure \
 	--target-list=x86_64-softmmu \
-	--prefix=%{_prefix}
+	--prefix=%{_prefix} \
 	--audio-drv-list=pa,sdl,alsa,oss \
 	--extra-ldflags=$extraldflags \
 	--extra-cflags="$CFLAGS"
