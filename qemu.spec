@@ -104,11 +104,12 @@ buildldflags="VL_LDFLAGS=-Wl,--build-id"
 # sdl outputs to alsa or pulseaudio depending on system config, but it's broken (RH bug #495964)
 # alsa works, but causes huge CPU load due to bugs
 # oss works, but is very problematic because it grabs exclusive control of the device causing other apps to go haywire
-./configure --target-list=x86_64-softmmu \
-            --prefix=%{_prefix} \
-            --audio-drv-list=pa,sdl,alsa,oss \
-            --extra-ldflags=$extraldflags \
-            --extra-cflags="$CFLAGS"
+./configure \
+	--target-list=x86_64-softmmu \
+	--prefix=%{_prefix}
+	--audio-drv-list=pa,sdl,alsa,oss \
+	--extra-ldflags=$extraldflags \
+	--extra-cflags="$CFLAGS"
 
 %make V=1 $buildldflags
 cp -a x86_64-softmmu/qemu-system-x86_64 qemu-kvm
@@ -207,6 +208,7 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_sbindir}/ksmtuned
 %config(noreplace) %{_sysconfdir}/ksmtuned.conf
 %{_sysconfdir}/sysconfig/modules/kvm.modules
+%{_sysconfdir}/qemu/target-x86_64.conf
 %{_bindir}/kvm_stat
 #%{_bindir}/kvmtrace
 #%{_bindir}/kvmtrace_format
@@ -236,6 +238,7 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_mandir}/man8/qemu-nbd.8*
 %dir %{_datadir}/qemu
 %{_datadir}/qemu/*.bin
+%{_datadir}/qemu/*.rom
 %{_datadir}/qemu/keymaps
 %{_datadir}/qemu/video.x
 %{_datadir}/qemu/openbios-sparc32
