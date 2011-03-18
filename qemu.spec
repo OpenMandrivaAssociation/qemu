@@ -13,6 +13,7 @@ Release:	%{qemu_release}
 Source0:	http://kent.dl.sourceforge.net/sourceforge/kvm/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
 Source1:	kvm.modules
 Patch0:		qemu-kvm-compile-fix.patch
+Patch1:		qemu-0.14-fix-pci-build.patch
 
 # KSM control scripts
 Source4: ksm.init
@@ -82,6 +83,7 @@ create, commit, convert and get information from a disk image.
 %prep
 %setup -q -n %{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
 %patch0 -p0
+%patch1 -p1
 
 # nuke explicit dependencies on GLIBC_PRIVATE
 # (Anssi 03/2008) FIXME: use _requires_exceptions
@@ -242,7 +244,6 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_datadir}/qemu/*.bin
 %{_datadir}/qemu/*.rom
 %{_datadir}/qemu/keymaps
-%{_datadir}/qemu/video.x
 %{_datadir}/qemu/openbios-sparc32
 %{_datadir}/qemu/openbios-sparc64
 %{_datadir}/qemu/openbios-ppc
