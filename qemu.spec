@@ -1,6 +1,6 @@
 %define qemu_name	qemu-kvm
-%define qemu_version	0.14.0
-%define qemu_rel	2
+%define qemu_version	0.14.1
+%define qemu_rel	1
 #define qemu_snapshot	0
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
@@ -13,7 +13,6 @@ Release:	%{qemu_release}
 Source0:	http://kent.dl.sourceforge.net/sourceforge/kvm/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
 Source1:	kvm.modules
 Patch0:		qemu-kvm-compile-fix.patch
-Patch1:		qemu-0.14-fix-pci-build.patch
 Patch2:		hw-arm_sysctl.c-Wire-MCI-register-MMC-card-status-bi.patch
 Patch3:		hw-arm_sysctl.c-Add-the-Versatile-Express-system-reg.patch
 Patch4:		hw-pl110-Model-the-PL111-CLCD-controller.patch
@@ -87,7 +86,6 @@ create, commit, convert and get information from a disk image.
 %prep
 %setup -q -n %{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
 %patch0 -p0
-%patch1 -p1
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
