@@ -1,5 +1,5 @@
 %define qemu_name	qemu-kvm
-%define qemu_version	0.14.1
+%define qemu_version	0.15.0
 %define qemu_rel	1
 #define qemu_snapshot	0
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
@@ -10,11 +10,9 @@ Summary:	QEMU CPU Emulator
 Name:		qemu
 Version:	%{qemu_version}
 Release:	%{qemu_release}
-Source0:	http://kent.dl.sourceforge.net/sourceforge/kvm/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
+Source0:	http://downloads.sourceforge.net/project/kvm/%{qemu_name}/%{version}/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
 Source1:	kvm.modules
 Patch0:		qemu-kvm-compile-fix.patch
-Patch2:		hw-arm_sysctl.c-Wire-MCI-register-MMC-card-status-bi.patch
-Patch3:		hw-arm_sysctl.c-Add-the-Versatile-Express-system-reg.patch
 Patch4:		hw-pl110-Model-the-PL111-CLCD-controller.patch
 Patch5:		versatilepb-Implement-SYS_CLCD-mux-control-register-.patch
 
@@ -43,7 +41,7 @@ BuildRequires:	zlib-devel
 BuildRequires:	brlapi-devel
 BuildRequires:	gnutls-devel
 BuildRequires:	libsasl2-devel
-BuildRequires:	pciutils-devel
+BuildRequires:	%{_lib}pci-devel
 BuildRequires:	texinfo
 # not in main
 #BuildRequires:	vde-devel
@@ -86,8 +84,6 @@ create, commit, convert and get information from a disk image.
 %prep
 %setup -q -n %{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
 %patch0 -p0
-%patch2 -p1
-%patch3 -p1
 %patch4 -p1
 %patch5 -p1
 
@@ -169,22 +165,18 @@ mkdir -p $RPM_BUILD_ROOT%{_bindir}/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 install -m 0755 %{SOURCE1} $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/modules/kvm.modules
-#install -m 0755 kvm/user/kvmtrace $RPM_BUILD_ROOT%{_bindir}/
-#install -m 0755 kvm/user/kvmtrace_format $RPM_BUILD_ROOT%{_bindir}/
 install -m 0755 kvm/kvm_stat $RPM_BUILD_ROOT%{_bindir}/
 install -m 0755 qemu-kvm $RPM_BUILD_ROOT%{_bindir}/
 %endif
 
 %makeinstall_std BUILD_DOCS="yes"
 
-#install -d ${RPM_BUILD_ROOT}%{_mandir}/man1
-#install -d ${RPM_BUILD_ROOT}%{_mandir}/man8
-#install -D -p -m 0644 qemu.1 ${RPM_BUILD_ROOT}%{_mandir}/man1
-#install -D -p -m 0644 qemu-img.1 ${RPM_BUILD_ROOT}%{_mandir}/man1
-#install -D -p -m 0644 qemu-nbd.8 ${RPM_BUILD_ROOT}%{_mandir}/man8
-#chmod -x ${RPM_BUILD_ROOT}%{_mandir}/man1/*
-
 install -D -p -m 0644 qemu.sasl $RPM_BUILD_ROOT%{_sysconfdir}/sasl2/qemu.conf
+
+#QPM
+install -m 0755 QMP/qmp-shell $RPM_BUILD_ROOT/%{_bindir}/qmp-shell
+install -d $RPM_BUILD_ROOT/%{py_platsitedir}
+install -m 0755 QMP/qmp.py $RPM_BUILD_ROOT/%{py_platsitedir}/qmp.py
 
 # remove unpackaged files
 rm -rf $RPM_BUILD_ROOT%{_docdir}/qemu
@@ -220,14 +212,13 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_sysconfdir}/sysconfig/modules/kvm.modules
 %{_sysconfdir}/qemu/target-x86_64.conf
 %{_bindir}/kvm_stat
-#%{_bindir}/kvmtrace
-#%{_bindir}/kvmtrace_format
 %{_bindir}/qemu-io
 %{_bindir}/qemu-kvm
 %{_bindir}/qemu
 %{_bindir}/qemu-alpha
 %{_bindir}/qemu-arm*
 %{_bindir}/qemu-cris
+%{_bindir}/qemu-ga
 %{_bindir}/qemu-i386
 %{_bindir}/qemu-m68k
 %{_bindir}/qemu-mips*
@@ -244,6 +235,7 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_bindir}/qemu-system-mips*
 %{_bindir}/qemu-system-sparc
 %{_bindir}/qemu-system-x86_64
+%{_bindir}/qmp-shell
 %{_mandir}/man1/qemu.1*
 %{_mandir}/man8/qemu-nbd.8*
 %dir %{_datadir}/qemu
@@ -254,8 +246,10 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_datadir}/qemu/openbios-sparc64
 %{_datadir}/qemu/openbios-ppc
 %{_datadir}/qemu/bamboo.dtb
+%{_datadir}/qemu/mpc8544ds.dtb
+%{_datadir}/qemu/petalogix-ml605.dtb
 %{_datadir}/qemu/petalogix-s3adsp1800.dtb
-
+%{py_platsitedir}/qmp.py
 %files img
 %defattr(-,root,root)
 %{_bindir}/qemu-img
