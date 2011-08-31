@@ -1,6 +1,6 @@
 %define qemu_name	qemu-kvm
 %define qemu_version	0.15.0
-%define qemu_rel	1
+%define qemu_rel	2
 #define qemu_snapshot	0
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
@@ -42,6 +42,7 @@ BuildRequires:	brlapi-devel
 BuildRequires:	gnutls-devel
 BuildRequires:	libsasl2-devel
 BuildRequires:	%{_lib}pci-devel
+BuildRequires:	%{_lib}png-devel
 BuildRequires:	texinfo
 # not in main
 #BuildRequires:	vde-devel
@@ -114,7 +115,8 @@ buildldflags="VL_LDFLAGS=-Wl,--build-id"
 	--sysconfdir=%{_sysconfdir} \
 	--audio-drv-list=pa,sdl,alsa,oss \
 	--extra-ldflags=$extraldflags \
-	--extra-cflags="$CFLAGS"
+	--extra-cflags="$CFLAGS" \
+	--enable-vnc-png
 
 %make V=1 $buildldflags
 cp -a x86_64-softmmu/qemu-system-x86_64 qemu-kvm
@@ -145,7 +147,8 @@ make clean
 	--audio-drv-list=pa,sdl,alsa,oss \
 	--disable-kvm \
 	--extra-ldflags=$extraldflags \
-	--extra-cflags="$CFLAGS"
+	--extra-cflags="$CFLAGS" \
+	--enable-vnc-png
 
 %make V=1 $buildldflags
 
