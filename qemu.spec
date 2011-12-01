@@ -153,39 +153,39 @@ make clean
 %make V=1 $buildldflags
 
 %install
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
-install -D -p -m 0755 %{SOURCE4} $RPM_BUILD_ROOT%{_initrddir}/ksm
-install -D -p -m 0644 %{SOURCE5} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/ksm
+install -D -p -m 0755 %{SOURCE4} %{buildroot}%{_initrddir}/ksm
+install -D -p -m 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/sysconfig/ksm
 
-install -D -p -m 0755 %{SOURCE6} $RPM_BUILD_ROOT%{_initrddir}/ksmtuned
-install -D -p -m 0755 %{SOURCE7} $RPM_BUILD_ROOT%{_sbindir}/ksmtuned
-install -D -p -m 0644 %{SOURCE8} $RPM_BUILD_ROOT%{_sysconfdir}/ksmtuned.conf
+install -D -p -m 0755 %{SOURCE6} %{buildroot}%{_initrddir}/ksmtuned
+install -D -p -m 0755 %{SOURCE7} %{buildroot}%{_sbindir}/ksmtuned
+install -D -p -m 0644 %{SOURCE8} %{buildroot}%{_sysconfdir}/ksmtuned.conf
 
 %ifarch %{ix86} x86_64
-mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/modules
-mkdir -p $RPM_BUILD_ROOT%{_bindir}/
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/%{name}
+mkdir -p %{buildroot}/%{_sysconfdir}/sysconfig/modules
+mkdir -p %{buildroot}%{_bindir}/
+mkdir -p %{buildroot}%{_datadir}/%{name}
 
-install -m 0755 %{SOURCE1} $RPM_BUILD_ROOT/%{_sysconfdir}/sysconfig/modules/kvm.modules
-install -m 0755 kvm/kvm_stat $RPM_BUILD_ROOT%{_bindir}/
-install -m 0755 qemu-kvm $RPM_BUILD_ROOT%{_bindir}/
+install -m 0755 %{SOURCE1} %{buildroot}/%{_sysconfdir}/sysconfig/modules/kvm.modules
+install -m 0755 kvm/kvm_stat %{buildroot}%{_bindir}/
+install -m 0755 qemu-kvm %{buildroot}%{_bindir}/
 %endif
 
 %makeinstall_std BUILD_DOCS="yes"
 
-install -D -p -m 0644 qemu.sasl $RPM_BUILD_ROOT%{_sysconfdir}/sasl2/qemu.conf
+install -D -p -m 0644 qemu.sasl %{buildroot}%{_sysconfdir}/sasl2/qemu.conf
 
 #QPM
-install -m 0755 QMP/qmp-shell $RPM_BUILD_ROOT/%{_bindir}/qmp-shell
-install -d $RPM_BUILD_ROOT/%{py_platsitedir}
-install -m 0755 QMP/qmp.py $RPM_BUILD_ROOT/%{py_platsitedir}/qmp.py
+install -m 0755 QMP/qmp-shell %{buildroot}/%{_bindir}/qmp-shell
+install -d %{buildroot}/%{py_platsitedir}
+install -m 0755 QMP/qmp.py %{buildroot}/%{py_platsitedir}/qmp.py
 
 # remove unpackaged files
-rm -rf $RPM_BUILD_ROOT%{_docdir}/qemu
+rm -rf %{buildroot}%{_docdir}/qemu
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 %post 
 %ifarch %{ix86} x86_64
