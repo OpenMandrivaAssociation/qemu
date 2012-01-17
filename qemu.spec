@@ -198,7 +198,6 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_bindir}/kvm_stat
 %{_bindir}/qemu-io
 %{_bindir}/qemu-kvm
-%{_bindir}/qemu
 %{_bindir}/qemu-alpha
 %{_bindir}/qemu-arm*
 %{_bindir}/qemu-cris
@@ -213,6 +212,7 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_bindir}/qemu-x86_64
 %{_bindir}/qemu-system-arm
 %{_bindir}/qemu-system-cris
+%{_bindir}/qemu-system-i386
 %{_bindir}/qemu-system-m68k
 %{_bindir}/qemu-system-sh4*
 %{_bindir}/qemu-system-ppc*
@@ -231,6 +231,7 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_datadir}/qemu/openbios-ppc
 %{_datadir}/qemu/bamboo.dtb
 %{_datadir}/qemu/mpc8544ds.dtb
+%{_datadir}/qemu/palcode-clipper
 %{_datadir}/qemu/petalogix-ml605.dtb
 %{_datadir}/qemu/petalogix-s3adsp1800.dtb
 %{py_platsitedir}/qmp.py
