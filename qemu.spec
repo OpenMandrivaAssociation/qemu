@@ -137,7 +137,7 @@ mkdir -p %{buildroot}%{_sysconfdir}/sysconfig/modules
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir}/%{name}
 
-install -m 0755 %{SOURCE1} %{buildroot}/%{_sysconfdir}/sysconfig/modules/kvm.modules
+install -m 0755 %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/modules/kvm.modules
 install -m 0755 kvm/kvm_stat %{buildroot}%{_bindir}
 install -m 0755 qemu-kvm %{buildroot}%{_bindir}
 %endif
