@@ -19,8 +19,7 @@ Source8:	ksmtuned.conf
 License:	GPL
 URL:		http://wiki.qemu.org/Main_Page
 Group:		Emulators
-Provides:	kvm
-Obsoletes:	kvm < 86
+%rename		kvm
 Requires:	qemu-img = %{version}-%{release}
 # for %%{_sysconfdir}/sasl2
 Requires:	cyrus-sasl
