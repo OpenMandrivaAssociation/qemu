@@ -53,22 +53,17 @@ ExclusiveArch:	%{ix86} ppc x86_64 amd64 %{sunsparc}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
-QEMU is a FAST! processor emulator. By using dynamic translation it
-achieves a reasonnable speed while being easy to port on new host
-CPUs. QEMU has two operating modes:
+QEMU is a generic and open source processor emulator which achieves a good
+emulation speed by using dynamic translation. QEMU has two operating modes:
 
-* User mode emulation. In this mode, QEMU can launch Linux processes
-  compiled for one CPU on another CPU. Linux system calls are
-  converted because of endianness and 32/64 bit mismatches. Wine
-  (Windows emulation) and DOSEMU (DOS emulation) are the main targets
-  for QEMU.
+* Full system emulation. In this mode, QEMU emulates a full system (for
+  example a PC), including a processor and various peripherials. It can be
+  used to launch different Operating Systems without rebooting the PC or
+  to debug system code.
+* User mode emulation. In this mode, QEMU can launch Linux processes compiled
+  for one CPU on another CPU.
 
-* Full system emulation. In this mode, QEMU emulates a full system,
-  including a processor and various peripherials. Currently, it is
-  only used to launch an x86 Linux kernel on an x86 Linux system. It
-  enables easier testing and debugging of system code. It can also be
-  used to provide virtual hosting of several virtual PC on a single
-  server.
+As QEMU requires no host kernel patches to run, it is safe and easy to use.
 
 %package img
 Summary:	QEMU disk image utility
