@@ -20,7 +20,7 @@ License:	GPL
 URL:		http://wiki.qemu.org/Main_Page
 Group:		Emulators
 %rename		kvm
-Requires:	qemu-img = %{version}-%{release}
+Requires:	qemu-img = %{EVRD}
 # for %%{_sysconfdir}/sasl2
 Requires:	cyrus-sasl
 BuildRequires:	pkgconfig(sdl)
