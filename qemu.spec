@@ -131,13 +131,13 @@ install -D -p -m 0755 %{SOURCE7} %{buildroot}%{_sbindir}/ksmtuned
 install -D -p -m 0644 %{SOURCE8} %{buildroot}%{_sysconfdir}/ksmtuned.conf
 
 %ifarch %{ix86} x86_64
-mkdir -p %{buildroot}/%{_sysconfdir}/sysconfig/modules
-mkdir -p %{buildroot}%{_bindir}/
+mkdir -p %{buildroot}%{_sysconfdir}/sysconfig/modules
+mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir}/%{name}
 
 install -m 0755 %{SOURCE1} %{buildroot}/%{_sysconfdir}/sysconfig/modules/kvm.modules
-install -m 0755 kvm/kvm_stat %{buildroot}%{_bindir}/
-install -m 0755 qemu-kvm %{buildroot}%{_bindir}/
+install -m 0755 kvm/kvm_stat %{buildroot}%{_bindir}
+install -m 0755 qemu-kvm %{buildroot}%{_bindir}
 %endif
 
 %makeinstall_std BUILD_DOCS="yes"
@@ -145,9 +145,9 @@ install -m 0755 qemu-kvm %{buildroot}%{_bindir}/
 install -D -p -m 0644 qemu.sasl %{buildroot}%{_sysconfdir}/sasl2/qemu.conf
 
 #QPM
-install -m 0755 QMP/qmp-shell %{buildroot}/%{_bindir}/qmp-shell
-install -d %{buildroot}/%{py_platsitedir}
-install -m 0755 QMP/qmp.py %{buildroot}/%{py_platsitedir}/qmp.py
+install -m 0755 QMP/qmp-shell %{buildroot}%{_bindir}/qmp-shell
+install -d %{buildroot}%{py_platsitedir}
+install -m 0755 QMP/qmp.py %{buildroot}%{py_platsitedir}/qmp.py
 
 # remove unpackaged files
 rm -rf %{buildroot}%{_docdir}/qemu
