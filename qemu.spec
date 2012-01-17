@@ -68,7 +68,7 @@ This package contains the QEMU disk image utility that is used to
 create, commit, convert and get information from a disk image.
 
 %prep
-%setup -q -n %{qemu_name}-%{?qemu_snapshot:-%{qemu_snapshot}}
+%setup -q -n %{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}
 %patch0 -p1 -b .i8259~
 %patch1 -p1 -b .notdf~
 
