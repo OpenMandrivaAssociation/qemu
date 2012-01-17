@@ -1,6 +1,6 @@
 %define qemu_name	qemu-kvm
-%define qemu_version	0.15.0
-%define qemu_rel	2
+%define qemu_version	1.0
+%define qemu_rel	1
 #define qemu_snapshot	0
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
@@ -12,9 +12,8 @@ Version:	%{qemu_version}
 Release:	%{qemu_release}
 Source0:	http://downloads.sourceforge.net/project/kvm/%{qemu_name}/%{version}/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
 Source1:	kvm.modules
-Patch0:		qemu-kvm-compile-fix.patch
-Patch4:		hw-pl110-Model-the-PL111-CLCD-controller.patch
-Patch5:		versatilepb-Implement-SYS_CLCD-mux-control-register-.patch
+Patch0:		qemu-kvm-1.0-unbreak-i8259-migration.patch
+Patch1:		qemu-kvm-1.0-deprecate-time-drift-fix.patch
 
 # KSM control scripts
 Source4: ksm.init
@@ -84,9 +83,8 @@ create, commit, convert and get information from a disk image.
 
 %prep
 %setup -q -n %{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
-%patch0 -p0
-%patch4 -p1
-%patch5 -p1
+%patch0 -p1 -b .i8259~
+%patch1 -p1 -b .notdf~
 
 # nuke explicit dependencies on GLIBC_PRIVATE
 # (Anssi 03/2008) FIXME: use _requires_exceptions
