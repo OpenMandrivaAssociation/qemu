@@ -2,7 +2,7 @@
 %define qemu_version	1.0
 %define qemu_rel	1
 #define qemu_snapshot	0
-%define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
+%define qemu_release	%{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
 %define __find_requires %{_builddir}/%{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}/find_requires.sh
 
@@ -50,7 +50,6 @@ BuildRequires:	iasl
 # glibc-devel with fixed preadv/pwritev prototypes
 BuildRequires:	glibc-devel >= 6:2.10.1-7mnb2
 ExclusiveArch:	%{ix86} ppc x86_64 amd64 %{sparcx}
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %description
 QEMU is a generic and open source processor emulator which achieves a good
@@ -70,7 +69,7 @@ Summary:	QEMU disk image utility
 Group:		Emulators
 Version:	%{qemu_version}
 Release:	%{qemu_release}
-Conflicts:	qemu < 0.9.0-%{mkrel 3}
+Conflicts:	qemu < 0.9.0-3
 
 %description img
 This package contains the QEMU disk image utility that is used to
@@ -141,8 +140,6 @@ make clean
 %make V=1 $buildldflags
 
 %install
-rm -rf %{buildroot}
-
 install -D -p -m 0755 %{SOURCE4} %{buildroot}%{_initrddir}/ksm
 install -D -p -m 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/sysconfig/ksm
 
@@ -172,9 +169,6 @@ install -m 0755 QMP/qmp.py %{buildroot}/%{py_platsitedir}/qmp.py
 # remove unpackaged files
 rm -rf %{buildroot}%{_docdir}/qemu
 
-%clean
-rm -rf %{buildroot}
-
 %post 
 %ifarch %{ix86} x86_64
 # load kvm modules now, so we can make sure no reboot is needed.
@@ -192,7 +186,6 @@ sh /%{_sysconfdir}/sysconfig/modules/kvm.modules
 rm -f /etc/rc.d/*/{K,S}??qemu
 
 %files
-%defattr(-,root,root)
 %doc README qemu-doc.html qemu-tech.html
 %config(noreplace)%{_sysconfdir}/sasl2/qemu.conf
 %{_initrddir}/ksm
@@ -241,7 +234,7 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_datadir}/qemu/petalogix-ml605.dtb
 %{_datadir}/qemu/petalogix-s3adsp1800.dtb
 %{py_platsitedir}/qmp.py
+
 %files img
-%defattr(-,root,root)
 %{_bindir}/qemu-img
 %{_mandir}/man1/qemu-img.1*
