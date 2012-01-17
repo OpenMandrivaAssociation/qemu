@@ -84,6 +84,7 @@ buildldflags="VL_LDFLAGS=-Wl,--build-id"
 	--prefix=%{_prefix} \
 	--sysconfdir=%{_sysconfdir} \
 	--audio-drv-list=pa,sdl,alsa,oss \
+	--disable-strip \
 	--extra-ldflags=$extraldflags \
 	--extra-cflags="$CFLAGS" \
 	--enable-vnc-png
@@ -116,6 +117,7 @@ make clean
 	--interp-prefix=%{_prefix}/qemu-%%M \
 	--audio-drv-list=pa,sdl,alsa,oss \
 	--disable-kvm \
+	--disable-strip \
 	--extra-ldflags=$extraldflags \
 	--extra-cflags="$CFLAGS" \
 	--enable-vnc-png
