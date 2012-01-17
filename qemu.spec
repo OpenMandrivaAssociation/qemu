@@ -1,24 +1,20 @@
-%define qemu_name	qemu-kvm
-%define qemu_version	1.0
-%define qemu_rel	1
-#define qemu_snapshot	0
-%define qemu_release	%{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
-
 Summary:	QEMU CPU Emulator
 Name:		qemu
-Version:	%{qemu_version}
-Release:	%{qemu_release}
+Version:	1.0
+#define qemu_snapshot	0
+Release:	%{?qemu_snapshot:0.%{qemu_snapshot}.}1
+%define qemu_name	qemu-kvm
 Source0:	http://downloads.sourceforge.net/project/kvm/%{qemu_name}/%{version}/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
 Source1:	kvm.modules
 Patch0:		qemu-kvm-1.0-unbreak-i8259-migration.patch
 Patch1:		qemu-kvm-1.0-deprecate-time-drift-fix.patch
 
 # KSM control scripts
-Source4: ksm.init
-Source5: ksm.sysconfig
-Source6: ksmtuned.init
-Source7: ksmtuned
-Source8: ksmtuned.conf
+Source4:	ksm.init
+Source5:	ksm.sysconfig
+Source6:	ksmtuned.init
+Source7:	ksmtuned
+Source8:	ksmtuned.conf
 
 License:	GPL
 URL:		http://wiki.qemu.org/Main_Page
@@ -62,14 +58,14 @@ emulation speed by using dynamic translation. QEMU has two operating modes:
 
 As QEMU requires no host kernel patches to run, it is safe and easy to use.
 
-%package img
+%package	img
 Summary:	QEMU disk image utility
 Group:		Emulators
 Version:	%{qemu_version}
 Release:	%{qemu_release}
 Conflicts:	qemu < 0.9.0-3
 
-%description img
+%description	img
 This package contains the QEMU disk image utility that is used to
 create, commit, convert and get information from a disk image.
 
