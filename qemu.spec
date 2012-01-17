@@ -24,18 +24,18 @@ Obsoletes:	kvm < 86
 Requires:	qemu-img = %{version}-%{release}
 # for %%{_sysconfdir}/sasl2
 Requires:	cyrus-sasl
-BuildRequires:	libSDL-devel
+BuildRequires:	pkgconfig(sdl)
 BuildRequires:	texi2html
 # XXXX: -luuid
-BuildRequires:	e2fsprogs-devel
-BuildRequires:	kernel-headers	
-BuildRequires:	pulseaudio-devel
-BuildRequires:	zlib-devel
+BuildRequires:	pkgconfig(ext2fs)
+BuildRequires:	kernel-headers
+BuildRequires:	pkgconfig(libpulse)
+BuildRequires:	pkgconfig
 BuildRequires:	brlapi-devel
-BuildRequires:	gnutls-devel
+BuildRequires:	pkgconfig(gnutls)
 BuildRequires:	libsasl2-devel
-BuildRequires:	%{_lib}pci-devel
-BuildRequires:	%{_lib}png-devel
+BuildRequires:	pkgconfig(libpci)
+BuildRequires:	pkgconfig(libpng15)
 BuildRequires:	texinfo
 # not in main
 #BuildRequires:	vde-devel
