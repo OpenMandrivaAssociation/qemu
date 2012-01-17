@@ -61,8 +61,6 @@ As QEMU requires no host kernel patches to run, it is safe and easy to use.
 %package	img
 Summary:	QEMU disk image utility
 Group:		Emulators
-Version:	%{qemu_version}
-Release:	%{qemu_release}
 Conflicts:	qemu < 0.9.0-3
 
 %description	img
@@ -70,7 +68,7 @@ This package contains the QEMU disk image utility that is used to
 create, commit, convert and get information from a disk image.
 
 %prep
-%setup -q -n %{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
+%setup -q -n %{qemu_name}-%{?qemu_snapshot:-%{qemu_snapshot}}
 %patch0 -p1 -b .i8259~
 %patch1 -p1 -b .notdf~
 
