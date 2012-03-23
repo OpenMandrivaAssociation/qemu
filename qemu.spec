@@ -16,6 +16,8 @@ Source6:	ksmtuned.init
 Source7:	ksmtuned
 Source8:	ksmtuned.conf
 
+Source100:	qemu.rpmlintrc
+
 License:	GPLv2+ and LGPLv2+ and BSD
 URL:		http://wiki.qemu.org/Main_Page
 Group:		Emulators
@@ -31,7 +33,7 @@ BuildRequires:	kernel-headers
 BuildRequires:	pkgconfig(libpulse)
 BuildRequires:	pkgconfig
 BuildRequires:	brlapi-devel
-BuildRequires:	pkgconfig(gnutls)
+BuildRequires:	pkgconfig(gnutls) >= 3.0
 BuildRequires:	libsasl2-devel
 BuildRequires:	pkgconfig(libpci)
 BuildRequires:	pkgconfig(libpng15)
