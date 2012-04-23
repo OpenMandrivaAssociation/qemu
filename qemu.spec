@@ -1,12 +1,11 @@
 Summary:	QEMU CPU Emulator
 Name:		qemu
-Version:	1.0
+Version:	1.0.1
 #define qemu_snapshot	0
 Release:	%{?qemu_snapshot:0.%{qemu_snapshot}.}2
 %define qemu_name	qemu-kvm
 Source0:	http://downloads.sourceforge.net/project/kvm/%{qemu_name}/%{version}/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
 Source1:	kvm.modules
-Patch0:		qemu-kvm-1.0-unbreak-i8259-migration.patch
 Patch1:		qemu-kvm-1.0-deprecate-time-drift-fix.patch
 
 # KSM control scripts
@@ -70,7 +69,6 @@ create, commit, convert and get information from a disk image.
 
 %prep
 %setup -q -n %{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}
-%patch0 -p1 -b .i8259~
 %patch1 -p1 -b .notdf~
 
 %build
