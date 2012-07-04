@@ -1,10 +1,10 @@
 Summary:	QEMU CPU Emulator
 Name:		qemu
-Version:	1.0.1
-#define qemu_snapshot	0
-Release:	%{?qemu_snapshot:0.%{qemu_snapshot}.}2
-%define qemu_name	qemu-kvm
-Source0:	http://downloads.sourceforge.net/project/kvm/%{qemu_name}/%{version}/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.gz
+Version:	1.1.0
+%define qemu_snapshot	1
+Release:	%{?qemu_snapshot:0.%{qemu_snapshot}.}1
+%define qemu_name	qemu
+Source0:	http://wiki.qemu.org/download/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.bz2
 Source1:	kvm.modules
 Patch1:		qemu-kvm-1.0-deprecate-time-drift-fix.patch
 
