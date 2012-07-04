@@ -140,7 +140,7 @@ mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir}/%{name}
 
 install -m 0755 %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/modules/kvm.modules
-install -m 0755 kvm/kvm_stat %{buildroot}%{_bindir}
+install -m 0755 scripts/kvm/kvm_stat %{buildroot}%{_bindir}
 install -m 0755 qemu-kvm %{buildroot}%{_bindir}
 %endif
 
@@ -207,11 +207,15 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_bindir}/qemu-system-sparc
 %{_bindir}/qemu-system-x86_64
 %{_bindir}/qmp-shell
+%{_bindir}/virtfs-proxy-helper
 %{_mandir}/man1/qemu.1*
+%{_mandir}/man1/virtfs-proxy-helper.1*
 %{_mandir}/man8/qemu-nbd.8*
+%{_prefix}/libexec/qemu-bridge-helper
 %dir %{_datadir}/qemu
 %{_datadir}/qemu/*.bin
 %{_datadir}/qemu/*.rom
+%{_datadir}/qemu/cpus-x86_64.conf
 %{_datadir}/qemu/keymaps
 %{_datadir}/qemu/openbios-sparc32
 %{_datadir}/qemu/openbios-sparc64
@@ -221,6 +225,7 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_datadir}/qemu/palcode-clipper
 %{_datadir}/qemu/petalogix-ml605.dtb
 %{_datadir}/qemu/petalogix-s3adsp1800.dtb
+%{_datadir}/qemu/qemu-icon.bmp
 %{py_platsitedir}/qmp.py
 
 %files img
