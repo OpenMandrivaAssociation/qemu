@@ -3,10 +3,8 @@ Name:		qemu
 Version:	1.1.0
 %define qemu_snapshot	1
 Release:	%{?qemu_snapshot:0.%{qemu_snapshot}.}1
-%define qemu_name	qemu
-Source0:	http://wiki.qemu.org/download/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.bz2
+Source0:	http://wiki.qemu.org/download/%{name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.bz2
 Source1:	kvm.modules
-Patch1:		qemu-kvm-1.0-deprecate-time-drift-fix.patch
 
 # KSM control scripts
 Source4:	ksm.init
@@ -68,8 +66,7 @@ This package contains the QEMU disk image utility that is used to
 create, commit, convert and get information from a disk image.
 
 %prep
-%setup -q -n %{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}
-%patch1 -p1 -b .notdf~
+%setup -q
 
 %build
 extraldflags="-Wl,--build-id";
