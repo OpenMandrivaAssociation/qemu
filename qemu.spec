@@ -69,6 +69,11 @@ create, commit, convert and get information from a disk image.
 %setup -q
 
 %build
+#(proyvind): binutils upstream bug #10862, linking with gold fails if doing parallel build
+mkdir -p bfd
+ln -s %{_bindir}/ld.bfd bfd/ld
+export PATH=$PWD/bfd:$PATH
+
 extraldflags="-Wl,--build-id";
 buildldflags="VL_LDFLAGS=-Wl,--build-id"
 
