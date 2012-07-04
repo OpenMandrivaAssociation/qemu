@@ -74,9 +74,6 @@ mkdir -p bfd
 ln -s %{_bindir}/ld.bfd bfd/ld
 export PATH=$PWD/bfd:$PATH
 
-extraldflags="-Wl,--build-id";
-buildldflags="VL_LDFLAGS=-Wl,--build-id"
-
 %ifarch %{ix86} x86_64
 # sdl outputs to alsa or pulseaudio depending on system config, but it's broken (RH bug #495964)
 # alsa works, but causes huge CPU load due to bugs
@@ -87,11 +84,11 @@ buildldflags="VL_LDFLAGS=-Wl,--build-id"
 	--sysconfdir=%{_sysconfdir} \
 	--audio-drv-list=pa,sdl,alsa,oss \
 	--disable-strip \
-	--extra-ldflags=$extraldflags \
-	--extra-cflags="$CFLAGS" \
+	--extra-ldflags="%{ldflags}" \
+	--extra-cflags="%{optflags}" \
 	--enable-vnc-png
 
-%make V=1 $buildldflags
+%make V=1
 cp -a x86_64-softmmu/qemu-system-x86_64 qemu-kvm
 make clean
 
@@ -120,11 +117,11 @@ make clean
 	--audio-drv-list=pa,sdl,alsa,oss \
 	--disable-kvm \
 	--disable-strip \
-	--extra-ldflags=$extraldflags \
-	--extra-cflags="$CFLAGS" \
+	--extra-ldflags="%{ldflags}" \
+	--extra-cflags="%{optflags}" \
 	--enable-vnc-png
 
-%make V=1 $buildldflags
+%make V=1
 
 %install
 install -D -p -m 0755 %{SOURCE4} %{buildroot}%{_initrddir}/ksm
