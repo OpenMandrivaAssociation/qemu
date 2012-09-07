@@ -45,6 +45,7 @@ BuildRequires:	dev86
 BuildRequires:	iasl
 # glibc-devel with fixed preadv/pwritev prototypes
 BuildRequires:	glibc-devel >= 6:2.10.1-7mnb2
+BuildRequires:	pkgconfig(libcacard)
 ExclusiveArch:	%{ix86} ppc x86_64 amd64 %{sparcx}
 
 %description
