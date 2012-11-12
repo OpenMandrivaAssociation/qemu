@@ -1,0 +1,9 @@
+sources:
+  "ksm.init:"	3559389bb60a1f80038edd4f1e8afcefc50361b1
+  "ksm.sysconfig:"	e9ca76e26261da722c1a15d53720e3af23469b81
+  "ksmtuned:"	8b3c8e32647b83f952425c74733dacbb3ace41b9
+  "ksmtuned.conf:"	d3146fc26f84934d1a3b69c177ff7e595b84e43c
+  "ksmtuned.init:"	fb256350d259957e0deea84d5002de99aa0b6265
+  "kvm.modules:"	22b396da1dc9b4439662d61731506e2b4c20aa36
+  "qemu-1.2.0.tar.bz2:"	4bbfb35ca2e386e9b731c09a8eb1187c0c0795a8
+  "qemu.rpmlintrc:"	8679c83d5de777665972bc9fe9f0f364d2335220

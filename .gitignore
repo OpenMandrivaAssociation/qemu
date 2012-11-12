@@ -1,0 +1,8 @@
+ksm.init
+ksm.sysconfig
+ksmtuned
+ksmtuned.conf
+ksmtuned.init
+kvm.modules
+qemu-1.2.0.tar.bz2
+qemu.rpmlintrc
