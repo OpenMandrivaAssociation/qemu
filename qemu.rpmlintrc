@@ -1,0 +1,2 @@
+# False positive
+addFilter("E: unstripped-binary-or-object")
