@@ -213,7 +213,7 @@ BuildRequires:	pkgconfig(uuid)
 #%endif
 
 Requires:	qemu-img = %{EVRD}
-Requires:	libcacard-tools
+#Requires:	libcacard-tools
 # for %%{_sysconfdir}/sasl2
 Requires:	cyrus-sasl
 Requires:	vgabios >= 0.6c
