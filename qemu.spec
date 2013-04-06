@@ -186,7 +186,7 @@ BuildRequires:	systemtap
 BuildRequires:	texi2html
 BuildRequires:	texinfo
 BuildRequires:	brlapi-devel
-BuildRequires:	libsasl2-devel
+BuildRequires:	sasl-devel
 BuildRequires:	usbredir-devel >= 0.5.2
 BuildRequires:	xfsprogs-devel
 BuildRequires:	pkgconfig(bluez)
