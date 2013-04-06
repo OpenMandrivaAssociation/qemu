@@ -9,7 +9,7 @@
 Summary:	QEMU CPU Emulator
 Name:		qemu
 Version:	1.2.0
-Release:	2
+Release:	3
 License:	GPLv2+ and LGPLv2+ and BSD
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
@@ -45,6 +45,8 @@ Source100:	qemu.rpmlintrc
 # Add ./configure --disable-kvm-options
 # keep: Carrying locally until qemu-kvm is fully merged into qemu.git
 Patch2:	0002-configure-Add-disable-kvm-options.patch
+#Texinfo 5.1
+Patch3: qemu-1.2.0-doc-fix-sheepdog-invalid-texi-table-list-syntax.patch
 
 # The infamous chardev flow control patches
 Patch101:	0101-char-Split-out-tcp-socket-close-code-in-a-separate-f.patch
