@@ -174,6 +174,7 @@ dobuild() {
         --enable-spice \
         --enable-mixemu \
         --enable-seccomp \
+	--enable-virtfs \
 %endif
 %if %{without rbd}
         --disable-rbd \
