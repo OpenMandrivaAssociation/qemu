@@ -61,6 +61,7 @@ BuildRequires:	sasl-devel
 BuildRequires:	usbredir-devel >= 0.5.2
 BuildRequires:	xfsprogs-devel
 BuildRequires:	attr-devel
+BuildRequires:	cap-devel
 BuildRequires:	pkgconfig(bluez)
 BuildRequires:	pkgconfig(ext2fs)
 BuildRequires:	pkgconfig(gnutls) >= 3.0
