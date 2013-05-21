@@ -181,6 +181,7 @@ dobuild() {
         --disable-werror \
         --disable-xen \
         --enable-kvm \
+	--disable-smartcard-nss \
         "$@"
 
     echo "config-host.mak contents:"
@@ -242,7 +243,7 @@ install -m 0644 %{SOURCE3} %{buildroot}%{_udevdir}
 
 %makeinstall_std
 chmod -x %{buildroot}%{_mandir}/man1/*
-install -D -p -m 0644 -t %{buildroot}%{qemudocdir} Changelog README TODO COPYING COPYING.LIB LICENSE
+install -D -p -m 0644 -t %{buildroot}%{qemudocdir} Changelog README COPYING COPYING.LIB LICENSE
 
 install -D -p -m 0644 qemu.sasl %{buildroot}%{_sysconfdir}/sasl2/qemu.conf
 
@@ -355,6 +356,8 @@ mkdir -p %{buildroot}%{_udevdir}
 install -m 0644 %{SOURCE10} %{buildroot}%{_unitdir}
 install -m 0644 %{SOURCE11} %{buildroot}%{_udevdir}
 
+%find_lang %{name}
+
 
 %post 
 %ifarch %{ix86} x86_64
@@ -374,7 +377,7 @@ udevadm trigger --sysname-match=kvm || :
 %triggerpostun -- qemu < 0.10.4-6
 rm -f /etc/rc.d/*/{K,S}??qemu
 
-%files
+%files -f %{name}.lang
 %doc README qemu-doc.html qemu-tech.html
 %config(noreplace) %{_sysconfdir}/sasl2/qemu.conf
 %{_unitdir}/ksm.service
@@ -415,16 +418,17 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 #% {_bindir}/qmp-shell
 #conflicts with cacard-tools
 #% {_bindir}/vscclient
-#{_bindir}/virtfs-proxy-helper
+%{_bindir}/virtfs-proxy-helper
 /lib/systemd/ksmctl
 %{_mandir}/man1/qemu.1*
-#{_mandir}/man1/virtfs-proxy-helper.1*
+%{_mandir}/man1/virtfs-proxy-helper.1*
 %{_mandir}/man8/qemu-nbd.8*
 %{_prefix}/libexec/qemu-bridge-helper
 %dir %{_datadir}/qemu
 %{_datadir}/qemu/*.bin
 %{_datadir}/qemu/*.rom
-%{_datadir}/qemu/cpus-x86_64.conf
+%{_datadir}/qemu/*.img
+%{_datadir}/qemu/*.aml
 %{_datadir}/qemu/keymaps
 %{_datadir}/qemu/openbios-sparc32
 %{_datadir}/qemu/openbios-sparc64
