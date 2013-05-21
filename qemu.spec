@@ -75,6 +75,9 @@ BuildRequires:	pkgconfig(sdl)
 BuildRequires:	pkgconfig(spice-server)
 BuildRequires:	pkgconfig(spice-protocol)
 BuildRequires:	pkgconfig(uuid)
+BuildRequires:	pkgconfig(gtk+-2.0)
+BuildRequires:	pkgconfig(vte)
+
 #not ready yet
 #%if %{with fdt}
 # For FDT device tree support
