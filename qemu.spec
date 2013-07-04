@@ -10,7 +10,7 @@
 
 Summary:	QEMU CPU Emulator
 Name:		qemu
-Version:	1.5.0
+Version:	1.5.1
 Release:	1
 License:	GPLv2+ and LGPLv2+ and BSD
 Group:		Emulators
@@ -58,6 +58,7 @@ BuildRequires:	texi2html
 BuildRequires:	texinfo
 BuildRequires:	brlapi-devel
 BuildRequires:	sasl-devel
+BuildRequires:	systemtap-devel
 BuildRequires:	usbredir-devel >= 0.5.2
 BuildRequires:	xfsprogs-devel
 BuildRequires:	attr-devel
@@ -72,6 +73,7 @@ BuildRequires:	pkgconfig(libpci)
 BuildRequires:	pkgconfig(libpng)
 BuildRequires:	pkgconfig(libpulse)
 BuildRequires:	pkgconfig(libseccomp)
+BuildRequires:	pkgconfig(libssh2)
 BuildRequires:	pkgconfig(libusbredirhost) >=0.5.2
 BuildRequires:	pkgconfig(sdl)
 BuildRequires:	pkgconfig(spice-server)
@@ -188,6 +190,7 @@ dobuild() {
         --disable-xen \
         --enable-kvm \
 	--disable-smartcard-nss \
+	--enable-libssh2 \
         "$@"
 
     echo "config-host.mak contents:"
