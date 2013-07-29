@@ -10,7 +10,7 @@
 
 Summary:	QEMU CPU Emulator
 Name:		qemu
-Version:	1.5.1
+Version:	1.5.2
 Release:	1
 License:	GPLv2+ and LGPLv2+ and BSD
 Group:		Emulators
@@ -47,7 +47,7 @@ Source100:	qemu.rpmlintrc
 # keep: Carrying locally until qemu-kvm is fully merged into qemu.git
 Patch2:	0002-configure-Add-disable-kvm-options.patch
 
-ExclusiveArch:	%{ix86} ppc x86_64 amd64 %{sparcx}
+ExclusiveArch:	%{ix86} ppc x86_64 amd64 %{sparcx} %arm
 
 BuildRequires:	dev86
 BuildRequires:	iasl
