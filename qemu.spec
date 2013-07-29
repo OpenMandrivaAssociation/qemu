@@ -40,7 +40,6 @@ Source9:	ksmtuned.conf
 
 Source10:	qemu-guest-agent.service
 Source11:	99-qemu-guest-agent.rules
-Source12:	bridge.conf
 
 Source100:	qemu.rpmlintrc
 
