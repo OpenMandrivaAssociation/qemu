@@ -1,7 +1,0 @@
-# QEMU configure log Qui Jul  4 17:16:50 CEST 2013
-# Configured with: './BUILD/qemu-1.5.1/configure' '--help'
-#
-cc -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -Wstrict-prototypes -Wredundant-decls -Wall -Wundef -Wwrite-strings -Wmissing-prototypes -fno-strict-aliasing -c -o /tmp/qemu-conf-11340-9319-13272.o /tmp/qemu-conf-27818-9319-17707.c
-cc -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -Wstrict-prototypes -Wredundant-decls -Wall -Wundef -Wwrite-strings -Wmissing-prototypes -fno-strict-aliasing -c -o /tmp/qemu-conf-11340-9319-13272.o /tmp/qemu-conf-27818-9319-17707.c
-/tmp/qemu-conf-27818-9319-17707.c:2:2: error: #error __i386__ not defined
-cc -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -Wstrict-prototypes -Wredundant-decls -Wall -Wundef -Wwrite-strings -Wmissing-prototypes -fno-strict-aliasing -c -o /tmp/qemu-conf-11340-9319-13272.o /tmp/qemu-conf-27818-9319-17707.c

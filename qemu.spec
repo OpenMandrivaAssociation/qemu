@@ -2,6 +2,7 @@
 %bcond_with    exclusive_x86_64 # disabled
 %bcond_without rbd              # enabled
 %bcond_without fdt              # enabled
+%bcond_without gtk              # enabled
 
 %define _disable_ld_no_undefined 1
 
@@ -39,13 +40,23 @@ Source9:	ksmtuned.conf
 
 Source10:	qemu-guest-agent.service
 Source11:	99-qemu-guest-agent.rules
+Source12:	bridge.conf
+
 Source100:	qemu.rpmlintrc
 
 # Non upstream build fix
 
 # Add ./configure --disable-kvm-options
 # keep: Carrying locally until qemu-kvm is fully merged into qemu.git
-Patch2:	0002-configure-Add-disable-kvm-options.patch
+# qemu-kvm migration compat (posted upstream)
+Patch0001: 0001-configure-Add-enable-migration-from-qemu-kvm.patch
+Patch0002: 0002-acpi_piix4-Drop-minimum_version_id-to-handle-qemu-kv.patch
+Patch0003: 0003-i8254-Fix-migration-from-qemu-kvm-1.1.patch
+Patch0004: 0004-pc_piix-Add-compat-handling-for-qemu-kvm-VGA-mem-siz.patch
+# Fix migration w/ qxl from qemu-kvm 1.2 (solution pending upstream)
+Patch0005: 0005-qxl-Add-rom_size-compat-property-fix-migration-from-.patch
+# Fix build with rawhide libfdt
+Patch0006: 0006-configure-dtc-Probe-for-libfdt_env.h.patch
 
 ExclusiveArch:	%{ix86} ppc x86_64 amd64 %{sparcx} %arm
 
@@ -64,10 +75,11 @@ BuildRequires:	xfsprogs-devel
 BuildRequires:	attr-devel
 BuildRequires:	cap-devel
 BuildRequires:	alsa-oss-devel
+BuildRequires:	libaio-devel
 BuildRequires:	pkgconfig(bluez)
 BuildRequires:	pkgconfig(ext2fs)
 BuildRequires:	pkgconfig(gnutls) >= 3.0
-#BuildRequires:	pkgconfig(libcacard)
+BuildRequires:	pkgconfig(libcacard)
 BuildRequires:	pkgconfig(libcap-ng)
 BuildRequires:	pkgconfig(libcurl)
 BuildRequires:	pkgconfig(libpci)
@@ -80,7 +92,7 @@ BuildRequires:	pkgconfig(sdl)
 BuildRequires:	pkgconfig(spice-server)
 BuildRequires:	pkgconfig(spice-protocol)
 BuildRequires:	pkgconfig(uuid)
-BuildRequires:	pkgconfig(gtk+-2.0)
+BuildRequires:	pkgconfig(gtk+-3.0)
 BuildRequires:	pkgconfig(vte)
 
 #not ready yet
@@ -134,17 +146,24 @@ create, commit, convert and get information from a disk image.
 mkdir -p bfd
 ln -s %{_bindir}/ld.bfd bfd/ld
 export PATH=$PWD/bfd:$PATH
-buildarch="i386-softmmu x86_64-softmmu arm-softmmu cris-softmmu \
-    m68k-softmmu mips-softmmu mipsel-softmmu mips64-softmmu \
-    mips64el-softmmu sh4-softmmu sh4eb-softmmu sparc-softmmu sparc64-softmmu \
-    ppc-softmmu ppcemb-softmmu ppc64-softmmu \
-    i386-linux-user x86_64-linux-user alpha-linux-user arm-linux-user \
-    armeb-linux-user cris-linux-user m68k-linux-user mips-linux-user \
-    mipsel-linux-user ppc-linux-user ppc64-linux-user \
-    ppc64abi32-linux-user sh4-linux-user sh4eb-linux-user \
-    sparc-linux-user sparc64-linux-user sparc32plus-linux-user"
 %if %{with x86only}
     buildarch="i386-softmmu x86_64-softmmu i386-linux-user x86_64-linux-user"
+%else
+    buildarch="i386-softmmu x86_64-softmmu alpha-softmmu arm-softmmu \
+    cris-softmmu lm32-softmmu m68k-softmmu microblaze-softmmu \
+    microblazeel-softmmu mips-softmmu mipsel-softmmu mips64-softmmu \
+    mips64el-softmmu or32-softmmu ppc-softmmu ppcemb-softmmu ppc64-softmmu \
+    s390x-softmmu sh4-softmmu sh4eb-softmmu sparc-softmmu sparc64-softmmu \
+    xtensa-softmmu xtensaeb-softmmu unicore32-softmmu moxie-softmmu \
+    i386-linux-user x86_64-linux-user alpha-linux-user arm-linux-user \
+    armeb-linux-user cris-linux-user m68k-linux-user \
+    microblaze-linux-user microblazeel-linux-user mips-linux-user \
+    mipsel-linux-user mips64-linux-user mips64el-linux-user \
+    mipsn32-linux-user mipsn32el-linux-user \
+    or32-linux-user ppc-linux-user ppc64-linux-user \
+    ppc64abi32-linux-user s390x-linux-user sh4-linux-user sh4eb-linux-user \
+    sparc-linux-user sparc64-linux-user sparc32plus-linux-user \
+    unicore32-linux-user"
 %endif
 
 # Targets we don't build as of qemu 1.1.50
@@ -174,12 +193,9 @@ dobuild() {
         --disable-strip \
         --extra-ldflags="$extraldflags -pie -Wl,-z,relro -Wl,-z,now" \
         --extra-cflags="%{optflags} -fPIE -DPIE -fuse-ld=bfd" \
-%ifarch %{ix86} x86_64
-        --enable-spice \
-        --enable-mixemu \
+	--enable-mixemu \
         --enable-seccomp \
-	--enable-virtfs \
-%endif
+        --enable-spice \
 %if %{without rbd}
         --disable-rbd \
 %endif
@@ -190,7 +206,12 @@ dobuild() {
         --disable-werror \
         --disable-xen \
         --enable-kvm \
+	--enable-migration-from-qemu-kvm \
+%if %{with gtk}
+        --with-gtkabi="3.0" \
+%endif
 	--disable-smartcard-nss \
+	--enable-tpm \
 	--enable-libssh2 \
         "$@"
 
@@ -201,6 +222,7 @@ dobuild() {
 
     %make V=1 $buildldflags
 }
+
 
 # This is kind of confusing. We run ./configure + make twice here to
 # preserve some back compat: if on x86, we want to provide a qemu-kvm
@@ -225,8 +247,8 @@ make clean
 %endif
 
 # Build qemu-system-* with consistent default of kvm=off
-dobuild --target-list="$buildarch" --disable-kvm-options
-gcc %{SOURCE6} -O2 -g -o ksmctl
+dobuild --target-list="$buildarch"
+%{__cc} %{SOURCE6} -O2 -g -o ksmctl
 
 %install
 install -D -p -m 0755 %{SOURCE4} %{buildroot}/%{_unitdir}/ksm.service
@@ -366,8 +388,8 @@ mkdir -p %{buildroot}%{_udevdir}
 install -m 0644 %{SOURCE10} %{buildroot}%{_unitdir}
 install -m 0644 %{SOURCE11} %{buildroot}%{_udevdir}
 
-%find_lang %{name}
 
+#% find_lang % {name}
 
 %post 
 %ifarch %{ix86} x86_64
@@ -387,7 +409,8 @@ udevadm trigger --sysname-match=kvm || :
 %triggerpostun -- qemu < 0.10.4-6
 rm -f /etc/rc.d/*/{K,S}??qemu
 
-%files -f %{name}.lang
+%files 
+#-f % {name}.lang
 %doc README qemu-doc.html qemu-tech.html
 %config(noreplace) %{_sysconfdir}/sasl2/qemu.conf
 %{_unitdir}/ksm.service
@@ -425,6 +448,23 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_bindir}/qemu-system-sparc
 %{_bindir}/qemu-system-sparc64
 %{_bindir}/qemu-system-x86_64
+%{_bindir}/qemu-microblaze
+%{_bindir}/qemu-microblazeel
+%{_bindir}/qemu-or32
+%{_bindir}/qemu-s390x
+%{_bindir}/qemu-system-alpha
+%{_bindir}/qemu-system-lm32
+%{_bindir}/qemu-system-microblaze
+%{_bindir}/qemu-system-microblazeel
+%{_bindir}/qemu-system-moxie
+%{_bindir}/qemu-system-or32
+%{_bindir}/qemu-system-s390x
+%{_bindir}/qemu-system-unicore32
+%{_bindir}/qemu-system-xtensa
+%{_bindir}/qemu-system-xtensaeb
+%{_bindir}/qemu-unicore32
+
+
 #% {_bindir}/qmp-shell
 #conflicts with cacard-tools
 #% {_bindir}/vscclient
@@ -450,41 +490,7 @@ rm -f /etc/rc.d/*/{K,S}??qemu
 %{_datadir}/qemu/petalogix-s3adsp1800.dtb
 %{_datadir}/qemu/qemu-icon.bmp
 
-%{_datadir}/systemtap/tapset/qemu-alpha.stp
-%{_datadir}/systemtap/tapset/qemu-arm.stp
-%{_datadir}/systemtap/tapset/qemu-armeb.stp
-%{_datadir}/systemtap/tapset/qemu-cris.stp
-%{_datadir}/systemtap/tapset/qemu-m68k.stp
-%{_datadir}/systemtap/tapset/qemu-mips.stp
-%{_datadir}/systemtap/tapset/qemu-mipsel.stp
-%{_datadir}/systemtap/tapset/qemu-ppc.stp
-%{_datadir}/systemtap/tapset/qemu-ppc64.stp
-%{_datadir}/systemtap/tapset/qemu-ppc64abi32.stp
-%{_datadir}/systemtap/tapset/qemu-sh4.stp
-%{_datadir}/systemtap/tapset/qemu-sh4eb.stp
-%{_datadir}/systemtap/tapset/qemu-sparc.stp
-%{_datadir}/systemtap/tapset/qemu-sparc32plus.stp
-%{_datadir}/systemtap/tapset/qemu-sparc64.stp
-#%{_datadir}/systemtap/tapset/qemu-kvm.stp
-%{_datadir}/systemtap/tapset/qemu-system-i386.stp
-%{_datadir}/systemtap/tapset/qemu-system-x86_64.stp
-%{_datadir}/systemtap/tapset/qemu-system-mips.stp
-%{_datadir}/systemtap/tapset/qemu-system-mipsel.stp
-%{_datadir}/systemtap/tapset/qemu-system-mips64el.stp
-%{_datadir}/systemtap/tapset/qemu-system-mips64.stp
-%{_datadir}/systemtap/tapset/qemu-system-m68k.stp
-%{_datadir}/systemtap/tapset/qemu-system-cris.stp
-%{_datadir}/systemtap/tapset/qemu-system-sh4.stp
-%{_datadir}/systemtap/tapset/qemu-system-sh4eb.stp
-%{_datadir}/systemtap/tapset/qemu-system-sparc.stp
-%{_datadir}/systemtap/tapset/qemu-system-sparc64.stp
-%{_datadir}/systemtap/tapset/qemu-system-ppc.stp
-%{_datadir}/systemtap/tapset/qemu-system-ppc64.stp
-%{_datadir}/systemtap/tapset/qemu-system-ppcemb.stp
-%{_datadir}/systemtap/tapset/qemu-system-arm.stp
-%{_datadir}/systemtap/tapset/qemu-kvm.stp
-%{_datadir}/systemtap/tapset/qemu-x86_64.stp
-%{_datadir}/systemtap/tapset/qemu-i386.stp
+%{_datadir}/systemtap/tapset/qemu-*.stp
 
 %{_exec_prefix}/lib/binfmt.d/qemu-*.conf
 
