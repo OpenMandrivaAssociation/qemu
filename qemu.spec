@@ -2,7 +2,6 @@
 #
 %bcond_with    exclusive_x86_64 # disabled
 %bcond_without rbd              # enabled
-%bcond_without spice            # enabled
 %bcond_without xfsprogs         # enabled
 %bcond_without separate_kvm     # enabled
 %bcond_without gtk              # enabled
