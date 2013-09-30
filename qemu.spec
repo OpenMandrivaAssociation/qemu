@@ -658,10 +658,10 @@ dobuild() {
         --disable-werror \
         --disable-xen \
         --enable-kvm \
-%if 0%{?have_spice:1}
+%if %{with spice}
         --enable-spice \
 %endif
-%if 0%{?have_seccomp:1}
+%if %{with seccomp}
         --enable-seccomp \
 %endif
 %if %{without rbd}
