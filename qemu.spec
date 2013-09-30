@@ -134,6 +134,7 @@ BuildRequires:		rsync
 BuildRequires:		pkgconfig(libpci)
 BuildRequires:		pkgconfig(libpulse)
 BuildRequires:		pkgconfig(libiscsi)
+BuildRequires:		alsa-oss-devel
 BuildRequires:		ncurses-devel
 BuildRequires:		attr-devel
 %if %{with usbredir}
