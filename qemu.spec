@@ -6,7 +6,8 @@
 %bcond_without separate_kvm     # enabled
 %bcond_without gtk              # enabled
 %bcond_without usbredir         # enabled
-%bcond_without spice            # enabled
+# enable it!!!
+%bcond_with spice            # disabled
 %ifarch %{ix86} x86_64
 %bcond_without seccomp          # enabled
 %else
@@ -177,7 +178,7 @@ BuildRequires:		brlapi-devel
 BuildRequires:		fdt-devel
 %endif
 # For virtfs
-BuildRequires:		cap-devel
+BuildRequires:		pkgconfig(libcap-ng)
 # Hard requirement for version >= 1.3
 BuildRequires:		pkgconfig(pixman-1)
 %if 0%{?fedora} > 18
