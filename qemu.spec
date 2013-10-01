@@ -294,14 +294,15 @@ Requires:	libcacard-tools
 This package provides a command line tool for manipulating disk images
 
 %package	common
-Summary: QEMU common files needed by all QEMU targets
-Group: Emulators
+Summary: 	QEMU common files needed by all QEMU targets
+Group:		Emulators
 Requires(post): /usr/bin/getent
 Requires(post): /usr/sbin/groupadd
 Requires(post): /usr/sbin/useradd
 Requires(post): rpm-helper
 Requires(preun): rpm-helper
 Requires(postun): rpm-helper
+
 %description	common
 QEMU is a generic and open source processor emulator which achieves a good
 emulation speed by using dynamic translation.
