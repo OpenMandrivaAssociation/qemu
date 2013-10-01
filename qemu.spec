@@ -179,6 +179,7 @@ BuildRequires:		fdt-devel
 %endif
 # For virtfs
 BuildRequires:		pkgconfig(libcap-ng)
+BuildRequires:		cap-devel
 # Hard requirement for version >= 1.3
 BuildRequires:		pkgconfig(pixman-1)
 %if 0%{?fedora} > 18
