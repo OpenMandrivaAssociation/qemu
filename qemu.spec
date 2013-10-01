@@ -82,8 +82,7 @@
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
 Version:	1.6.0
-Release:	2
-Epoch:		2
+Release:	3
 License:	GPLv2+ and LGPLv2+ and BSD
 Group:		Emulators
 URL:		http://www.qemu.org/
@@ -202,58 +201,58 @@ BuildRequires:		gettext
 BuildRequires: librdmacm-devel
 
 %if 0%{?user:1}
-Requires: %{name}-%{user} = %{version}-%{release}
+Requires: %{name}-%{user} = %{EVRD}
 %endif
 %if 0%{?system_alpha:1}
-Requires: %{name}-%{system_alpha} = %{version}-%{release}
+Requires: %{name}-%{system_alpha} = %{EVRD}
 %endif
 %if 0%{?system_arm:1}
-Requires: %{name}-%{system_arm} = %{version}-%{release}
+Requires: %{name}-%{system_arm} = %{EVRD}
 %endif
 %if 0%{?system_cris:1}
-Requires: %{name}-%{system_cris} = %{version}-%{release}
+Requires: %{name}-%{system_cris} = %{EVRD}
 %endif
 %if 0%{?system_lm32:1}
-Requires: %{name}-%{system_lm32} = %{version}-%{release}
+Requires: %{name}-%{system_lm32} = %{EVRD}
 %endif
 %if 0%{?system_m68k:1}
-Requires: %{name}-%{system_m68k} = %{version}-%{release}
+Requires: %{name}-%{system_m68k} = %{EVRD}
 %endif
 %if 0%{?system_microblaze:1}
-Requires: %{name}-%{system_microblaze} = %{version}-%{release}
+Requires: %{name}-%{system_microblaze} = %{EVRD}
 %endif
 %if 0%{?system_mips:1}
-Requires: %{name}-%{system_mips} = %{version}-%{release}
+Requires: %{name}-%{system_mips} = %{EVRD}
 %endif
 %if 0%{?system_or32:1}
-Requires: %{name}-%{system_or32} = %{version}-%{release}
+Requires: %{name}-%{system_or32} = %{EVRD}
 %endif
 %if 0%{?system_ppc:1}
-Requires: %{name}-%{system_ppc} = %{version}-%{release}
+Requires: %{name}-%{system_ppc} = %{EVRD}
 %endif
 %if 0%{?system_s390x:1}
-Requires: %{name}-%{system_s390x} = %{version}-%{release}
+Requires: %{name}-%{system_s390x} = %{EVRD}
 %endif
 %if 0%{?system_sh4:1}
-Requires: %{name}-%{system_sh4} = %{version}-%{release}
+Requires: %{name}-%{system_sh4} = %{EVRD}
 %endif
 %if 0%{?system_sparc:1}
-Requires: %{name}-%{system_sparc} = %{version}-%{release}
+Requires: %{name}-%{system_sparc} = %{EVRD}
 %endif
 %if 0%{?system_unicore32:1}
-Requires: %{name}-%{system_unicore32} = %{version}-%{release}
+Requires: %{name}-%{system_unicore32} = %{EVRD}
 %endif
 %if 0%{?system_x86:1}
-Requires: %{name}-%{system_x86} = %{version}-%{release}
+Requires: %{name}-%{system_x86} = %{EVRD}
 %endif
 %if 0%{?system_xtensa:1}
-Requires: %{name}-%{system_xtensa} = %{version}-%{release}
+Requires: %{name}-%{system_xtensa} = %{EVRD}
 %endif
 %if 0%{?system_moxie:1}
-Requires: %{name}-%{system_moxie} = %{version}-%{release}
+Requires: %{name}-%{system_moxie} = %{EVRD}
 %endif
 %if %{without separate_kvm}
-Requires: %{name}-img = %{version}-%{release}
+Requires: %{name}-img = %{EVRD}
 %else
 Requires: %{name}-img
 %endif
@@ -277,7 +276,7 @@ As QEMU requires no host kernel patches to run, it is safe and easy to use.
 %package	kvm
 Summary:	QEMU metapackage for KVM support
 Group:		Emulators
-Requires:	qemu-%{kvm_package} = %{version}-%{release}
+Requires:	qemu-%{kvm_package} = %{EVRD}
 
 %description kvm
 This is a meta-package that provides a qemu-system-<arch> package for native
@@ -334,7 +333,7 @@ This package does not need to be installed on the host OS.
 %package -n	ksm
 Summary:	Kernel Samepage Merging services
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 Requires(post): rpm-helper
 Requires(postun): rpm-helper
 
@@ -348,7 +347,7 @@ This package provides service files for disabling and tuning KSM.
 %package	%{user}
 Summary:	QEMU user mode emulation of qemu targets
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 Requires(post): rpm-helper
 Requires(postun): rpm-helper
 
@@ -363,7 +362,7 @@ This package provides the user mode emulation of qemu targets
 %package	%{system_x86}
 Summary:	QEMU system emulator for x86
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 Requires:	seavgabios-bin
 # First version that ships aml files which we depend on
 Requires:	seabios-bin >= 1.7.3-2
@@ -391,7 +390,7 @@ SeaVGABIOS is an open-source VGABIOS implementation.
 %package	%{system_alpha}
 Summary:	QEMU system emulator for Alpha
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 
 %description	%{system_alpha}
 QEMU is a generic and open source processor emulator which achieves a good
@@ -404,7 +403,7 @@ This package provides the system emulator for Alpha systems.
 %package	%{system_arm}
 Summary:	QEMU system emulator for ARM
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 %description %{system_arm}
 QEMU is a generic and open source processor emulator which achieves a good
 emulation speed by using dynamic translation.
@@ -416,7 +415,7 @@ This package provides the system emulator for ARM boards.
 %package	%{system_mips}
 Summary:	QEMU system emulator for MIPS
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 
 %description	%{system_mips}
 QEMU is a generic and open source processor emulator which achieves a good
@@ -429,7 +428,7 @@ This package provides the system emulator for MIPS boards.
 %package	%{system_cris}
 Summary:	QEMU system emulator for CRIS
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 
 %description	%{system_cris}
 QEMU is a generic and open source processor emulator which achieves a good
@@ -442,7 +441,7 @@ This package provides the system emulator for CRIS boards.
 %package	%{system_lm32}
 Summary:	QEMU system emulator for LatticeMico32
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 %description	%{system_lm32}
 QEMU is a generic and open source processor emulator which achieves a good
 emulation speed by using dynamic translation.
@@ -454,7 +453,7 @@ This package provides the system emulator for LatticeMico32 boards.
 %package	%{system_m68k}
 Summary:	QEMU system emulator for ColdFire (m68k)
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 
 %description	%{system_m68k}
 QEMU is a generic and open source processor emulator which achieves a good
@@ -467,7 +466,7 @@ This package provides the system emulator for ColdFire boards.
 %package	%{system_microblaze}
 Summary:	QEMU system emulator for Microblaze
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 
 %description	%{system_microblaze}
 QEMU is a generic and open source processor emulator which achieves a good
@@ -480,7 +479,7 @@ This package provides the system emulator for Microblaze boards.
 %package	%{system_or32}
 Summary:	QEMU system emulator for OpenRisc32
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 
 %description	%{system_or32}
 QEMU is a generic and open source processor emulator which achieves a good
@@ -493,7 +492,7 @@ This package provides the system emulator for OpenRisc32 boards.
 %package	%{system_s390x}
 Summary:	QEMU system emulator for S390
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 %description	%{system_s390x}
 QEMU is a generic and open source processor emulator which achieves a good
 emulation speed by using dynamic translation.
@@ -505,7 +504,7 @@ This package provides the system emulator for S390 systems.
 %package	%{system_sh4}
 Summary:	QEMU system emulator for SH4
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 
 %description	%{system_sh4}
 QEMU is a generic and open source processor emulator which achieves a good
@@ -518,7 +517,7 @@ This package provides the system emulator for SH4 boards.
 %package	%{system_sparc}
 Summary:	QEMU system emulator for SPARC
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 Requires:	openbios
 
 %description	%{system_sparc}
@@ -540,7 +539,7 @@ This package provides an openbios for SPARC and PPC
 %package	%{system_ppc}
 Summary:	QEMU system emulator for PPC
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 Requires:	SLOF
 
 %description %{system_ppc}
@@ -563,7 +562,7 @@ and boot Linux or a hypervisor on the industry Open Firmware boot standard.
 %package	%{system_xtensa}
 Summary:	QEMU system emulator for Xtensa
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 
 %description	%{system_xtensa}
 QEMU is a generic and open source processor emulator which achieves a good
@@ -576,7 +575,7 @@ This package provides the system emulator for Xtensa boards.
 %package	%{system_unicore32}
 Summary:	QEMU system emulator for Unicore32
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 
 %description	%{system_unicore32}
 QEMU is a generic and open source processor emulator which achieves a good
@@ -589,7 +588,7 @@ This package provides the system emulator for Unicore32 boards.
 %package	%{system_moxie}
 Summary:	QEMU system emulator for Moxie
 Group:		Emulators
-Requires:	%{name}-common = %{version}-%{release}
+Requires:	%{name}-common = %{EVRD}
 
 %description	%{system_moxie}
 QEMU is a generic and open source processor emulator which achieves a good
