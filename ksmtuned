@@ -21,14 +21,6 @@ if [ -f /etc/ksmtuned.conf ]; then
     . /etc/ksmtuned.conf
 fi
 
-debug() {
-    if [ -n "$DEBUG" ]; then
-        s="`/bin/date`: $*"
-        [ -n "$LOGFILE" ] && echo "$s" >> "$LOGFILE" || echo "$s"
-    fi
-}
-
-
 KSM_MONITOR_INTERVAL=${KSM_MONITOR_INTERVAL:-60}
 KSM_NPAGES_BOOST=${KSM_NPAGES_BOOST:-300}
 KSM_NPAGES_DECAY=${KSM_NPAGES_DECAY:--50}
@@ -43,17 +35,17 @@ KSM_THRES_COEF=${KSM_THRES_COEF:-20}
 KSM_THRES_CONST=${KSM_THRES_CONST:-2048}
 
 total=`awk '/^MemTotal:/ {print $2}' /proc/meminfo`
-debug total $total
+[ -n "$DEBUG" ] && echo total $total
 
 npages=0
 sleep=$[KSM_SLEEP_MSEC * 16 * 1024 * 1024 / total]
 [ $sleep -le 10 ] && sleep=10
-debug sleep $sleep
+[ -n "$DEBUG" ] && echo sleep $sleep
 thres=$[total * KSM_THRES_COEF / 100]
 if [ $KSM_THRES_CONST -gt $thres ]; then
     thres=$KSM_THRES_CONST
 fi
-debug thres $thres
+[ -n "$DEBUG" ] && echo thres $thres
 
 KSMCTL () {
     case x$1 in
@@ -70,15 +62,13 @@ KSMCTL () {
 
 committed_memory () {
     # calculate how much memory is committed to running qemu processes
-    local pidlist
-    pidlist=$(pgrep -d ' ' -- '^qemu(-kvm|:.{1,11})$')
-    if [ -n "$pidlist" ]; then
-        ps -p "$pidlist" -o rsz=
-    fi | awk '{ sum += $1 }; END { print sum }'
+    local progname
+    progname=${1:-qemu-kvm}
+    ps -C "$progname" -o rsz | awk '{ sum += $1 }; END { print sum }'
 }
 
 free_memory () {
-    awk '/^(MemFree|Buffers|Cached):/ {free += $2}; END {print free}' \
+    awk '/^(MemFree|Buffers|MemCached):/ {free += $2}; END {print free}' \
                 /proc/meminfo
 }
 
@@ -99,22 +89,22 @@ adjust () {
     local free committed
     free=`free_memory`
     committed=`committed_memory`
-    debug committed $committed free $free
+    [ -n "$DEBUG" ] && echo committed $committed free $free
     if [ $[committed + thres] -lt $total -a $free -gt $thres ]; then
         KSMCTL stop
-        debug "$[committed + thres] < $total and free > $thres, stop ksm"
+        [ -n "$DEBUG" ] && echo "$[committed + thres] < $total and free > $thres, stop ksm"
         return 1
     fi
-    debug "$[committed + thres] > $total, start ksm"
+    [ -n "$DEBUG" ] && echo "$[committed + thres] > $total, start ksm"
     if [ $free -lt $thres ]; then
         npages=`increase_npages $KSM_NPAGES_BOOST`
-        debug "$free < $thres, boost"
+        [ -n "$DEBUG" ] && echo "$free < $thres, boost"
     else
         npages=`increase_npages $KSM_NPAGES_DECAY`
-        debug "$free > $thres, decay"
+        [ -n "$DEBUG" ] && echo "$free > $thres, decay"
     fi
     KSMCTL start $npages $sleep
-    debug "KSMCTL start $npages $sleep"
+    [ -n "$DEBUG" ] && echo "KSMCTL start $npages $sleep"
     return 0
 }
 
@@ -132,7 +122,7 @@ loop () {
     done
 }
 
-PIDFILE=${PIDFILE-/var/run/ksmtune.pid}
+PIDFILE=${PIDFILE-/var/run/ksmtuned.pid}
 if touch "$PIDFILE"; then
   loop &
   echo $! > "$PIDFILE"

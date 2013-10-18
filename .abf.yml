@@ -1,6 +1,2 @@
-removed_sources:
-  qemu-1.5.0.tar.bz2: 52d1bd7f8627bb435b95b88ea005b71b9b1a0098
-  qemu-1.5.1.tar.bz2: 1e1339dffb01c98f33ec8451266cee1adf3b41be
-  qemu-1.5.2.tar.bz2: 932c04cdb227e1553c79a43bbf7552a433c815a9
 sources:
   qemu-1.6.0.tar.bz2: 5f754fc128aaafd0c7aee2204d453f4be1ac859e
