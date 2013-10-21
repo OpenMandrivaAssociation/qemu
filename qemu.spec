@@ -40,6 +40,7 @@ Source9:	ksmctl.c
 Source10:	qemu-guest-agent.service
 Source11:	99-qemu-guest-agent.rules
 Source12:	bridge.conf
+Source13:	qemu.rpmlintrc
 
 Patch000:	qemu-1.6.1-fix-ar.patch
 # This patch queue is auto-generated from https://github.com/openSUSE/qemu
