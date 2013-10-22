@@ -156,7 +156,7 @@ BuildRequires:      brlapi-devel
 # For FDT device tree support
 BuildRequires:      fdt-devel
 %endif
-%infarch %arm
+%ifnarch %arm
 # xen
 BuildRequires:		xen-devel
 %endif
