@@ -156,8 +156,10 @@ BuildRequires:      brlapi-devel
 # For FDT device tree support
 BuildRequires:      fdt-devel
 %endif
+%infarch %arm
 # xen
 BuildRequires:		xen-devel
+%endif
 # For virtfs
 BuildRequires:      pkgconfig(libcap-ng)
 BuildRequires:      cap-devel
