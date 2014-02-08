@@ -12,7 +12,7 @@
 Summary:	QEMU CPU Emulator
 Name:		qemu
 Version:	1.5.2
-Release:	1
+Release:	2
 License:	GPLv2+ and LGPLv2+ and BSD
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
