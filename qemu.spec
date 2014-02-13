@@ -1,5 +1,5 @@
 %define qemu_name	qemu
-%define qemu_version	1.6.1
+%define qemu_version	1.7.0
 %define qemu_rel	1
 #define qemu_snapshot	0
 %define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
@@ -31,7 +31,6 @@ License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
 Source0:	http://wiki.qemu-project.org/download/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.bz2
-Source1:	kvm.modules
 Source3:	80-kvm.rules
 # KSM control scripts
 Source4:	ksm.service
@@ -45,53 +44,37 @@ Source11:	99-qemu-guest-agent.rules
 Source12:	bridge.conf
 Source13:	qemu.rpmlintrc
 
-Patch000:	qemu-1.6.1-fix-ar.patch
-# This patch queue is auto-generated from https://github.com/openSUSE/qemu
-Patch0001:	0001-XXX-dont-dump-core-on-sigabort.patc.patch
-Patch0002:	0002-XXX-work-around-SA_RESTART-race-wit.patch
-Patch0003:	0003-qemu-0.9.0.cvs-binfmt.patch.patch
-Patch0004:	0004-qemu-cvs-alsa_bitfield.patch.patch
-Patch0005:	0005-qemu-cvs-alsa_ioctl.patch.patch
-Patch0006:	0006-qemu-cvs-alsa_mmap.patch.patch
-Patch0007:	0007-qemu-cvs-gettimeofday.patch.patch
-Patch0008:	0008-qemu-cvs-ioctl_debug.patch.patch
-Patch0009:	0009-qemu-cvs-ioctl_nodirection.patch.patch
-Patch0010:	0010-block-vmdk-Support-creation-of-SCSI.patch
-Patch0011:	0011-linux-user-add-binfmt-wrapper-for-a.patch
-Patch0012:	0012-linux-user-Ignore-timer_create-sysc.patch
-Patch0013:	0013-linux-user-be-silent-about-capget-f.patch
-Patch0014:	0014-PPC-KVM-Disable-mmu-notifier-check..patch
-Patch0015:	0015-linux-user-fix-segfault-deadlock.pa.patch
-Patch0016:	0016-linux-user-binfmt-support-host-bina.patch
-Patch0017:	0017-linux-user-arm-no-tb_flush-on-reset.patch
-Patch0018:	0018-linux-user-Ignore-broken-loop-ioctl.patch
-Patch0019:	0019-linux-user-lock-tcg.patch.patch
-Patch0020:	0020-linux-user-Run-multi-threaded-code-.patch
-Patch0021:	0021-linux-user-lock-tb-flushing-too.pat.patch
-Patch0022:	0022-linux-user-Fake-proc-cpuinfo.patch.patch
-Patch0023:	0023-linux-user-implement-FS_IOC_GETFLAG.patch
-Patch0024:	0024-linux-user-implement-FS_IOC_SETFLAG.patch
-Patch0025:	0025-linux-user-XXX-disable-fiemap.patch.patch
-Patch0026:	0026-slirp-nooutgoing.patch.patch
-Patch0027:	0027-vnc-password-file-and-incoming-conn.patch
-Patch0028:	0028-linux-user-add-more-blk-ioctls.patc.patch
-Patch0029:	0029-linux-user-use-target_ulong.patch.patch
-Patch0030:	0030-Add-support-for-DictZip-enabled-gzi.patch
-Patch0031:	0031-Add-tar-container-format.patch.patch
-Patch0032:	0032-Legacy-Patch-kvm-qemu-preXX-dictzip.patch
-Patch0033:	0033-Legacy-Patch-kvm-qemu-preXX-report-.patch
-Patch0034:	0034-console-add-question-mark-escape-op.patch
-Patch0035:	0035-Make-char-muxer-more-robust-wrt-sma.patch
-Patch0036:	0036-linux-user-lseek-explicitly-cast-no.patch
-Patch0037:	0037-virtfs-proxy-helper-Provide-__u64-f.patch
-Patch0039:	0039-roms-Build-vgabios.bin.patch.patch
-Patch0040:	0040-configure-Enable-PIE-for-ppc-and-pp.patch
+# Fix crash in lsi_soft_reset (bz #1000947)
+# Patches posted upstream
+Patch0001: 0001-pci-do-not-export-pci_bus_reset.patch
+Patch0002: 0002-qdev-allow-both-pre-and-post-order-vists-in-qdev-wal.patch
+Patch0003: 0003-qdev-switch-reset-to-post-order.patch
+# CVE-2013-4377: Fix crash when unplugging virtio devices (bz #1012633,
+# bz #1012641)
+# Patches posted upstream
+Patch0004: 0004-virtio-bus-remove-vdev-field.patch
+Patch0005: 0005-virtio-pci-remove-vdev-field.patch
+Patch0006: 0006-virtio-ccw-remove-vdev-field.patch
+Patch0007: 0007-virtio-bus-cleanup-plug-unplug-interface.patch
+Patch0008: 0008-virtio-blk-switch-exit-callback-to-VirtioDeviceClass.patch
+Patch0009: 0009-virtio-serial-switch-exit-callback-to-VirtioDeviceCl.patch
+Patch0010: 0010-virtio-net-switch-exit-callback-to-VirtioDeviceClass.patch
+Patch0011: 0011-virtio-scsi-switch-exit-callback-to-VirtioDeviceClas.patch
+Patch0012: 0012-virtio-balloon-switch-exit-callback-to-VirtioDeviceC.patch
+Patch0013: 0013-virtio-rng-switch-exit-callback-to-VirtioDeviceClass.patch
+Patch0014: 0014-virtio-pci-add-device_unplugged-callback.patch
 
-# roms/ipxe patches
-Patch1000:	ipxe-build-Work-around-bug-in-gcc-4.8.patch
-Patch1001:	ipxe-zbin-Fix-size-used-for-memset-in-al.patch
-Patch1002:	ipxe-build-Avoid-strict-aliasing-warning.patch
-# end roms/ipxe patches
+# Fix qemu-img create with NBD backing file (bz #1034433)
+# Patch posted upstream
+Patch0101: 0101-block-Close-backing-file-early-in-bdrv_img_create.patch
+# Add kill() to seccomp whitelist, fix AC97 with -sandbox on (bz
+# #1043521)
+Patch0102: 0102-seccomp-add-kill-to-the-syscall-whitelist.patch
+# Changing streaming mode default to off for spice (bz #1038336)
+Patch0103: 0103-spice-flip-streaming-video-mode-to-off-by-default.patch
+# Fix guest scsi verify command (bz #1001617)
+Patch0104: 0104-scsi-bus-fix-transfer-length-and-direction-for-VERIF.patch
+Patch0105: 0105-scsi-disk-fix-VERIFY-emulation.patch
 
 BuildRequires:	gettext
 BuildRequires:	libtool
@@ -296,11 +279,11 @@ dobuild() {
 	--disable-strip \
 	--extra-ldflags="$extraldflags -pie -Wl,-z,relro -Wl,-z,now" \
 	--extra-cflags="%{optflags} -fPIE -DPIE" \
-	--enable-mixemu \
 	--enable-trace-backend=dtrace \
 	--disable-werror \
 	--disable-xen \
 	--enable-kvm \
+	--enable-tpm \
 %ifarch %ix86 x86_64
 	--enable-xen \
 %endif
@@ -321,7 +304,6 @@ dobuild() {
 %if %{with gtk}
 	--with-gtkabi="3.0" \
 %endif
-	--enable-tpm \
         "$@"
 
     echo "config-host.mak contents:"
@@ -354,12 +336,10 @@ install -D -p -m 0644 %{SOURCE3} %{buildroot}%{_udevrulesdir}
 mkdir -p %{buildroot}%{_sysconfdir}/qemu/
 install -D -m 0644 %{SOURCE12} %{buildroot}%{_sysconfdir}/qemu/
 
-%ifarch %{ix86} x86_64
+%ifarch %{ix86} x86_64 armv7hl
 mkdir -p %{buildroot}/%{_sysconfdir}/sysconfig/modules
 mkdir -p %{buildroot}/%{_bindir}/
 mkdir -p %{buildroot}/%{_datadir}/%{name}
-
-install -m 0755 %{SOURCE1} %{buildroot}/%{_sysconfdir}/sysconfig/modules/kvm.modules
 %endif
 
 %makeinstall_std BUILD_DOCS="yes"
@@ -382,13 +362,9 @@ ln -sf ../../../emul/ia32-linux %{buildroot}/usr/share/qemu/qemu-i386
 %ifnarch ia64
 mkdir -p %{buildroot}/emul/ia32-linux
 %endif
+rm -rf %{buildroot}%{_datadir}/%{name}/QEMU,tcx.bin
 
 %post 
-%ifarch %{ix86} x86_64
-# load kvm modules now, so we can make sure no reboot is needed.
-# If there's already a kvm module installed, we don't mess with it
-sh /%{_sysconfdir}/sysconfig/modules/kvm.modules
-%endif
 %_post_service ksmtuned
 %_post_service ksm
 
@@ -407,7 +383,6 @@ sh /%{_sysconfdir}/sysconfig/modules/kvm.modules
 %{_sbindir}/ksmtuned
 %config(noreplace) %{_sysconfdir}/ksmtuned.conf
 %config(noreplace) %{_sysconfdir}/qemu/bridge.conf
-%{_sysconfdir}/sysconfig/modules/kvm.modules
 %{_sysconfdir}/qemu/target-x86_64.conf
 %{_bindir}/qemu-system-*
 %{_bindir}/virtfs-proxy-helper
@@ -466,7 +441,6 @@ sh /%{_sysconfdir}/sysconfig/modules/kvm.modules
 %{_bindir}/qemu-sparc
 %{_bindir}/qemu-unicore32
 %{_bindir}/qemu-x86_64
-%{_bindir}/qemu-*-binfmt
 %{_sbindir}/qemu-binfmt-conf.sh
 %ifnarch %ix86 x86_64 ia64
 %dir /emul/ia32-linux
@@ -510,4 +484,3 @@ sh /%{_sysconfdir}/sysconfig/modules/kvm.modules
 %{_bindir}/qemu-ga
 %{_unitdir}/qemu-guest-agent.service
 %{_udevrulesdir}/99-qemu-guest-agent.rules
-
