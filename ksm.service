@@ -1,6 +1,6 @@
 [Unit]
 Description=Kernel Samepage Merging
-ConditionPathExists=/sys/kernel/mm/ksm
+ConditionPathExists=/sys/kernel/mm/uksm
 ConditionVirtualization=no
 
 [Service]
