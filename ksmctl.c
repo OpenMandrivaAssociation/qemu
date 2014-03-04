@@ -12,8 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define KSM_MAX_KERNEL_PAGES_FILE "/sys/kernel/mm/ksm/max_kernel_pages"
-#define KSM_RUN_FILE		  "/sys/kernel/mm/ksm/run"
+#define KSM_MAX_KERNEL_PAGES_FILE "/sys/kernel/mm/uksm/max_kernel_pages"
+#define KSM_RUN_FILE		  "/sys/kernel/mm/uksm/run"
 
 char *program_name;
 
