@@ -109,6 +109,7 @@ BuildRequires:	pkgconfig(sdl)
 BuildRequires:	pkgconfig(uuid)
 BuildRequires:	pkgconfig(vdehist)
 BuildRequires:	pkgconfig(zlib)
+BuildRequires:	pkgconfig(libcacard)
 %if %{with usbredir}
 BuildRequires:	usbredir-devel >= 0.5.2
 %endif
