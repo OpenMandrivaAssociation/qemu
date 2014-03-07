@@ -1,8 +1,8 @@
 %define qemu_name	qemu
 %define qemu_version	1.7.0
-%define qemu_rel	2
+%define qemu_rel	0.1
 #define qemu_snapshot	0
-%define qemu_release	%mkrel %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
+%define qemu_release	%{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
 %ifarch %{ix86} x86_64
 %bcond_without	firmwares # build firmwares from source
