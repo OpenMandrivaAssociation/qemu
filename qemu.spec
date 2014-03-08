@@ -1,6 +1,6 @@
 %define qemu_name	qemu
 %define qemu_version	1.7.0
-%define qemu_rel	2
+%define qemu_rel	3
 #define qemu_snapshot	0
 %define qemu_release    %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
