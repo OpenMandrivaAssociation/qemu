@@ -1,6 +1,6 @@
 %define qemu_name	qemu
-%define qemu_version	1.7.0
-%define qemu_rel	3
+%define qemu_version	1.7.1
+%define qemu_rel	1
 #define qemu_snapshot	0
 %define qemu_release    %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
@@ -49,20 +49,6 @@ Source13:	qemu.rpmlintrc
 Patch0001: 0001-pci-do-not-export-pci_bus_reset.patch
 Patch0002: 0002-qdev-allow-both-pre-and-post-order-vists-in-qdev-wal.patch
 Patch0003: 0003-qdev-switch-reset-to-post-order.patch
-# CVE-2013-4377: Fix crash when unplugging virtio devices (bz #1012633,
-# bz #1012641)
-# Patches posted upstream
-Patch0004: 0004-virtio-bus-remove-vdev-field.patch
-Patch0005: 0005-virtio-pci-remove-vdev-field.patch
-Patch0006: 0006-virtio-ccw-remove-vdev-field.patch
-Patch0007: 0007-virtio-bus-cleanup-plug-unplug-interface.patch
-Patch0008: 0008-virtio-blk-switch-exit-callback-to-VirtioDeviceClass.patch
-Patch0009: 0009-virtio-serial-switch-exit-callback-to-VirtioDeviceCl.patch
-Patch0010: 0010-virtio-net-switch-exit-callback-to-VirtioDeviceClass.patch
-Patch0011: 0011-virtio-scsi-switch-exit-callback-to-VirtioDeviceClas.patch
-Patch0012: 0012-virtio-balloon-switch-exit-callback-to-VirtioDeviceC.patch
-Patch0013: 0013-virtio-rng-switch-exit-callback-to-VirtioDeviceClass.patch
-Patch0014: 0014-virtio-pci-add-device_unplugged-callback.patch
 
 # Fix qemu-img create with NBD backing file (bz #1034433)
 # Patch posted upstream
@@ -72,9 +58,6 @@ Patch0101: 0101-block-Close-backing-file-early-in-bdrv_img_create.patch
 Patch0102: 0102-seccomp-add-kill-to-the-syscall-whitelist.patch
 # Changing streaming mode default to off for spice (bz #1038336)
 Patch0103: 0103-spice-flip-streaming-video-mode-to-off-by-default.patch
-# Fix guest scsi verify command (bz #1001617)
-Patch0104: 0104-scsi-bus-fix-transfer-length-and-direction-for-VERIF.patch
-Patch0105: 0105-scsi-disk-fix-VERIFY-emulation.patch
 
 BuildRequires:	gettext
 BuildRequires:	libtool
