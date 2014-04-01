@@ -58,12 +58,12 @@ debug thres $thres
 KSMCTL () {
     case x$1 in
         xstop)
-            echo 0 > /sys/kernel/mm/ksm/run
+            echo 0 > /sys/kernel/mm/uksm/run
             ;;
         xstart)
-            echo $2 > /sys/kernel/mm/ksm/pages_to_scan
-            echo $3 > /sys/kernel/mm/ksm/sleep_millisecs
-            echo 1 > /sys/kernel/mm/ksm/run
+            echo $2 > /sys/kernel/mm/uksm/pages_to_scan
+            echo $3 > /sys/kernel/mm/uksm/sleep_millisecs
+            echo 1 > /sys/kernel/mm/uksm/run
             ;;
     esac
 }
