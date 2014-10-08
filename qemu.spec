@@ -1,6 +1,6 @@
 %define qemu_name	qemu
 %define qemu_version	2.1.2
-%define qemu_rel	1
+%define qemu_rel	2
 #define qemu_snapshot	0
 %define qemu_release    %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
@@ -43,6 +43,8 @@ Source10:	qemu-guest-agent.service
 Source11:	99-qemu-guest-agent.rules
 Source12:	bridge.conf
 Source13:	qemu.rpmlintrc
+#cb - from mageia http://lists.gnu.org/archive/html/qemu-devel/2014-01/msg01035.html
+Patch0: qemu-2.0.0-mga-compile-fix.patch
 
 BuildRequires:	gettext
 BuildRequires:	libtool
