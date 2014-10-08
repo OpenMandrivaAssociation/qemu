@@ -1,5 +1,5 @@
 %define qemu_name	qemu
-%define qemu_version	1.7.1
+%define qemu_version	2.1.2
 %define qemu_rel	1
 #define qemu_snapshot	0
 %define qemu_release    %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
@@ -43,21 +43,6 @@ Source10:	qemu-guest-agent.service
 Source11:	99-qemu-guest-agent.rules
 Source12:	bridge.conf
 Source13:	qemu.rpmlintrc
-
-# Fix crash in lsi_soft_reset (bz #1000947)
-# Patches posted upstream
-Patch0001: 0001-pci-do-not-export-pci_bus_reset.patch
-Patch0002: 0002-qdev-allow-both-pre-and-post-order-vists-in-qdev-wal.patch
-Patch0003: 0003-qdev-switch-reset-to-post-order.patch
-
-# Fix qemu-img create with NBD backing file (bz #1034433)
-# Patch posted upstream
-Patch0101: 0101-block-Close-backing-file-early-in-bdrv_img_create.patch
-# Add kill() to seccomp whitelist, fix AC97 with -sandbox on (bz
-# #1043521)
-Patch0102: 0102-seccomp-add-kill-to-the-syscall-whitelist.patch
-# Changing streaming mode default to off for spice (bz #1038336)
-Patch0103: 0103-spice-flip-streaming-video-mode-to-off-by-default.patch
 
 BuildRequires:	gettext
 BuildRequires:	libtool
@@ -232,6 +217,8 @@ This sub-package contains the guest agent.
 %apply_patches
 
 %build
+export CC=gcc
+export CXX=g++
 extraldflags="-Wl,--build-id";
 buildldflags="VL_LDFLAGS=-Wl,--build-id"
 
@@ -253,6 +240,7 @@ buildarch="i386-softmmu x86_64-softmmu alpha-softmmu arm-softmmu \
 
 dobuild() {
     ./configure \
+	--python=%{__python2} \
 	--prefix=%{_prefix} \
 	--libdir=%{_libdir} \
 	--sysconfdir=%{_sysconfdir} \
@@ -347,6 +335,8 @@ mkdir -p %{buildroot}/emul/ia32-linux
 %endif
 rm -rf %{buildroot}%{_datadir}/%{name}/QEMU,tcx.bin
 
+%find_lang %{name}
+
 %post 
 %_post_service ksmtuned
 %_post_service ksm
@@ -355,7 +345,7 @@ rm -rf %{buildroot}%{_datadir}/%{name}/QEMU,tcx.bin
 %_preun_service ksm
 %_preun_service ksmtuned
 
-%files
+%files -f %{name}.lang
 %doc README qemu-doc.html qemu-tech.html
 %config(noreplace)%{_sysconfdir}/sasl2/qemu.conf
 %{_unitdir}/ksm.service
@@ -390,6 +380,9 @@ rm -rf %{buildroot}%{_datadir}/%{name}/QEMU,tcx.bin
 %{_datadir}/%{name}/kvmvapic.bin
 %{_datadir}/%{name}/linuxboot.bin
 %{_datadir}/%{name}/multiboot.bin
+%{_datadir}/%{name}/QEMU,cgthree.bin
+%{_datadir}/%{name}/bios-256k.bin
+%{_datadir}/%{name}/u-boot.e500
 
 %files linux-user
 %{_datadir}/%{name}/ppc_rom.bin
