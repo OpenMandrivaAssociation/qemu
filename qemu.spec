@@ -56,6 +56,7 @@ BuildRequires:	alsa-oss-devel
 BuildRequires:	attr-devel
 BuildRequires:	brlapi-devel
 BuildRequires:	cap-devel
+BuildRequires:	glibc-static-devel
 BuildRequires:	jpeg-devel
 BuildRequires:	libaio-devel
 BuildRequires:	librdmacm-devel
