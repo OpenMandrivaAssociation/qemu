@@ -254,7 +254,6 @@ cp %{SOURCE14} qemu-wrapper.c
 		--disable-fdt \
 		--disable-bluez \
 		--disable-slirp \
-		--disable-kvm \
 		--disable-rdma \
 		--disable-system \
 		--disable-bsd-user \
@@ -285,6 +284,7 @@ cp %{SOURCE14} qemu-wrapper.c
 		--disable-numa \
 		--disable-lzo \
 		--disable-rbd \
+		--enable-kvm \
 		--extra-ldflags="-static -Wl,-z,relro -Wl,-z,now" \
 		--extra-cflags="%{optflags}"
 %make V=1 $buildldflags
