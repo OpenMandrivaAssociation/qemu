@@ -584,7 +584,7 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_binfmtdir}/aarch64.conf
 
 %files -n qemu-static-arm
-%{_bindir}/qemu-wrapper
+%{_bindir}/qemu-armv7hl
 %{_bindir}/qemu-static-arm
 %{_binfmtdir}/arm.conf
 
