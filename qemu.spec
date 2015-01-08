@@ -224,6 +224,71 @@ export CXX=g++
 extraldflags="-Wl,--build-id";
 buildldflags="VL_LDFLAGS=-Wl,--build-id"
 
+mkdir -p qemu-static
+pushd qemu-static
+../configure	--python=%{__python2} \
+		--target-list=arm-linux-user,mips-linux-user,mipsel-linux-user \
+		--disable-debug-tcg \
+		--disable-debug-info \
+		--disable-sparse \
+		--disable-strip \
+		--disable-werror \
+		--disable-stack-protector \
+		--disable-sdl \
+		--disable-gtk \
+		--disable-virtfs \
+		--disable-vnc \
+		--disable-cocoa \
+		--disable-xen \
+		--disable-xen-pci-passthrough \
+		--disable-brlapi \
+		--disable-vnc-tls \
+		--disable-vnc-sasl \
+		--disable-vnc-jpeg \
+		--disable-vnc-png \
+		--disable-vnc-ws \
+		--disable-curses \
+		--disable-curl \
+		--disable-fdt \
+		--disable-bluez \
+		--disable-slirp \
+		--disable-kvm \
+		--disable-rdma \
+		--disable-system \
+		--disable-bsd-user \
+		--disable-guest-base \
+		--disable-uuid \
+		--disable-vde \
+		--disable-netmap \
+		--disable-cap-ng \
+		--disable-attr \
+		--disable-blobs \
+		--disable-docs \
+		--disable-vhost-net \
+		--disable-spice \
+		--disable-libiscsi \
+		--disable-libnfs \
+		--disable-smartcard-nss \
+		--disable-libusb \
+		--disable-usb-redir \
+		--disable-guest-agent \
+		--disable-seccomp \
+		--disable-coroutine-pool \
+		--disable-glusterfs \
+		--disable-archipelago \
+		--disable-tpm \
+		--disable-libssh2 \
+		--disable-vhdx \
+		--disable-quorum \
+		--disable-numa \
+		--disable-lzo \
+		--disable-rbd \
+		--extra-ldflags="-static -Wl,-z,relro -Wl,-z,now" \
+		--extra-cflags="%{optflags}"
+%make V=1 $buildldflags
+popd
+
+
 buildarch="i386-softmmu x86_64-softmmu alpha-softmmu arm-softmmu \
     cris-softmmu lm32-softmmu m68k-softmmu microblaze-softmmu \
     microblazeel-softmmu mips-softmmu mipsel-softmmu mips64-softmmu \
