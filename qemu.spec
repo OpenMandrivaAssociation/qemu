@@ -216,6 +216,18 @@ as PC and PowerMac systems.
 
 This sub-package contains the guest agent.
 
+%package	static-aarch64
+Summary:	Static build of qemu aarch64 user mode
+Group:		Emulators
+
+%description	static-aarch64
+This package contains a static build of the user mode aarch64 qemu emulator,
+which allows you to run arm binaries in your host environment without any
+need for a dedicated virtual machine.
+
+The static nature of this build makes it usable for doing aarch64 emulation in
+guest environment, ie. a chroot.
+
 %package	static-arm
 Summary:	Static build of qemu arm user mode
 Group:		Emulators
@@ -265,7 +277,7 @@ mkdir -p qemu-static
 pushd qemu-static
 cp %{SOURCE14} qemu-wrapper.c
 ../configure	--python=%{__python2} \
-		--target-list=arm-linux-user,mips-linux-user,mipsel-linux-user \
+		--target-list=aarch64-linux-user,arm-linux-user,mips-linux-user,mipsel-linux-user \
 		--enable-tcg-interpreter \
 		--disable-debug-tcg \
 		--disable-debug-info \
@@ -436,10 +448,12 @@ mkdir -p %{buildroot}/emul/ia32-linux
 rm -rf %{buildroot}%{_datadir}/%{name}/QEMU,tcx.bin
 
 install -d %{buildroot}%{_binfmtdir}
+install -m755 qemu-static/aarch64-linux-user/qemu-aarch64 -D %{buildroot}%{_bindir}/qemu-static-aarch64
 install -m755 qemu-static/arm-linux-user/qemu-arm -D %{buildroot}%{_bindir}/qemu-static-arm
 install -m766 qemu-static/qemu-wrapper -D %{buildroot}%{_bindir}/qemu-wrapper
 install -m755 qemu-static/mips-linux-user/qemu-mips -D %{buildroot}%{_bindir}/qemu-static-mips
 install -m755 qemu-static/mipsel-linux-user/qemu-mipsel -D %{buildroot}%{_bindir}/qemu-static-mipsel
+echo ':aarch64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xb7:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff:/usr/bin/qemu-static-aarch64:P' > %{buildroot}%{_binfmtdir}/aarch64.conf
 echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/qemu-wrapper:' > %{buildroot}%{_binfmtdir}/arm.conf
 echo ':mips:M::\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff:/usr/bin/qemu-static-mips:' > %{buildroot}%{_binfmtdir}/mips.conf
 echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-static-mipsel:' > %{buildroot}%{_binfmtdir}/mipsel.conf
@@ -455,7 +469,7 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %_preun_service ksmtuned
 
 %files -f %{name}.lang
-%doc README qemu-doc.html qemu-tech.html
+%doc README system/qemu-doc.html system/qemu-tech.html
 %config(noreplace)%{_sysconfdir}/sasl2/qemu.conf
 %{_unitdir}/ksm.service
 /lib/systemd/ksmctl
@@ -573,15 +587,19 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_unitdir}/qemu-guest-agent.service
 %{_udevrulesdir}/99-qemu-guest-agent.rules
 
+%files -n qemu-static-aarch64
+%{_bindir}/qemu-static-aarch64
+%{_binfmtdir}/aarch64.conf
+
 %files -n qemu-static-arm
 %{_bindir}/qemu-wrapper
 %{_bindir}/qemu-static-arm
-%{_binfmtdir}/arm
+%{_binfmtdir}/arm.conf
 
 %files -n qemu-static-mips
 %{_bindir}/qemu-static-mips
-%{_binfmtdir}/mips
+%{_binfmtdir}/mips.conf
 
 %files -n qemu-static-mipsel
 %{_bindir}/qemu-static-mipsel
-%{_binfmtdir}/mipsel
+%{_binfmtdir}/mipsel.conf
