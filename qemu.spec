@@ -77,7 +77,7 @@ BuildRequires:	pkgconfig(libssh)
 BuildRequires:	pkgconfig(libusb-1.0) 
 BuildRequires:	pkgconfig(ncurses)
 BuildRequires:	pkgconfig(pixman-1)
-BuildRequires:	pkgconfig(sdl)
+BuildRequires:	pkgconfig(sdl2)
 BuildRequires:	pkgconfig(uuid)
 BuildRequires:	pkgconfig(vdehist)
 BuildRequires:	pkgconfig(zlib)
@@ -216,6 +216,41 @@ as PC and PowerMac systems.
 
 This sub-package contains the guest agent.
 
+%package	static-arm
+Summary:	Static build of qemu arm user mode
+Group:		Emulators
+
+%description	static-arm
+This package contains a static build of the user mode arm qemu emulator,
+which allows you to run arm binaries in your host environment without any
+need for a dedicated virtual machine.
+
+The static nature of this build makes it usable for doing arm emulation in
+guest environment, ie. a chroot.
+
+%package	static-mips
+Summary:	Static build of qemu mips user mode
+Group:		Emulators
+
+%description	static-mips
+This package contains a static build of the user mode mips qemu emulator,
+which allows you to run arm binaries in your host environment without any
+need for a dedicated virtual machine.
+
+The static nature of this build makes it usable for doing mips emulation in
+guest environment, ie. a chroot.
+
+%package	static-mipsel
+Summary:	Static build of qemu mipsel user mode
+Group:		Emulators
+
+%description	static-mipsel
+This package contains a static build of the user mode mipsel qemu emulator,
+which allows you to run arm binaries in your host environment without any
+need for a dedicated virtual machine.
+
+The static nature of this build makes it usable for doing mipsel emulation in
+guest environment, ie. a chroot.
 %prep
 %setup -q -n %{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
 %apply_patches
@@ -231,6 +266,7 @@ pushd qemu-static
 cp %{SOURCE14} qemu-wrapper.c
 ../configure	--python=%{__python2} \
 		--target-list=arm-linux-user,mips-linux-user,mipsel-linux-user \
+		--enable-tcg-interpreter \
 		--disable-debug-tcg \
 		--disable-debug-info \
 		--disable-sparse \
@@ -275,7 +311,8 @@ cp %{SOURCE14} qemu-wrapper.c
 		--disable-usb-redir \
 		--disable-guest-agent \
 		--disable-seccomp \
-		--disable-coroutine-pool \
+		--with-coroutine=ucontext \
+		--enable-coroutine-pool \
 		--disable-glusterfs \
 		--disable-archipelago \
 		--disable-tpm \
@@ -289,28 +326,14 @@ cp %{SOURCE14} qemu-wrapper.c
 		--extra-ldflags="-static -Wl,-z,relro -Wl,-z,now" \
 		--extra-cflags="%{optflags}"
 %make V=1 $buildldflags
-gcc -static qemu-wrapper.c -O3 -o qemu-wrapper
+gcc -static qemu-wrapper.c %{optflags} %{ldflags} -O3 -o qemu-wrapper
 popd
 
-
-buildarch="i386-softmmu x86_64-softmmu alpha-softmmu arm-softmmu \
-    cris-softmmu lm32-softmmu m68k-softmmu microblaze-softmmu \
-    microblazeel-softmmu mips-softmmu mipsel-softmmu mips64-softmmu \
-    mips64el-softmmu or32-softmmu ppc-softmmu ppcemb-softmmu ppc64-softmmu \
-    s390x-softmmu sh4-softmmu sh4eb-softmmu sparc-softmmu sparc64-softmmu \
-    xtensa-softmmu xtensaeb-softmmu unicore32-softmmu moxie-softmmu \
-    i386-linux-user x86_64-linux-user alpha-linux-user arm-linux-user \
-    armeb-linux-user cris-linux-user m68k-linux-user \
-    microblaze-linux-user microblazeel-linux-user mips-linux-user \
-    mipsel-linux-user mips64-linux-user mips64el-linux-user \
-    mipsn32-linux-user mipsn32el-linux-user \
-    or32-linux-user ppc-linux-user ppc64-linux-user \
-    ppc64abi32-linux-user s390x-linux-user sh4-linux-user sh4eb-linux-user \
-    sparc-linux-user sparc64-linux-user sparc32plus-linux-user \
-    unicore32-linux-user"
-
 dobuild() {
-    ./configure \
+    ../configure \
+	--enable-system \
+	--enable-user \
+	--enable-linux-user \
 	--python=%{__python2} \
 	--prefix=%{_prefix} \
 	--libdir=%{_libdir} \
@@ -326,7 +349,7 @@ dobuild() {
 	--disable-xen \
 	--enable-kvm \
 	--enable-tpm \
-%ifarch %ix86 x86_64
+%ifarch %{ix86} x86_64
 	--enable-xen \
 %endif
 %if %{with spice}
@@ -346,6 +369,9 @@ dobuild() {
 %if %{with gtk}
 	--with-gtkabi="3.0" \
 %endif
+	--enable-sdl \
+	--with-sdlabi="2.0"
+
         "$@"
 
     echo "config-host.mak contents:"
@@ -356,19 +382,22 @@ dobuild() {
     %make V=1 $buildldflags
 }
 
-dobuild --target-list="$buildarch"
+mkdir -p system
+pushd system
+dobuild
 %{__cc} %{SOURCE9} -O2 -g -o ksmctl
+popd
 
 %install
-install -D -p -m 0644 %{SOURCE4} %{buildroot}/%{_unitdir}/ksm.service
-install -D -p -m 0644 %{SOURCE5} %{buildroot}/%{_sysconfdir}/sysconfig/ksm
-install -D -p -m 0755 ksmctl %{buildroot}/lib/systemd/ksmctl
+install -D -p -m 0644 %{SOURCE4} %{buildroot}%{_unitdir}/ksm.service
+install -D -p -m 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/sysconfig/ksm
+install -D -p -m 0755 system/ksmctl %{buildroot}/lib/systemd/ksmctl
 
-install -D -p -m 0644 %{SOURCE6} %{buildroot}/%{_unitdir}/ksmtuned.service
-install -D -p -m 0755 %{SOURCE7} %{buildroot}/%{_sbindir}/ksmtuned
-install -D -p -m 0644 %{SOURCE8} %{buildroot}/%{_sysconfdir}/ksmtuned.conf
+install -D -p -m 0644 %{SOURCE6} %{buildroot}%{_unitdir}/ksmtuned.service
+install -D -p -m 0755 %{SOURCE7} %{buildroot}%{_sbindir}/ksmtuned
+install -D -p -m 0644 %{SOURCE8} %{buildroot}%{_sysconfdir}/ksmtuned.conf
 
-install -D -p -m 0644 %{SOURCE10} %{buildroot}/%{_unitdir}/qemu-guest-agent.service
+install -D -p -m 0644 %{SOURCE10} %{buildroot}%{_unitdir}/qemu-guest-agent.service
 
 mkdir -p %{buildroot}%{_udevrulesdir}
 install -D -p -m 0644 %{SOURCE11} %{buildroot}%{_udevrulesdir}
@@ -379,25 +408,25 @@ mkdir -p %{buildroot}%{_sysconfdir}/qemu/
 install -D -m 0644 %{SOURCE12} %{buildroot}%{_sysconfdir}/qemu/
 
 %ifarch %{ix86} x86_64 armv7hl
-mkdir -p %{buildroot}/%{_sysconfdir}/sysconfig/modules
-mkdir -p %{buildroot}/%{_bindir}/
-mkdir -p %{buildroot}/%{_datadir}/%{name}
+mkdir -p %{buildroot}%{_sysconfdir}/sysconfig/modules
+mkdir -p %{buildroot}%{_bindir}/
+mkdir -p %{buildroot}%{_datadir}/%{name}
 %endif
 
-%makeinstall_std BUILD_DOCS="yes"
+%makeinstall_std -C system BUILD_DOCS="yes"
 
-install -D -p -m 0644 qemu.sasl %{buildroot}/%{_sysconfdir}/sasl2/qemu.conf
+install -D -p -m 0644 qemu.sasl %{buildroot}%{_sysconfdir}/sasl2/qemu.conf
 
 # remove unpackaged files
-rm -rf %{buildroot}/%{_docdir}/qemu %{buildroot}%{_bindir}/vscclient
-rm -f %{buildroot}/%{_libdir}/libcacard*
+rm -rf %{buildroot}%{_docdir}/qemu %{buildroot}%{_bindir}/vscclient
+rm -f %{buildroot}%{_libdir}/libcacard*
 rm -f %{buildroot}/usr/lib/libcacard*
-rm -f %{buildroot}/%{_libdir}/pkgconfig/libcacard.pc
+rm -f %{buildroot}%{_libdir}/pkgconfig/libcacard.pc
 rm -f %{buildroot}/usr/lib/pkgconfig/libcacard.pc
-rm -rf %{buildroot}/%{_includedir}/cacard
+rm -rf %{buildroot}%{_includedir}/cacard
 
-install -d -m 755 %{buildroot}/%{_sbindir}
-install -m 755 scripts/qemu-binfmt-conf.sh %{buildroot}/%{_sbindir}
+install -d -m 755 %{buildroot}%{_sbindir}
+install -m 755 scripts/qemu-binfmt-conf.sh %{buildroot}%{_sbindir}
 %ifnarch %ix86 x86_64
 ln -sf ../../../emul/ia32-linux %{buildroot}/usr/share/qemu/qemu-i386
 %endif
@@ -405,6 +434,15 @@ ln -sf ../../../emul/ia32-linux %{buildroot}/usr/share/qemu/qemu-i386
 mkdir -p %{buildroot}/emul/ia32-linux
 %endif
 rm -rf %{buildroot}%{_datadir}/%{name}/QEMU,tcx.bin
+
+install -d %{buildroot}%{_binfmtdir}
+install -m755 qemu-static/arm-linux-user/qemu-arm -D %{buildroot}%{_bindir}/qemu-static-arm
+install -m766 qemu-static/qemu-wrapper -D %{buildroot}%{_bindir}/qemu-wrapper
+install -m755 qemu-static/mips-linux-user/qemu-mips -D %{buildroot}%{_bindir}/qemu-static-mips
+install -m755 qemu-static/mipsel-linux-user/qemu-mipsel -D %{buildroot}%{_bindir}/qemu-static-mipsel
+echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/qemu-wrapper:' > %{buildroot}%{_binfmtdir}/arm.conf
+echo ':mips:M::\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff:/usr/bin/qemu-static-mips:' > %{buildroot}%{_binfmtdir}/mips.conf
+echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-static-mipsel:' > %{buildroot}%{_binfmtdir}/mipsel.conf
 
 %find_lang %{name}
 
@@ -463,6 +501,7 @@ rm -rf %{buildroot}%{_datadir}/%{name}/QEMU,tcx.bin
 %{_datadir}/%{name}/slof.bin
 %{_datadir}/%{name}/palcode-clipper
 %{_datadir}/%{name}/s390-ccw.img
+%{_bindir}/qemu-aarch64
 %{_bindir}/qemu-alpha
 %{_bindir}/qemu-arm
 %{_bindir}/qemu-armeb
@@ -478,9 +517,10 @@ rm -rf %{buildroot}%{_datadir}/%{name}/QEMU,tcx.bin
 %{_bindir}/qemu-mips64
 %{_bindir}/qemu-mips64el
 %{_bindir}/qemu-or32
-%{_bindir}/qemu-ppc64abi32
-%{_bindir}/qemu-ppc64
 %{_bindir}/qemu-ppc
+%{_bindir}/qemu-ppc64
+%{_bindir}/qemu-ppc64abi32
+%{_bindir}/qemu-ppc64le
 %{_bindir}/qemu-s390x
 %{_bindir}/qemu-sh4
 %{_bindir}/qemu-sh4eb
@@ -532,3 +572,16 @@ rm -rf %{buildroot}%{_datadir}/%{name}/QEMU,tcx.bin
 %{_bindir}/qemu-ga
 %{_unitdir}/qemu-guest-agent.service
 %{_udevrulesdir}/99-qemu-guest-agent.rules
+
+%files -n qemu-static-arm
+%{_bindir}/qemu-wrapper
+%{_bindir}/qemu-static-arm
+%{_binfmtdir}/arm
+
+%files -n qemu-static-mips
+%{_bindir}/qemu-static-mips
+%{_binfmtdir}/mips
+
+%files -n qemu-static-mipsel
+%{_bindir}/qemu-static-mipsel
+%{_binfmtdir}/mipsel
