@@ -43,8 +43,9 @@ Source10:	qemu-guest-agent.service
 Source11:	99-qemu-guest-agent.rules
 Source12:	bridge.conf
 Source13:	qemu.rpmlintrc
+Source14:	qemu-wrapper.c
 #cb - from mageia http://lists.gnu.org/archive/html/qemu-devel/2014-01/msg01035.html
-Patch0: qemu-2.0.0-mga-compile-fix.patch
+Patch0:		qemu-2.0.0-mga-compile-fix.patch
 
 BuildRequires:	gettext
 BuildRequires:	libtool
@@ -226,6 +227,7 @@ buildldflags="VL_LDFLAGS=-Wl,--build-id"
 
 mkdir -p qemu-static
 pushd qemu-static
+cp %{SOURCE14} qemu-wrapper.c
 ../configure	--python=%{__python2} \
 		--target-list=arm-linux-user,mips-linux-user,mipsel-linux-user \
 		--disable-debug-tcg \
@@ -286,6 +288,7 @@ pushd qemu-static
 		--extra-ldflags="-static -Wl,-z,relro -Wl,-z,now" \
 		--extra-cflags="%{optflags}"
 %make V=1 $buildldflags
+gcc -static qemu-wrapper.c -O3 -o qemu-wrapper
 popd
 
 
