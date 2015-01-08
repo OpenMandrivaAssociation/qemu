@@ -222,7 +222,7 @@ Group:		Emulators
 
 %description	static-aarch64
 This package contains a static build of the user mode aarch64 qemu emulator,
-which allows you to run arm binaries in your host environment without any
+which allows you to run aarch64 binaries in your host environment without any
 need for a dedicated virtual machine.
 
 The static nature of this build makes it usable for doing aarch64 emulation in
@@ -246,7 +246,7 @@ Group:		Emulators
 
 %description	static-mips
 This package contains a static build of the user mode mips qemu emulator,
-which allows you to run arm binaries in your host environment without any
+which allows you to run mips binaries in your host environment without any
 need for a dedicated virtual machine.
 
 The static nature of this build makes it usable for doing mips emulation in
@@ -258,7 +258,7 @@ Group:		Emulators
 
 %description	static-mipsel
 This package contains a static build of the user mode mipsel qemu emulator,
-which allows you to run arm binaries in your host environment without any
+which allows you to run mipsel binaries in your host environment without any
 need for a dedicated virtual machine.
 
 The static nature of this build makes it usable for doing mipsel emulation in
