@@ -115,7 +115,7 @@ BuildRequires:	pkgconfig(vte)
 %endif
 Provides:	kvm
 Requires:	ipxe
-Requires:	qemu-img = %{version}-%{release}
+Suggests:	qemu-img = %{version}-%{release}
 Requires:	seabios
 Requires:	sgabios
 Requires:	vgabios
