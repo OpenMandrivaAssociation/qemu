@@ -434,6 +434,7 @@ rm -rf %{buildroot}%{_datadir}/%{name}/QEMU,tcx.bin
 %{_mandir}/man1/virtfs-proxy-helper.*
 %dir %{_datadir}/qemu
 %{_datadir}/qemu/keymaps
+%{_datadir}/qemu/trace-events
 %{_datadir}/qemu/openbios-sparc32
 %{_datadir}/qemu/openbios-sparc64
 %{_datadir}/qemu/openbios-ppc
