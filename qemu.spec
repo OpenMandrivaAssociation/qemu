@@ -460,14 +460,6 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 
 %find_lang %{name}
 
-%post 
-%_post_service ksmtuned
-%_post_service ksm
-
-%preun
-%_preun_service ksm
-%_preun_service ksmtuned
-
 %files -f %{name}.lang
 %doc README system/qemu-doc.html system/qemu-tech.html
 %config(noreplace)%{_sysconfdir}/sasl2/qemu.conf
