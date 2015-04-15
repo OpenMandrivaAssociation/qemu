@@ -1,8 +1,5 @@
-%define qemu_name	qemu
 %define qemu_version	2.2.1
-%define qemu_rel	1
 #define qemu_snapshot	0
-%define qemu_release    %{?qemu_snapshot:0.%{qemu_snapshot}.}%{qemu_rel}
 
 %ifarch %{ix86} x86_64
 %bcond_without	firmwares # build firmwares from source
@@ -26,11 +23,11 @@
 Summary:	QEMU CPU Emulator
 Name:		qemu
 Version:	%{qemu_version}
-Release:	%{qemu_release}
+Release:	1
 License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
-Source0:	http://wiki.qemu-project.org/download/%{qemu_name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.bz2
+Source0:	http://wiki.qemu-project.org/download/%{name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.bz2
 Source3:	80-kvm.rules
 # KSM control scripts
 Source4:	ksm.service
@@ -141,8 +138,6 @@ CPUs. QEMU has two operating modes:
 %package	img
 Summary:	QEMU disk image utility
 Group:		Emulators
-Version:	%{qemu_version}
-Release:	%{qemu_release}
 
 %description	img
 This package contains the QEMU disk image utility that is used to
@@ -264,7 +259,7 @@ need for a dedicated virtual machine.
 The static nature of this build makes it usable for doing mipsel emulation in
 guest environment, ie. a chroot.
 %prep
-%setup -q -n %{qemu_name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
+%setup -q -n %{name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
 %apply_patches
 
 %build
