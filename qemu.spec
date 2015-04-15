@@ -1,5 +1,5 @@
-%define qemu_version	2.2.1
-#define qemu_snapshot	0
+%define qemu_version	2.3.0
+%define qemu_snapshot	rc3
 
 %ifarch %{ix86} x86_64
 %bcond_without	firmwares # build firmwares from source
@@ -22,12 +22,12 @@
 
 Summary:	QEMU CPU Emulator
 Name:		qemu
-Version:	%{qemu_version}
+Version:	%{qemu_version}%{?qemu_snapshot:~%{qemu_snapshot}}
 Release:	1
 License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
-Source0:	http://wiki.qemu-project.org/download/%{name}-%{version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.bz2
+Source0:	http://wiki.qemu-project.org/download/%{name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.bz2
 Source3:	80-kvm.rules
 # KSM control scripts
 Source4:	ksm.service
