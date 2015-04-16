@@ -74,7 +74,14 @@ BuildRequires:	pkgconfig(libssh)
 BuildRequires:	pkgconfig(libusb-1.0) 
 BuildRequires:	pkgconfig(ncurses)
 BuildRequires:	pkgconfig(pixman-1)
+%if 1
+# reverting back to SDL 1.2 untill SDL 2.0 support is working properly
+BuildRequires:	pkgconfig(sdl)
+%define	sdlabi	1.2
+%else
 BuildRequires:	pkgconfig(sdl2)
+%define	sdlabi	2.0
+%endif
 BuildRequires:	pkgconfig(uuid)
 BuildRequires:	pkgconfig(vdehist)
 BuildRequires:	pkgconfig(zlib)
@@ -377,8 +384,7 @@ dobuild() {
 	--with-gtkabi="3.0" \
 %endif
 	--enable-sdl \
-	--with-sdlabi="2.0"
-
+	--with-sdlabi="%{sdlabi}" \
         "$@"
 
     echo "config-host.mak contents:"
