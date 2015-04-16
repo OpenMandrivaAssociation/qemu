@@ -58,19 +58,23 @@ BuildRequires:	jpeg-devel
 BuildRequires:	libaio-devel
 BuildRequires:	librdmacm-devel
 BuildRequires:	nss-devel
+BuildRequires:	numa-devel
 BuildRequires:	sasl-devel
+BuildRequires:	snappy-devel
 # We need both because the 'stap' binary is probed for by configure
 BuildRequires:	systemtap
 BuildRequires:	systemtap-devel
 BuildRequires:	pkgconfig(bluez)
+BuildRequires:	pkgconfig(glusterfs-api)
 BuildRequires:	pkgconfig(gnutls)
 BuildRequires:	pkgconfig(libcap-ng)
 BuildRequires:	pkgconfig(libcurl)
 BuildRequires:	pkgconfig(libiscsi)
+BuildRequires:	pkgconfig(libnfs)
 BuildRequires:	pkgconfig(libpci)
 BuildRequires:	pkgconfig(libpng)
 BuildRequires:	pkgconfig(libpulse)
-BuildRequires:	pkgconfig(libssh)
+BuildRequires:	pkgconfig(libssh2)
 BuildRequires:	pkgconfig(libusb-1.0) 
 BuildRequires:	pkgconfig(ncurses)
 BuildRequires:	pkgconfig(pixman-1)
@@ -87,6 +91,7 @@ BuildRequires:	pkgconfig(vdehist)
 BuildRequires:	pkgconfig(zlib)
 %if %{with usbredir}
 BuildRequires:	usbredir-devel >= 0.5.2
+BuildRequires:	pkgconfig(libusbredirhost) >= 0.5.2
 %endif
 %if %{with spice}
 BuildRequires:	pkgconfig(spice-server)
@@ -365,6 +370,7 @@ dobuild() {
 	--enable-tpm \
 %ifarch %{ix86} x86_64
 	--enable-xen \
+	--enable-xen-pci-passthrough \
 %else
 	--disable-xen \
 %endif
@@ -387,6 +393,17 @@ dobuild() {
 %endif
 	--enable-sdl \
 	--with-sdlabi="%{sdlabi}" \
+%if %{with usbredir}
+	--enable-usb-redir \
+%else
+	--disable-usb-redir \
+%endif
+	--enable-snappy \
+	--enable-glusterfs \
+	--enable-libnfs \
+	--enable-guest-agent \
+	--enable-modules \
+	--enable-numa \
         "$@"
 
     echo "config-host.mak contents:"
@@ -502,6 +519,12 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_datadir}/%{name}/QEMU,cgthree.bin
 %{_datadir}/%{name}/bios-256k.bin
 %{_datadir}/%{name}/u-boot.e500
+%dir %{_libdir}/qemu
+%{_libdir}/qemu/block-curl.so
+%{_libdir}/qemu/block-gluster.so
+%{_libdir}/qemu/block-iscsi.so
+%{_libdir}/qemu/block-rbd.so
+%{_libdir}/qemu/block-ssh.so
 
 %files linux-user
 %{_datadir}/%{name}/ppc_rom.bin
