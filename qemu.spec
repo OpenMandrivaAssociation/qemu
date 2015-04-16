@@ -439,7 +439,7 @@ install -D -p -m 0644 %{SOURCE3} %{buildroot}%{_udevrulesdir}
 mkdir -p %{buildroot}%{_sysconfdir}/qemu/
 install -D -m 0644 %{SOURCE12} %{buildroot}%{_sysconfdir}/qemu/
 
-%ifarch %{ix86} x86_64 armv7hl
+%ifarch %{ix86} x86_64 %{arm}
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig/modules
 mkdir -p %{buildroot}%{_bindir}/
 mkdir -p %{buildroot}%{_datadir}/%{name}
