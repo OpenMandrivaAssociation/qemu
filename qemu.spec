@@ -360,11 +360,12 @@ dobuild() {
 	--extra-cflags="%{optflags} -fPIE -DPIE" \
 	--enable-trace-backend=dtrace \
 	--disable-werror \
-	--disable-xen \
 	--enable-kvm \
 	--enable-tpm \
 %ifarch %{ix86} x86_64
 	--enable-xen \
+%else
+	--disable-xen \
 %endif
 %if %{with spice}
 	--enable-spice \
