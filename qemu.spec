@@ -361,6 +361,7 @@ dobuild() {
 	--enable-trace-backend=dtrace \
 	--disable-werror \
 	--enable-kvm \
+	--enable-tcg-interpreter \
 	--enable-tpm \
 %ifarch %{ix86} x86_64
 	--enable-xen \
