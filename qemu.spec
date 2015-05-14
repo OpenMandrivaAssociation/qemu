@@ -286,7 +286,7 @@ buildldflags="VL_LDFLAGS=-Wl,--build-id"
 mkdir -p qemu-static
 pushd qemu-static
 cp %{SOURCE14} qemu-wrapper.c
-../configure	--python=%{__python2} \
+../configure	--python=%{__python} \
 		--target-list=aarch64-linux-user,arm-linux-user,mips-linux-user,mipsel-linux-user \
 		--enable-tcg-interpreter \
 		--disable-debug-tcg \
@@ -356,7 +356,7 @@ dobuild() {
 	--enable-system \
 	--enable-user \
 	--enable-linux-user \
-	--python=%{__python2} \
+	--python=%{__python} \
 	--prefix=%{_prefix} \
 	--libdir=%{_libdir} \
 	--sysconfdir=%{_sysconfdir} \
