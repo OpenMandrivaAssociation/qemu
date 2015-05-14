@@ -1,5 +1,5 @@
 %define qemu_version	2.3.0
-%define qemu_snapshot	rc3
+#define qemu_snapshot	0
 
 %ifarch %{ix86} x86_64
 %bcond_without	firmwares # build firmwares from source
@@ -43,6 +43,9 @@ Source13:	qemu.rpmlintrc
 Source14:	qemu-wrapper.c
 #cb - from mageia http://lists.gnu.org/archive/html/qemu-devel/2014-01/msg01035.html
 Patch0:		qemu-2.0.0-mga-compile-fix.patch
+
+# CVE-2015-3456: (VENOM) fdc: out-of-bounds fifo buffer memory access
+Patch1:		0001-fdc-force-the-fifo-access-to-be-in-bounds-of-the-all.patch
 
 BuildRequires:	gettext
 BuildRequires:	libtool
