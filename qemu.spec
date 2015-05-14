@@ -1,3 +1,5 @@
+%define _disable_ld_no_undefined 1
+
 %define qemu_version	2.3.0
 #define qemu_snapshot	0
 
