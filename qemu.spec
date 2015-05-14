@@ -68,7 +68,6 @@ BuildRequires:	snappy-devel
 BuildRequires:	systemtap
 BuildRequires:	systemtap-devel
 BuildRequires:	pkgconfig(bluez)
-BuildRequires:	pkgconfig(glusterfs-api)
 BuildRequires:	pkgconfig(gnutls)
 BuildRequires:	pkgconfig(libcap-ng)
 BuildRequires:	pkgconfig(libcurl)
@@ -402,7 +401,6 @@ dobuild() {
 	--disable-usb-redir \
 %endif
 	--enable-snappy \
-	--enable-glusterfs \
 	--enable-libnfs \
 	--enable-guest-agent \
 	--enable-modules \
@@ -524,7 +522,6 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_datadir}/%{name}/u-boot.e500
 %dir %{_libdir}/qemu
 %{_libdir}/qemu/block-curl.so
-%{_libdir}/qemu/block-gluster.so
 %{_libdir}/qemu/block-iscsi.so
 %{_libdir}/qemu/block-rbd.so
 %{_libdir}/qemu/block-ssh.so
