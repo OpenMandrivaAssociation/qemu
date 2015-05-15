@@ -9,7 +9,8 @@
 %endif
 
 %bcond_without rbd              # enabled
-%bcond_without gtk              # enabled
+# seems to hang at the moment
+%bcond_with gtk              # enabled
 %bcond_without usbredir         # enabled
 %bcond_without xfsprogs         # enabled
 %bcond_without spice            # enabled
@@ -26,7 +27,7 @@
 Summary:	QEMU CPU Emulator
 Name:		qemu
 Version:	%{qemu_version}%{?qemu_snapshot:~%{qemu_snapshot}}
-Release:	0.1
+Release:	0.2
 License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
@@ -83,7 +84,7 @@ BuildRequires:	pkgconfig(libssh2)
 BuildRequires:	pkgconfig(libusb-1.0) 
 BuildRequires:	pkgconfig(ncurses)
 BuildRequires:	pkgconfig(pixman-1)
-%if 1
+%if 0
 # reverting back to SDL 1.2 untill SDL 2.0 support is working properly
 BuildRequires:	pkgconfig(sdl)
 %define	sdlabi	1.2
@@ -396,6 +397,8 @@ dobuild() {
 %endif
 %if %{with gtk}
 	--with-gtkabi="3.0" \
+%else
+	--disable-gtk \
 %endif
 	--enable-sdl \
 	--with-sdlabi="%{sdlabi}" \
@@ -483,7 +486,11 @@ echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x2
 echo ':mips:M::\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff:/usr/bin/qemu-static-mips:' > %{buildroot}%{_binfmtdir}/mips.conf
 echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-static-mipsel:' > %{buildroot}%{_binfmtdir}/mipsel.conf
 
+%if %{with gtk}
 %find_lang %{name}
+%else
+touch %{name}.lang
+%endif
 
 %files -f %{name}.lang
 %doc README system/qemu-doc.html system/qemu-tech.html
