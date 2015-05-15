@@ -89,6 +89,7 @@ BuildRequires:	pkgconfig(pixman-1)
 BuildRequires:	pkgconfig(sdl)
 %define	sdlabi	1.2
 %else
+BuildRequires:	pkgconfig(x11)
 BuildRequires:	pkgconfig(sdl2)
 %define	sdlabi	2.0
 %endif
