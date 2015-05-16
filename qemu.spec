@@ -26,7 +26,7 @@
 Summary:	QEMU CPU Emulator
 Name:		qemu
 Version:	%{qemu_version}%{?qemu_snapshot:~%{qemu_snapshot}}
-Release:	0.1
+Release:	0.3
 License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
@@ -83,7 +83,7 @@ BuildRequires:	pkgconfig(libssh2)
 BuildRequires:	pkgconfig(libusb-1.0) 
 BuildRequires:	pkgconfig(ncurses)
 BuildRequires:	pkgconfig(pixman-1)
-%if 1
+%if 0
 # reverting back to SDL 1.2 untill SDL 2.0 support is working properly
 BuildRequires:	pkgconfig(sdl)
 %define	sdlabi	1.2
