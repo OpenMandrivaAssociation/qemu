@@ -281,6 +281,10 @@ export CC=gcc
 export CXX=g++
 extraldflags="-Wl,--build-id";
 buildldflags="VL_LDFLAGS=-Wl,--build-id"
+# (tpg) try to fix build on x86_64
+%ifarch x86_64
+%global optflags %optflags -fPIC
+%endif
 
 mkdir -p qemu-static
 pushd qemu-static
