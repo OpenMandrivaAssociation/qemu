@@ -363,7 +363,7 @@ dobuild() {
 	--localstatedir=%{_localstatedir} \
 	--libexecdir=%{_libexecdir} \
 	--disable-strip \
-	--extra-ldflags="$extraldflags \
+	--extra-ldflags="$extraldflags" \
 	--extra-cflags="%{optflags}" \
 	--enable-trace-backend=dtrace \
 	--disable-werror \
