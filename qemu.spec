@@ -281,10 +281,6 @@ export CC=gcc
 export CXX=g++
 extraldflags="-Wl,--build-id";
 buildldflags="VL_LDFLAGS=-Wl,--build-id"
-# (tpg) try to fix build on x86_64
-%ifarch x86_64
-%global optflags %optflags -fPIC
-%endif
 
 mkdir -p qemu-static
 pushd qemu-static
@@ -367,8 +363,8 @@ dobuild() {
 	--localstatedir=%{_localstatedir} \
 	--libexecdir=%{_libexecdir} \
 	--disable-strip \
-	--extra-ldflags="$extraldflags -pie -Wl,-z,relro -Wl,-z,now" \
-	--extra-cflags="%{optflags} -fPIE -DPIE" \
+	--extra-ldflags="$extraldflags \
+	--extra-cflags="%{optflags}" \
 	--enable-trace-backend=dtrace \
 	--disable-werror \
 	--enable-kvm \
