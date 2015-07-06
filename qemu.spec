@@ -46,6 +46,9 @@ Patch0:		qemu-2.0.0-mga-compile-fix.patch
 
 # CVE-2015-3456: (VENOM) fdc: out-of-bounds fifo buffer memory access
 Patch1:		0001-fdc-force-the-fifo-access-to-be-in-bounds-of-the-all.patch
+# CVE-2015-4037: insecure temporary file use in /net/slirp.c (bz
+# #1222894)
+Patch2:		0003-slirp-use-less-predictable-directory-name-in-tmp-for.patch
 
 BuildRequires:	gettext
 BuildRequires:	libtool
