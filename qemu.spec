@@ -490,7 +490,6 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_sbindir}/ksmtuned
 %config(noreplace) %{_sysconfdir}/ksmtuned.conf
 %config(noreplace) %{_sysconfdir}/qemu/bridge.conf
-%{_sysconfdir}/qemu/target-x86_64.conf
 %{_bindir}/qemu-system-*
 %{_bindir}/virtfs-proxy-helper
 %{_mandir}/man1/qemu.1*
