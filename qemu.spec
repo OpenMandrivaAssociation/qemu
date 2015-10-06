@@ -1,4 +1,7 @@
-%define qemu_version	2.3.0
+%define _disable_lto 1
+%define _disable_rebuild_configure 1
+
+%define qemu_version	2.4.0.1
 #define qemu_snapshot	0
 
 %ifarch %{ix86} x86_64
@@ -23,7 +26,7 @@
 Summary:	QEMU CPU Emulator
 Name:		qemu
 Version:	%{qemu_version}%{?qemu_snapshot:~%{qemu_snapshot}}
-Release:	6
+Release:	1
 License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
@@ -43,12 +46,6 @@ Source13:	qemu.rpmlintrc
 Source14:	qemu-wrapper.c
 #cb - from mageia http://lists.gnu.org/archive/html/qemu-devel/2014-01/msg01035.html
 Patch0:		qemu-2.0.0-mga-compile-fix.patch
-
-# CVE-2015-3456: (VENOM) fdc: out-of-bounds fifo buffer memory access
-Patch1:		0001-fdc-force-the-fifo-access-to-be-in-bounds-of-the-all.patch
-# CVE-2015-4037: insecure temporary file use in /net/slirp.c (bz
-# #1222894)
-Patch2:		0003-slirp-use-less-predictable-directory-name-in-tmp-for.patch
 
 BuildRequires:	gettext
 BuildRequires:	libtool
@@ -309,7 +306,6 @@ cp %{SOURCE14} qemu-wrapper.c
 		--disable-vnc-sasl \
 		--disable-vnc-jpeg \
 		--disable-vnc-png \
-		--disable-vnc-ws \
 		--disable-curses \
 		--disable-curl \
 		--disable-fdt \
@@ -342,7 +338,6 @@ cp %{SOURCE14} qemu-wrapper.c
 		--disable-tpm \
 		--disable-libssh2 \
 		--disable-vhdx \
-		--disable-quorum \
 		--disable-numa \
 		--disable-lzo \
 		--disable-rbd \
@@ -528,6 +523,7 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_libdir}/qemu/block-iscsi.so
 %{_libdir}/qemu/block-rbd.so
 %{_libdir}/qemu/block-ssh.so
+%{_libdir}/qemu/block-dmg.so
 
 %files linux-user
 %{_datadir}/%{name}/ppc_rom.bin
@@ -591,6 +587,7 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_datadir}/%{name}/vgabios-qxl.bin
 %{_datadir}/%{name}/vgabios-stdvga.bin
 %{_datadir}/%{name}/vgabios-vmware.bin
+%{_datadir}/%{name}/vgabios-virtio.bin
 
 %files -n sgabios
 %{_datadir}/%{name}/sgabios.bin
