@@ -1,7 +1,7 @@
 %define _disable_lto 1
 %define _disable_rebuild_configure 1
 
-%define qemu_version	2.4.0.1
+%define qemu_version	2.4.1
 #define qemu_snapshot	0
 
 %ifarch %{ix86} x86_64
