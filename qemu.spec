@@ -105,7 +105,7 @@ BuildRequires:	xfsprogs-devel
 # For FDT device tree support
 BuildRequires:	fdt-devel
 %endif
-%ifnarch %arm
+%ifnarch %armx
 # xen
 BuildRequires:	xen-devel
 %endif
@@ -364,7 +364,6 @@ dobuild() {
 	--extra-cflags="%{optflags}" \
 	--enable-trace-backend=dtrace \
 	--disable-werror \
-	--disable-libiscsi \
 	--enable-kvm \
 	--enable-tcg-interpreter \
 	--enable-tpm \
