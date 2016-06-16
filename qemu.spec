@@ -1,8 +1,8 @@
 %define _disable_lto 1
 %define _disable_rebuild_configure 1
+%define sdlabi 2.0
 
-%define qemu_version	2.4.1
-#define qemu_snapshot	0
+%define qemu_version	2.6.0
 
 %ifarch %{ix86} x86_64
 %bcond_without	firmwares # build firmwares from source
@@ -20,8 +20,6 @@
 %endif
 # libfdt is only needed to build ARM, Microblaze or PPC emulators
 %bcond_without fdt
-
-
 
 Summary:	QEMU CPU Emulator
 Name:		qemu
@@ -43,9 +41,9 @@ Source10:	qemu-guest-agent.service
 Source11:	99-qemu-guest-agent.rules
 Source12:	bridge.conf
 Source13:	qemu.rpmlintrc
-Source14:	qemu-wrapper.c
 #cb - from mageia http://lists.gnu.org/archive/html/qemu-devel/2014-01/msg01035.html
-Patch0:		qemu-2.0.0-mga-compile-fix.patch
+#Patch0:		qemu-2.0.0-mga-compile-fix.patch
+Patch0:		qemu-2.x.x-ld-gold.patch
 
 BuildRequires:	gettext
 BuildRequires:	libtool
@@ -80,14 +78,7 @@ BuildRequires:	pkgconfig(libssh2)
 BuildRequires:	pkgconfig(libusb-1.0) 
 BuildRequires:	pkgconfig(ncurses)
 BuildRequires:	pkgconfig(pixman-1)
-%if 1
-# reverting back to SDL 1.2 untill SDL 2.0 support is working properly
-BuildRequires:	pkgconfig(sdl)
-%define	sdlabi	1.2
-%else
 BuildRequires:	pkgconfig(sdl2)
-%define	sdlabi	2.0
-%endif
 BuildRequires:	pkgconfig(uuid)
 BuildRequires:	pkgconfig(vdehist)
 BuildRequires:	pkgconfig(zlib)
@@ -124,6 +115,9 @@ BuildRequires:	xen-devel
 BuildRequires:	pkgconfig(gtk+-3.0)
 BuildRequires:	pkgconfig(vte)
 %endif
+# qemu statuc
+BuildRequires:	pcre-static-devel
+BuildRequires:	gpg-error-static-devel
 Provides:	kvm
 Requires:	ipxe
 Suggests:	qemu-img = %{version}-%{release}
@@ -275,18 +269,25 @@ guest environment, ie. a chroot.
 %prep
 %setup -q -n %{name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
 %apply_patches
+sed -i 's!MAX_ARG_PAGES 33!MAX_ARG_PAGES 64!g' linux-user/qemu.h
 
 %build
+%setup_compile_flags
 export CC=gcc
 export CXX=g++
 extraldflags="-Wl,--build-id";
 buildldflags="VL_LDFLAGS=-Wl,--build-id"
+mkdir -p bfd
+ln -s %{_bindir}/ld.bfd bfd/ld
+export PATH=$PWD/bfd:$PATH
 
 mkdir -p qemu-static
 pushd qemu-static
-cp %{SOURCE14} qemu-wrapper.c
 ../configure	--python=%{__python2} \
 		--target-list=aarch64-linux-user,arm-linux-user,mips-linux-user,mipsel-linux-user \
+		--disable-tools \
+		--without-pixman \
+		--disable-linux-aio \
 		--enable-tcg-interpreter \
 		--disable-debug-tcg \
 		--disable-debug-info \
@@ -302,7 +303,6 @@ cp %{SOURCE14} qemu-wrapper.c
 		--disable-xen \
 		--disable-xen-pci-passthrough \
 		--disable-brlapi \
-		--disable-vnc-tls \
 		--disable-vnc-sasl \
 		--disable-vnc-jpeg \
 		--disable-vnc-png \
@@ -314,7 +314,6 @@ cp %{SOURCE14} qemu-wrapper.c
 		--disable-rdma \
 		--disable-system \
 		--disable-bsd-user \
-		--disable-guest-base \
 		--disable-uuid \
 		--disable-vde \
 		--disable-netmap \
@@ -326,7 +325,6 @@ cp %{SOURCE14} qemu-wrapper.c
 		--disable-spice \
 		--disable-libiscsi \
 		--disable-libnfs \
-		--disable-smartcard-nss \
 		--disable-libusb \
 		--disable-usb-redir \
 		--disable-guest-agent \
@@ -341,11 +339,12 @@ cp %{SOURCE14} qemu-wrapper.c
 		--disable-numa \
 		--disable-lzo \
 		--disable-rbd \
+		--static \
 		--enable-kvm \
-		--extra-ldflags="-static -Wl,-z,relro -Wl,-z,now" \
+		--extra-ldflags="%ldflags -static -Wl,-z,relro -Wl,-z,now" \
 		--extra-cflags="%{optflags}"
+
 %make V=1 $buildldflags
-gcc -static qemu-wrapper.c %{optflags} %{ldflags} -O3 -o qemu-wrapper
 popd
 
 dobuild() {
@@ -361,10 +360,11 @@ dobuild() {
 	--localstatedir=%{_localstatedir} \
 	--libexecdir=%{_libexecdir} \
 	--disable-strip \
-	--extra-ldflags="$extraldflags" \
+	--extra-ldflags="%{ldflags} $extraldflags" \
 	--extra-cflags="%{optflags}" \
 	--enable-trace-backend=dtrace \
 	--disable-werror \
+	--disable-libiscsi \
 	--enable-kvm \
 	--enable-tcg-interpreter \
 	--enable-tpm \
@@ -469,9 +469,9 @@ rm -rf %{buildroot}%{_datadir}/%{name}/QEMU,tcx.bin
 install -d %{buildroot}%{_binfmtdir}
 install -m755 qemu-static/aarch64-linux-user/qemu-aarch64 -D %{buildroot}%{_bindir}/qemu-static-aarch64
 install -m755 qemu-static/arm-linux-user/qemu-arm -D %{buildroot}%{_bindir}/qemu-static-arm
-install -m755 qemu-static/qemu-wrapper -D %{buildroot}%{_bindir}/qemu-static-armv7hl
 install -m755 qemu-static/mips-linux-user/qemu-mips -D %{buildroot}%{_bindir}/qemu-static-mips
 install -m755 qemu-static/mipsel-linux-user/qemu-mipsel -D %{buildroot}%{_bindir}/qemu-static-mipsel
+
 echo ':aarch64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xb7:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff:/usr/bin/qemu-static-aarch64:' > %{buildroot}%{_binfmtdir}/aarch64.conf
 echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-static-armv7hl:' > %{buildroot}%{_binfmtdir}/arm.conf
 echo ':mips:M::\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff:/usr/bin/qemu-static-mips:' > %{buildroot}%{_binfmtdir}/mips.conf
