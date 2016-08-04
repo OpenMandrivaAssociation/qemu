@@ -1,5 +1,6 @@
 %define _disable_lto 1
 %define _disable_rebuild_configure 1
+%define _disable_ld_no_undefined 1
 %define sdlabi 2.0
 
 %define qemu_version	2.6.0
@@ -155,6 +156,14 @@ create, commit, convert and get information from a disk image.
 Summary:        X86 BIOS for QEMU
 Group:          Emulators
 BuildArch:      noarch
+
+%package -n ivshmem-tools
+Summary: Client and server for QEMU ivshmem device
+Group: Development/Tools
+
+%description -n ivshmem-tools
+This package provides client and server tools for QEMU's ivshmem device.
+
 
 %description -n	seabios
 SeaBIOS is an open source implementation of a 16bit x86 BIOS. SeaBIOS
@@ -472,7 +481,7 @@ install -m755 qemu-static/mips-linux-user/qemu-mips -D %{buildroot}%{_bindir}/qe
 install -m755 qemu-static/mipsel-linux-user/qemu-mipsel -D %{buildroot}%{_bindir}/qemu-static-mipsel
 
 echo ':aarch64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xb7:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff:/usr/bin/qemu-static-aarch64:' > %{buildroot}%{_binfmtdir}/aarch64.conf
-echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-static-armv7hl:' > %{buildroot}%{_binfmtdir}/arm.conf
+echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-static-arm:' > %{buildroot}%{_binfmtdir}/arm.conf
 echo ':mips:M::\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff:/usr/bin/qemu-static-mips:' > %{buildroot}%{_binfmtdir}/mips.conf
 echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-static-mipsel:' > %{buildroot}%{_binfmtdir}/mipsel.conf
 
@@ -525,7 +534,6 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 
 %files linux-user
 %{_datadir}/%{name}/ppc_rom.bin
-%{_datadir}/%{name}/s390-zipl.rom
 %{_datadir}/%{name}/spapr-rtas.bin
 %{_datadir}/%{name}/slof.bin
 %{_datadir}/%{name}/palcode-clipper
@@ -556,6 +564,7 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_bindir}/qemu-sparc32plus
 %{_bindir}/qemu-sparc64
 %{_bindir}/qemu-sparc
+%{_bindir}/qemu-tilegx
 %{_bindir}/qemu-unicore32
 %{_bindir}/qemu-x86_64
 %{_sbindir}/qemu-binfmt-conf.sh
@@ -574,10 +583,13 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_mandir}/man8/qemu-nbd.8*
 %{_mandir}/man1/qemu-img.1*
 
+%files -n ivshmem-tools
+%{_bindir}/ivshmem-client
+%{_bindir}/ivshmem-server
+
 %files -n seabios
 %{_datadir}/%{name}/bios.bin
 %{_datadir}/%{name}/acpi-dsdt.aml
-%{_datadir}/%{name}/q35-acpi-dsdt.aml
 
 %files -n vgabios
 %{_datadir}/%{name}/vgabios.bin
@@ -600,6 +612,7 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 
 %files guest-agent
 %{_bindir}/qemu-ga
+%{_mandir}/man8/qemu-ga.8*
 %{_unitdir}/qemu-guest-agent.service
 %{_udevrulesdir}/99-qemu-guest-agent.rules
 
@@ -608,7 +621,6 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_binfmtdir}/aarch64.conf
 
 %files -n qemu-static-arm
-%{_bindir}/qemu-static-armv7hl
 %{_bindir}/qemu-static-arm
 %{_binfmtdir}/arm.conf
 
