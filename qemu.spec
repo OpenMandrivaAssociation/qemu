@@ -3,7 +3,7 @@
 %define _disable_ld_no_undefined 1
 %define sdlabi 2.0
 
-%define qemu_version	2.6.0
+%define qemu_version	2.6.1
 
 %ifarch %{ix86} x86_64
 %bcond_without	firmwares # build firmwares from source
