@@ -3,7 +3,7 @@
 %define _disable_ld_no_undefined 1
 %define sdlabi 2.0
 
-%define qemu_version	2.6.1
+%define qemu_version	2.7.0
 
 %ifarch %{ix86} x86_64
 %bcond_without	firmwares # build firmwares from source
@@ -504,7 +504,7 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_mandir}/man1/virtfs-proxy-helper.*
 %dir %{_datadir}/qemu
 %{_datadir}/qemu/keymaps
-%{_datadir}/qemu/trace-events
+%{_datadir}/qemu/trace-events-all 
 %{_datadir}/qemu/openbios-sparc32
 %{_datadir}/qemu/openbios-sparc64
 %{_datadir}/qemu/openbios-ppc
@@ -517,10 +517,13 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_datadir}/%{name}/efi-ne2k_pci.rom
 %{_datadir}/%{name}/efi-pcnet.rom
 %{_datadir}/%{name}/efi-e1000.rom
+%{_datadir}/%{name}/efi-e1000e.rom
 %{_datadir}/%{name}/efi-virtio.rom
 %{_datadir}/%{name}/efi-eepro100.rom
+%{_datadir}/%{name}/efi-vmxnet3.rom
 %{_datadir}/%{name}/kvmvapic.bin
 %{_datadir}/%{name}/linuxboot.bin
+%{_datadir}/%{name}/linuxboot_dma.bin
 %{_datadir}/%{name}/multiboot.bin
 %{_datadir}/%{name}/QEMU,cgthree.bin
 %{_datadir}/%{name}/bios-256k.bin
