@@ -552,7 +552,6 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_datadir}/%{name}/efi-vmx*.rom
 %{_datadir}/%{name}/efi-virtio.rom
 %{_datadir}/%{name}/efi-eepro100.rom
-%{_datadir}/%{name}/efi-vmxnet3.rom
 %{_datadir}/%{name}/kvmvapic.bin
 %{_datadir}/%{name}/linuxboot*.bin
 %{_datadir}/%{name}/multiboot.bin
