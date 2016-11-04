@@ -3,7 +3,7 @@
 %define _disable_ld_no_undefined 1
 %define sdlabi 2.0
 
-%define qemu_version	2.6.0
+%define qemu_version	2.7.0
 
 %ifarch %{ix86} x86_64
 %bcond_without	firmwares # build firmwares from source
@@ -45,6 +45,38 @@ Source13:	qemu.rpmlintrc
 #cb - from mageia http://lists.gnu.org/archive/html/qemu-devel/2014-01/msg01035.html
 #Patch0:		qemu-2.0.0-mga-compile-fix.patch
 Patch0:		qemu-2.x.x-ld-gold.patch
+
+# CVE-2016-7155: pvscsi: OOB read and infinite loop (bz #1373463)
+Patch0001: 0001-vmw_pvscsi-check-page-count-while-initialising-descr.patch
+# CVE-2016-7156: pvscsi: infinite loop when building SG list (bz #1373480)
+Patch0002: 0002-scsi-pvscsi-limit-loop-to-fetch-SG-list.patch
+# CVE-2016-7156: pvscsi: infinite loop when processing IO requests (bz
+# #1373480)
+Patch0003: 0003-scsi-pvscsi-limit-process-IO-loop-to-ring-size.patch
+# CVE-2016-7170: vmware_vga: OOB stack memory access (bz #1374709)
+Patch0004: 0004-vmsvga-correct-bitmap-and-pixmap-size-checks.patch
+# CVE-2016-7157: mptsas: invalid memory access (bz #1373505)
+Patch0005: 0005-scsi-mptconfig-fix-an-assert-expression.patch
+Patch0006: 0006-scsi-mptconfig-fix-misuse-of-MPTSAS_CONFIG_PACK.patch
+# CVE-2016-7466: usb: xhci memory leakage during device unplug (bz #1377838)
+Patch0007: 0007-usb-xhci-fix-memory-leak-in-usb_xhci_exit.patch
+# CVE-2016-7423: scsi: mptsas: OOB access (bz #1376777)
+Patch0008: 0008-scsi-mptsas-use-g_new0-to-allocate-MPTSASRequest-obj.patch
+# CVE-2016-7422: virtio: null pointer dereference (bz #1376756)
+Patch0009: 0009-virtio-add-check-for-descriptor-s-mapped-address.patch
+# CVE-2016-7908: net: Infinite loop in mcf_fec_do_tx (bz #1381193)
+Patch0010: 0010-net-mcf-limit-buffer-descriptor-count.patch
+# CVE-2016-8576: usb: xHCI: infinite loop vulnerability (bz #1382322)
+Patch0011: 0011-xhci-limit-the-number-of-link-trbs-we-are-willing-to.patch
+# CVE-2016-7995: usb: hcd-ehci: memory leak (bz #1382669)
+Patch0012: 0012-usb-ehci-fix-memory-leak-in-ehci_process_itd.patch
+# Fix interrupt endpoints not working with network/spice USB redirection on
+# guest with an emulated xhci controller (bz #1382331)
+Patch0013: 0013-usb-redir-allocate-buffers-before-waking-up-the-host.patch
+# Fix nested PPC 'Unknown MMU model' error (bz #1374749)
+Patch0014: 0014-ppc-kvm-Mark-64kB-page-size-support-as-disabled-if-n.patch
+# Fix flickering display with boxes + wayland VM (bz #1266484)
+Patch0015: 0015-qxl-Only-emit-QXL_INTERRUPT_CLIENT_MONITORS_CONFIG-o.patch
 
 BuildRequires:	gettext
 BuildRequires:	libtool
@@ -504,7 +536,7 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_mandir}/man1/virtfs-proxy-helper.*
 %dir %{_datadir}/qemu
 %{_datadir}/qemu/keymaps
-%{_datadir}/qemu/trace-events
+%{_datadir}/qemu/trace-events-all
 %{_datadir}/qemu/openbios-sparc32
 %{_datadir}/qemu/openbios-sparc64
 %{_datadir}/qemu/openbios-ppc
@@ -516,11 +548,12 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_datadir}/%{name}/efi-rtl8139.rom
 %{_datadir}/%{name}/efi-ne2k_pci.rom
 %{_datadir}/%{name}/efi-pcnet.rom
-%{_datadir}/%{name}/efi-e1000.rom
+%{_datadir}/%{name}/efi-e1000*.rom
+%{_datadir}/%{name}/efi-vmx*.rom
 %{_datadir}/%{name}/efi-virtio.rom
 %{_datadir}/%{name}/efi-eepro100.rom
 %{_datadir}/%{name}/kvmvapic.bin
-%{_datadir}/%{name}/linuxboot.bin
+%{_datadir}/%{name}/linuxboot*.bin
 %{_datadir}/%{name}/multiboot.bin
 %{_datadir}/%{name}/QEMU,cgthree.bin
 %{_datadir}/%{name}/bios-256k.bin
