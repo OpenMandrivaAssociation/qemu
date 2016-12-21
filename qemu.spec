@@ -92,7 +92,9 @@ BuildRequires:	jpeg-devel
 BuildRequires:	libaio-devel
 BuildRequires:	librdmacm-devel
 BuildRequires:	nss-devel
+%ifnarch armv7hl
 BuildRequires:	numa-devel
+%endif
 BuildRequires:	sasl-devel
 BuildRequires:	snappy-devel
 # We need both because the 'stap' binary is probed for by configure
