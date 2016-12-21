@@ -444,7 +444,9 @@ dobuild() {
 	--enable-libnfs \
 	--enable-guest-agent \
 	--enable-modules \
+%ifnarch armv7hl
 	--enable-numa \
+%endif
         "$@"
 
     echo "config-host.mak contents:"
