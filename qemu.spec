@@ -528,12 +528,15 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_datadir}/%{name}/QEMU,cgthree.bin
 %{_datadir}/%{name}/bios-256k.bin
 %{_datadir}/%{name}/u-boot.e500
+%{_datadir}/%{name}/skiboot.lid
 %dir %{_libdir}/qemu
 %{_libdir}/qemu/block-curl.so
 %{_libdir}/qemu/block-iscsi.so
 %{_libdir}/qemu/block-rbd.so
 %{_libdir}/qemu/block-ssh.so
-%{_libdir}/qemu/block-dmg.so
+%{_libdir}/qemu/block-dmg-bz2.so
+%{_libdir}/qemu/block-nfs.so
+
 
 %files linux-user
 %{_datadir}/%{name}/ppc_rom.bin
@@ -568,7 +571,6 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_bindir}/qemu-sparc64
 %{_bindir}/qemu-sparc
 %{_bindir}/qemu-tilegx
-%{_bindir}/qemu-unicore32
 %{_bindir}/qemu-x86_64
 %{_sbindir}/qemu-binfmt-conf.sh
 %ifnarch %ix86 x86_64 ia64
