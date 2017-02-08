@@ -490,7 +490,7 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %find_lang %{name}
 
 %files -f %{name}.lang
-%doc README system/qemu-doc.html system/qemu-tech.html
+%doc README system/qemu-doc.html
 %config(noreplace)%{_sysconfdir}/sasl2/qemu.conf
 %{_unitdir}/ksm.service
 /lib/systemd/ksmctl
