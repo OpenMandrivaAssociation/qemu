@@ -51,7 +51,6 @@ BuildRequires:	texinfo
 BuildRequires:	texi2html
 BuildRequires:	alsa-oss-devel
 BuildRequires:	attr-devel
-BuildRequires:	brlapi-devel
 BuildRequires:	cap-devel
 BuildRequires:	glibc-static-devel
 BuildRequires:	jpeg-devel
