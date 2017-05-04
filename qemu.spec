@@ -3,7 +3,7 @@
 %define _disable_ld_no_undefined 1
 %define sdlabi 2.0
 
-%define qemu_version	2.8.0
+%define qemu_version	2.9.0
 
 %ifarch %{ix86} x86_64
 %bcond_without	firmwares # build firmwares from source
@@ -75,7 +75,7 @@ BuildRequires:	pkgconfig(libpci)
 BuildRequires:	pkgconfig(libpng)
 BuildRequires:	pkgconfig(libpulse)
 BuildRequires:	pkgconfig(libssh2)
-BuildRequires:	pkgconfig(libusb-1.0) 
+BuildRequires:	pkgconfig(libusb-1.0)
 BuildRequires:	pkgconfig(ncurses)
 BuildRequires:	pkgconfig(pixman-1)
 BuildRequires:	pkgconfig(sdl2)
@@ -340,7 +340,6 @@ pushd qemu-static
 		--with-coroutine=ucontext \
 		--enable-coroutine-pool \
 		--disable-glusterfs \
-		--disable-archipelago \
 		--disable-tpm \
 		--disable-libssh2 \
 		--disable-vhdx \
@@ -571,6 +570,9 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_bindir}/qemu-sparc
 %{_bindir}/qemu-tilegx
 %{_bindir}/qemu-x86_64
+%{_bindir}/qemu-hppa
+%{_bindir}/qemu-nios2
+%{_bindir}/qemu-or1k
 %{_sbindir}/qemu-binfmt-conf.sh
 %ifnarch %ix86 x86_64 ia64
 %dir /emul/ia32-linux
@@ -616,7 +618,9 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 
 %files guest-agent
 %{_bindir}/qemu-ga
-%{_mandir}/man8/qemu-ga.8*
+%{_mandir}/man8/qemu-ga*8*
+%{_mandir}/man7/qemu-qmp*.7*
+%{_mandir}/man7/qemu-ga-ref*.7*
 %{_unitdir}/qemu-guest-agent.service
 %{_udevrulesdir}/99-qemu-guest-agent.rules
 
