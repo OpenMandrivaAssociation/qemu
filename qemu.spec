@@ -557,7 +557,6 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 %{_bindir}/qemu-mipsn32el
 %{_bindir}/qemu-mips64
 %{_bindir}/qemu-mips64el
-%{_bindir}/qemu-or32
 %{_bindir}/qemu-ppc
 %{_bindir}/qemu-ppc64
 %{_bindir}/qemu-ppc64abi32
