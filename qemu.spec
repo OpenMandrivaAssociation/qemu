@@ -45,6 +45,8 @@ Source13:	qemu.rpmlintrc
 Patch0:		qemu-2.x.x-ld-gold.patch
 
 BuildRequires:	gettext
+BuildRequires:	flex
+BuildRequires:	bison
 BuildRequires:	libtool
 BuildRequires:	rsync
 BuildRequires:	texinfo
