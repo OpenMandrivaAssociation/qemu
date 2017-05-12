@@ -25,7 +25,7 @@
 Summary:	QEMU CPU Emulator
 Name:		qemu
 Version:	%{qemu_version}%{?qemu_snapshot:~%{qemu_snapshot}}
-Release:	2
+Release:	3
 License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
@@ -371,7 +371,7 @@ pushd qemu-static
 		--target-list=aarch64-linux-user,arm-linux-user,mips-linux-user,mipsel-linux-user,i386-linux-user,x86_64-linux-user,ppc-linux-user,ppc64-linux-user,sparc-linux-user,sparc64-linux-user \
 		--disable-tools \
 		--disable-linux-aio \
-		--enable-tcg-interpreter \
+		--disable-tcg-interpreter \
 		--disable-debug-tcg \
 		--disable-debug-info \
 		--disable-sparse \
