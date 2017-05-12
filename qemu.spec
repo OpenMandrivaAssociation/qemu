@@ -25,7 +25,7 @@
 Summary:	QEMU CPU Emulator
 Name:		qemu
 Version:	%{qemu_version}%{?qemu_snapshot:~%{qemu_snapshot}}
-Release:	1
+Release:	2
 License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
@@ -120,6 +120,7 @@ BuildRequires:	pkgconfig(vte)
 # qemu statuc
 BuildRequires:	pcre-static-devel
 BuildRequires:	gpg-error-static-devel
+BuildRequires:	pixman-static-devel
 Provides:	kvm
 Requires:	ipxe
 Suggests:	qemu-img = %{version}-%{release}
@@ -276,6 +277,79 @@ need for a dedicated virtual machine.
 
 The static nature of this build makes it usable for doing mipsel emulation in
 guest environment, ie. a chroot.
+
+%package	static-x86_64
+Summary:	Static build of qemu x86_64 user mode
+Group:		Emulators
+
+%description	static-x86_64
+This package contains a static build of the user mode x86_64 qemu emulator,
+which allows you to run mipsel binaries in your host environment without any
+need for a dedicated virtual machine.
+
+The static nature of this build makes it usable for doing x86_64 emulation in
+guest environment, ie. a chroot.
+
+%package	static-i386
+Summary:	Static build of qemu i386 user mode
+Group:		Emulators
+
+%description	static-i386
+This package contains a static build of the user mode i386 qemu emulator,
+which allows you to run mipsel binaries in your host environment without any
+need for a dedicated virtual machine.
+
+The static nature of this build makes it usable for doing i386 emulation in
+guest environment, ie. a chroot.
+
+%package	static-ppc
+Summary:	Static build of qemu ppc user mode
+Group:		Emulators
+
+%description	static-ppc
+This package contains a static build of the user mode ppc qemu emulator,
+which allows you to run mipsel binaries in your host environment without any
+need for a dedicated virtual machine.
+
+The static nature of this build makes it usable for doing ppc emulation in
+guest environment, ie. a chroot.
+
+%package	static-ppc64
+Summary:	Static build of qemu ppc64 user mode
+Group:		Emulators
+
+%description	static-ppc64
+This package contains a static build of the user mode ppc64 qemu emulator,
+which allows you to run mipsel binaries in your host environment without any
+need for a dedicated virtual machine.
+
+The static nature of this build makes it usable for doing ppc64 emulation in
+guest environment, ie. a chroot.
+
+%package	static-sparc
+Summary:	Static build of qemu sparc user mode
+Group:		Emulators
+
+%description	static-sparc
+This package contains a static build of the user mode sparc qemu emulator,
+which allows you to run mipsel binaries in your host environment without any
+need for a dedicated virtual machine.
+
+The static nature of this build makes it usable for doing sparc emulation in
+guest environment, ie. a chroot.
+
+%package	static-sparc64
+Summary:	Static build of qemu sparc64 user mode
+Group:		Emulators
+
+%description	static-sparc64
+This package contains a static build of the user mode sparc64 qemu emulator,
+which allows you to run mipsel binaries in your host environment without any
+need for a dedicated virtual machine.
+
+The static nature of this build makes it usable for doing sparc64 emulation in
+guest environment, ie. a chroot.
+
 %prep
 %setup -q -n %{name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
 %apply_patches
@@ -294,9 +368,8 @@ export PATH=$PWD/bfd:$PATH
 mkdir -p qemu-static
 pushd qemu-static
 ../configure	--python=%{__python2} \
-		--target-list=aarch64-linux-user,arm-linux-user,mips-linux-user,mipsel-linux-user \
+		--target-list=aarch64-linux-user,arm-linux-user,mips-linux-user,mipsel-linux-user,i386-linux-user,x86_64-linux-user,ppc-linux-user,ppc64-linux-user,sparc-linux-user,sparc64-linux-user \
 		--disable-tools \
-		--without-pixman \
 		--disable-linux-aio \
 		--enable-tcg-interpreter \
 		--disable-debug-tcg \
@@ -324,7 +397,6 @@ pushd qemu-static
 		--disable-rdma \
 		--disable-system \
 		--disable-bsd-user \
-		--disable-uuid \
 		--disable-vde \
 		--disable-netmap \
 		--disable-cap-ng \
@@ -344,7 +416,6 @@ pushd qemu-static
 		--disable-glusterfs \
 		--disable-tpm \
 		--disable-libssh2 \
-		--disable-vhdx \
 		--disable-numa \
 		--disable-lzo \
 		--disable-rbd \
@@ -477,15 +548,70 @@ mkdir -p %{buildroot}/emul/ia32-linux
 rm -rf %{buildroot}%{_datadir}/%{name}/QEMU,tcx.bin
 
 install -d %{buildroot}%{_binfmtdir}
-install -m755 qemu-static/aarch64-linux-user/qemu-aarch64 -D %{buildroot}%{_bindir}/qemu-static-aarch64
-install -m755 qemu-static/arm-linux-user/qemu-arm -D %{buildroot}%{_bindir}/qemu-static-arm
-install -m755 qemu-static/mips-linux-user/qemu-mips -D %{buildroot}%{_bindir}/qemu-static-mips
-install -m755 qemu-static/mipsel-linux-user/qemu-mipsel -D %{buildroot}%{_bindir}/qemu-static-mipsel
+magic_aarch64='\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xb7:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
+magic_arm='\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff'
+magic_mips='\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
+magic_mipsel='\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff'
+magic_i386='\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x03\x00:\xff\xff\xff\xff\xff\xfe\xfe\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff'
+magic_i486='\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x03\x00:\xff\xff\xff\xff\xff\xfe\xfe\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff'
+magic_x86_64='\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x3e\x00:\xff\xff\xff\xff\xff\xfe\xfe\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff'
+magic_ppc='\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x14:\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
+magic_ppc64='\x7fELF\x02\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x15:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
+magic_sparc='\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x02:\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
+magic_sparc64='\x7fELF\x02\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x2b:\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
 
-echo ':aarch64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xb7:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff:/usr/bin/qemu-static-aarch64:' > %{buildroot}%{_binfmtdir}/aarch64.conf
-echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-static-arm:' > %{buildroot}%{_binfmtdir}/arm.conf
-echo ':mips:M::\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff:/usr/bin/qemu-static-mips:' > %{buildroot}%{_binfmtdir}/mips.conf
-echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-static-mipsel:' > %{buildroot}%{_binfmtdir}/mipsel.conf
+# We don't currently build the qemu binaries for the following
+# architectures, but let's keep the magic values here just in case...
+magic_alpha='\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x26\x90:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff'
+magic_armeb='\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
+magic_cris='\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x4c\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff'
+magic_m68k='\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x04:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
+magic_microblaze='\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\xba\xab:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
+magic_s390x='\x7fELF\x02\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x16:\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
+magic_ppc64abi32='\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x15:\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
+magic_sh4='\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x2a\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff'
+magic_sh4eb='\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x2a:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
+magic_sparc32plus='\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x12:\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
+
+for i in aarch64 arm mips mipsel i386 x86_64 ppc ppc64 sparc sparc64; do
+	install -m755 qemu-static/$i-linux-user/qemu-$i -D %{buildroot}%{_bindir}/qemu-static-$i
+	echo ":$i:M::$(eval echo \$magic_$i):%{_bindir}/qemu-static-$i:" >%{buildroot}%{_binfmtdir}/qemu-$i.conf
+done
+# Some subtypes that have different magic values but same qemu binaries...
+echo ":i486:M::$magic_i486:%{_bindir}/qemu-static-i386:" >%{buildroot}%{_binfmtdir}/qemu-i486.conf
+
+# Registering a binfmt handler for our own arch is a really really bad idea...
+%ifarch aarch64
+rm -f %{buildroot}%{_binfmtdir}/qemu-aarch64.conf
+%endif
+%ifarch %{armx} aarch64
+rm -f %{buildroot}%{_binfmtdir}/qemu-arm.conf
+%endif
+%ifarch x86_64
+rm -f %{buildroot}%{_binfmtdir}/qemu-x86_64.conf
+%endif
+%ifarch %{ix86} x86_64
+rm -f %{buildroot}%{_binfmtdir}/qemu-i?86.conf
+%endif
+%ifarch mips
+rm -f %{buildroot}%{_binfmtdir}/qemu-mips.conf
+%endif
+%ifarch mipsel
+rm -f %{buildroot}%{_binfmtdir}/qemu-mipsel.conf
+%endif
+%ifarch sparc sparc64
+rm -f %{buildroot}%{_binfmtdir}/qemu-sparc.conf
+%endif
+%ifarch sparc64
+rm -f %{buildroot}%{_binfmtdir}/qemu-sparc64.conf
+%endif
+%ifarch ppc ppc64
+rm -f %{buildroot}%{_binfmtdir}/qemu-ppc.conf
+%endif
+%ifarch ppc64
+rm -f %{buildroot}%{_binfmtdir}/qemu-ppc64.conf
+%endif
+
 
 %find_lang %{name}
 
@@ -627,16 +753,60 @@ echo ':mipsel:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00
 
 %files -n qemu-static-aarch64
 %{_bindir}/qemu-static-aarch64
-%{_binfmtdir}/aarch64.conf
+%ifnarch aarch64
+%{_binfmtdir}/qemu-aarch64.conf
+%endif
 
 %files -n qemu-static-arm
 %{_bindir}/qemu-static-arm
-%{_binfmtdir}/arm.conf
+%ifnarch %{arm} %{armx} aarch64
+%{_binfmtdir}/qemu-arm.conf
+%endif
 
 %files -n qemu-static-mips
 %{_bindir}/qemu-static-mips
-%{_binfmtdir}/mips.conf
+%ifnarch mips
+%{_binfmtdir}/qemu-mips.conf
+%endif
 
 %files -n qemu-static-mipsel
 %{_bindir}/qemu-static-mipsel
-%{_binfmtdir}/mipsel.conf
+%ifnarch mipsel
+%{_binfmtdir}/qemu-mipsel.conf
+%endif
+
+%files -n qemu-static-x86_64
+%{_bindir}/qemu-static-x86_64
+%ifnarch x86_64
+%{_binfmtdir}/qemu-x86_64.conf
+%endif
+
+%files -n qemu-static-i386
+%{_bindir}/qemu-static-i386
+%ifnarch %{ix86} x86_64
+%{_binfmtdir}/qemu-i?86.conf
+%endif
+
+%files -n qemu-static-ppc
+%{_bindir}/qemu-static-ppc
+%ifnarch ppc ppc64
+%{_binfmtdir}/qemu-ppc.conf
+%endif
+
+%files -n qemu-static-ppc64
+%{_bindir}/qemu-static-ppc64
+%ifnarch ppc64
+%{_binfmtdir}/qemu-ppc64.conf
+%endif
+
+%files -n qemu-static-sparc
+%{_bindir}/qemu-static-sparc
+%ifnarch sparc sparc64
+%{_binfmtdir}/qemu-sparc.conf
+%endif
+
+%files -n qemu-static-sparc64
+%{_bindir}/qemu-static-sparc64
+%ifnarch sparc64
+%{_binfmtdir}/qemu-sparc64.conf
+%endif
