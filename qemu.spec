@@ -9,7 +9,7 @@
 %bcond_without	firmwares # build firmwares from source
 %endif
 
-%bcond_without rbd              # enabled
+%bcond_with rbd              # disabled
 %bcond_without gtk              # enabled
 %bcond_without usbredir         # enabled
 %bcond_without xfsprogs         # enabled
