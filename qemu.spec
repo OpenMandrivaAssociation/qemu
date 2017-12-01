@@ -9,8 +9,6 @@
 %bcond_without	firmwares # build firmwares from source
 %endif
 
-%bcond_without ppc
-
 %bcond_with rbd              # disabled
 %bcond_without gtk              # enabled
 %bcond_without usbredir         # enabled
@@ -304,7 +302,6 @@ need for a dedicated virtual machine.
 The static nature of this build makes it usable for doing i386 emulation in
 guest environment, ie. a chroot.
 
-%if %{with ppc}
 %package	static-ppc
 Summary:	Static build of qemu ppc user mode
 Group:		Emulators
@@ -328,7 +325,6 @@ need for a dedicated virtual machine.
 
 The static nature of this build makes it usable for doing ppc64 emulation in
 guest environment, ie. a chroot.
-%endif
 
 %package	static-sparc
 Summary:	Static build of qemu sparc user mode
@@ -370,11 +366,7 @@ ln -s %{_bindir}/ld.bfd bfd/ld
 export PATH=$PWD/bfd:$PATH
 
 # (tpg) list of targets
-%define _target_list aarch64-linux-user,arm-linux-user,mips-linux-user,mipsel-linux-user,i386-linux-user,x86_64-linux-user,sparc-linux-user,sparc64-linux-user
-
-%if %{with ppc}
-%define _target_list %_target_list ppc-linux-user,ppc64-linux-user
-%endif
+%define _target_list aarch64-linux-user,arm-linux-user,mips-linux-user,mipsel-linux-user,i386-linux-user,x86_64-linux-user,sparc-linux-user,sparc64-linux-user,ppc-linux-user,ppc64-linux-user
 
 mkdir -p qemu-static
 pushd qemu-static
