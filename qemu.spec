@@ -9,8 +9,7 @@
 %bcond_without	firmwares # build firmwares from source
 %endif
 
-# (tpg) disable it as it does not build
-%bcond_with ppc
+%bcond_without ppc
 
 %bcond_with rbd              # disabled
 %bcond_without gtk              # enabled
@@ -45,7 +44,7 @@ Source10:	qemu-guest-agent.service
 Source11:	99-qemu-guest-agent.rules
 Source12:	bridge.conf
 Source13:	qemu.rpmlintrc
-Patch0:		qemu-2.x.x-ld-gold.patch
+#Patch0:		qemu-2.x.x-ld-gold.patch
 
 BuildRequires:	gettext
 BuildRequires:	flex
