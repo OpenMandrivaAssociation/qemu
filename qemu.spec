@@ -356,6 +356,7 @@ guest environment, ie. a chroot.
 sed -i 's!MAX_ARG_PAGES 33!MAX_ARG_PAGES 64!g' linux-user/qemu.h
 
 %build
+%global ldflags %{ldflags} -fuse-ld=bfd
 %setup_compile_flags
 export CC=gcc
 export CXX=g++
