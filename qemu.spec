@@ -356,15 +356,11 @@ guest environment, ie. a chroot.
 sed -i 's!MAX_ARG_PAGES 33!MAX_ARG_PAGES 64!g' linux-user/qemu.h
 
 %build
-%global optflags %{optflags} -fuse-ld=bfd
 %setup_compile_flags
 export CC=gcc
 export CXX=g++
 extraldflags="-Wl,--build-id";
 buildldflags="VL_LDFLAGS=-Wl,--build-id"
-mkdir -p bfd
-ln -s %{_bindir}/ld.bfd bfd/ld
-export PATH=$PWD/bfd:$PATH
 
 # (tpg) list of targets
 %define _target_list aarch64-linux-user,arm-linux-user,mips-linux-user,mipsel-linux-user,i386-linux-user,x86_64-linux-user,sparc-linux-user,sparc64-linux-user,ppc-linux-user,ppc64-linux-user
