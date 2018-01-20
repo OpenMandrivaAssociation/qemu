@@ -655,6 +655,8 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-ppc64.conf
 %{_datadir}/%{name}/bios-256k.bin
 %{_datadir}/%{name}/u-boot.e500
 %{_datadir}/%{name}/skiboot.lid
+%{_datadir}/%{name}/qemu_vga.ndrv
+%{_datadir}/%{name}/s390-netboot.img
 %dir %{_libdir}/qemu
 %{_libdir}/qemu/block-curl.so
 %{_libdir}/qemu/block-iscsi.so
