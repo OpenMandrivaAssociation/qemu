@@ -660,7 +660,9 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-ppc64.conf
 %dir %{_libdir}/qemu
 %{_libdir}/qemu/block-curl.so
 %{_libdir}/qemu/block-iscsi.so
+%if %{with rbd}
 %{_libdir}/qemu/block-rbd.so
+%endif
 %{_libdir}/qemu/block-ssh.so
 %{_libdir}/qemu/block-dmg-bz2.so
 %{_libdir}/qemu/block-nfs.so
