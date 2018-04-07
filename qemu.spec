@@ -4,7 +4,7 @@
 %define sdlabi 2.0
 
 %define qemu_version	2.12.0
-%define qemu_snapshot rc2 
+%define qemu_snapshot rc2
 
 %ifarch %{ix86} x86_64
 %bcond_without	firmwares # build firmwares from source
