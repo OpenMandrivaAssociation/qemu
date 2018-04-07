@@ -30,7 +30,7 @@ Release:	1
 License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
-Source0:	http://wiki.qemu-project.org/download/%{name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.xz
+Source0:	http://wiki.qemu-project.org/download/%{name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.bz2
 Source3:	80-kvm.rules
 # KSM control scripts
 Source4:	ksm.service
