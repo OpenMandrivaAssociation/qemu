@@ -3,7 +3,8 @@
 %define _disable_ld_no_undefined 1
 %define sdlabi 2.0
 
-%define qemu_version	2.9.0
+%define qemu_version	2.12.0
+%define qemu_snapshot rc2 
 
 %ifarch %{ix86} x86_64
 %bcond_without	firmwares # build firmwares from source
@@ -296,7 +297,6 @@ pushd qemu-static
 ../configure	--python=%{__python2} \
 		--target-list=aarch64-linux-user,arm-linux-user,mips-linux-user,mipsel-linux-user \
 		--disable-tools \
-		--without-pixman \
 		--disable-linux-aio \
 		--enable-tcg-interpreter \
 		--disable-debug-tcg \
@@ -324,7 +324,6 @@ pushd qemu-static
 		--disable-rdma \
 		--disable-system \
 		--disable-bsd-user \
-		--disable-uuid \
 		--disable-vde \
 		--disable-netmap \
 		--disable-cap-ng \
@@ -344,7 +343,6 @@ pushd qemu-static
 		--disable-glusterfs \
 		--disable-tpm \
 		--disable-libssh2 \
-		--disable-vhdx \
 		--disable-numa \
 		--disable-lzo \
 		--disable-rbd \
