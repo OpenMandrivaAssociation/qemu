@@ -672,7 +672,6 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-ppc64.conf
 %{_libdir}/qemu/ui-sdl.so
 %{_libdir}/qemu/ui-gtk.so
 %{_libdir}/qemu/ui-curses.so
-%{_libdir}/qemu/ui-curses.so
 %{_libdir}/qemu/audio*.so
 
 
@@ -686,7 +685,6 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-ppc64.conf
 %{_datadir}/%{name}/u-boot-sam460-20100605.bin
 %{_datadir}/%{name}/hppa-firmware.img
 %{_bindir}/qemu-aarch64
-%{_bindir}/qemu-aarch64_be
 %{_bindir}/qemu-riscv*
 %{_bindir}/qemu-xtensa*
 %{_bindir}/qemu-alpha
@@ -741,7 +739,6 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-ppc64.conf
 
 %files -n seabios
 %{_datadir}/%{name}/bios.bin
-%{_datadir}/%{name}/acpi-dsdt.aml
 
 %files -n vgabios
 %{_datadir}/%{name}/vgabios.bin
@@ -766,7 +763,7 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-ppc64.conf
 %{_bindir}/qemu-ga
 %{_mandir}/man8/qemu-ga*8*
 %{_mandir}/man7/qemu-qmp*.7*
-%{_mandir}/man7/qemu-block.7*
+%{_mandir}/man7/qemu-block*.7*
 %{_mandir}/man7/qemu-ga-ref*.7*
 %{_unitdir}/qemu-guest-agent.service
 %{_udevrulesdir}/99-qemu-guest-agent.rules
