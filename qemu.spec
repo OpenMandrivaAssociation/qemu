@@ -628,6 +628,8 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-ppc64.conf
 %config(noreplace) %{_sysconfdir}/ksmtuned.conf
 %config(noreplace) %{_sysconfdir}/qemu/bridge.conf
 %{_bindir}/qemu-system-*
+%{_bindir}/qemu-pr-helper
+%{_bindir}/qemu-keymap
 %{_bindir}/virtfs-proxy-helper
 %{_mandir}/man1/qemu.1*
 %{_mandir}/man1/virtfs-proxy-helper.*
@@ -667,6 +669,12 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-ppc64.conf
 %{_libdir}/qemu/block-ssh.so
 %{_libdir}/qemu/block-dmg-bz2.so
 %{_libdir}/qemu/block-nfs.so
+%{_libdir}/qemu/ui-sdl.so
+%{_libdir}/qemu/ui-gtk.so
+%{_libdir}/qemu/ui-curses.so
+%{_libdir}/qemu/ui-curses.so
+%{_libdir}/qemu/audio*.so
+
 
 
 %files linux-user
@@ -675,11 +683,17 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-ppc64.conf
 %{_datadir}/%{name}/slof.bin
 %{_datadir}/%{name}/palcode-clipper
 %{_datadir}/%{name}/s390-ccw.img
+%{_datadir}/%{name}/u-boot-sam460-20100605.bin
+%{_datadir}/%{name}/hppa-firmware.img
 %{_bindir}/qemu-aarch64
+%{_bindir}/qemu-aarch64_be
+%{_bindir}/qemu-riscv*
+%{_bindir}/qemu-xtensa*
 %{_bindir}/qemu-alpha
 %{_bindir}/qemu-arm
 %{_bindir}/qemu-armeb
 %{_bindir}/qemu-cris
+%{_bindir}/qemu-aarch64_be
 %{_bindir}/qemu-i386
 %{_bindir}/qemu-m68k
 %{_bindir}/qemu-microblaze
@@ -752,6 +766,7 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-ppc64.conf
 %{_bindir}/qemu-ga
 %{_mandir}/man8/qemu-ga*8*
 %{_mandir}/man7/qemu-qmp*.7*
+%{_mandir}/man7/qemu-block.7*
 %{_mandir}/man7/qemu-ga-ref*.7*
 %{_unitdir}/qemu-guest-agent.service
 %{_udevrulesdir}/99-qemu-guest-agent.rules
