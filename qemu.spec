@@ -25,8 +25,8 @@
 
 Summary:	QEMU CPU Emulator
 Name:		qemu
-Version:	%{qemu_version}%{?qemu_snapshot:~%{qemu_snapshot}}
-Release:	1
+Version:	%{qemu_version}
+Release:	%{?qemu_snapshot:0.%{qemu_snapshot}.}1
 License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
