@@ -4,7 +4,7 @@
 %define sdlabi 2.0
 
 %define qemu_version	2.12.0
-%define qemu_snapshot rc2
+%define qemu_snapshot %nil
 
 %ifarch %{ix86} x86_64
 %bcond_without	firmwares # build firmwares from source
@@ -30,7 +30,7 @@ Release:	%{?qemu_snapshot:0.%{qemu_snapshot}.}1
 License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
-Source0:	http://wiki.qemu-project.org/download/%{name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}.tar.bz2
+Source0:	http://wiki.qemu-project.org/download/%{name}-%{qemu_version}%{?qemu_snapshot:%{qemu_snapshot}}.tar.bz2
 Source3:	80-kvm.rules
 # KSM control scripts
 Source4:	ksm.service
@@ -43,7 +43,7 @@ Source10:	qemu-guest-agent.service
 Source11:	99-qemu-guest-agent.rules
 Source12:	bridge.conf
 Source13:	qemu.rpmlintrc
-#Patch0:		qemu-2.x.x-ld-gold.patch
+Patch0:		qemu-2.x.x-ld-gold.patch
 
 BuildRequires:	gettext
 BuildRequires:	flex
@@ -352,7 +352,7 @@ The static nature of this build makes it usable for doing sparc64 emulation in
 guest environment, ie. a chroot.
 
 %prep
-%setup -q -n %{name}-%{qemu_version}%{?qemu_snapshot:-%{qemu_snapshot}}
+%setup -q -n %{name}-%{qemu_version}%{?qemu_snapshot:%{qemu_snapshot}}
 %apply_patches
 sed -i 's!MAX_ARG_PAGES 33!MAX_ARG_PAGES 64!g' linux-user/qemu.h
 
