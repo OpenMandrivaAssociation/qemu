@@ -10,7 +10,7 @@
 %bcond_without	firmwares # build firmwares from source
 %endif
 
-%bcond_with rbd              # disabled
+%bcond_with rbd                 # disabled
 %bcond_without gtk              # enabled
 %bcond_without usbredir         # enabled
 %bcond_without xfsprogs         # enabled
@@ -26,7 +26,7 @@
 Summary:	QEMU CPU Emulator
 Name:		qemu
 Version:	%{qemu_version}
-Release:	%{?qemu_snapshot:0.%{qemu_snapshot}.}1
+Release:	%{?0qemu_snapshot:0.%{qemu_snapshot}.}1
 License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
@@ -58,9 +58,9 @@ BuildRequires:	cap-devel
 BuildRequires:	glibc-static-devel
 BuildRequires:	jpeg-devel
 BuildRequires:	libaio-devel
-BuildRequires:	librdmacm-devel
+BuildRequires:	rdmacm-devel
 BuildRequires:	nss-devel
-%ifnarch armv7hl
+%ifnarch %{arm}
 BuildRequires:	numa-devel
 %endif
 BuildRequires:	sasl-devel
@@ -98,7 +98,7 @@ BuildRequires:	pkgconfig(libseccomp)
 %endif
 %if %{with rbd}
 # For rbd block driver
-BuildRequires:	%{_lib}ceph-devel
+BuildRequires: %{_lib}ceph-devel
 %endif
 # For XFS discard support in raw-posix.c
 %if %{with xfsprogs}
@@ -116,7 +116,7 @@ BuildRequires:	xen-devel
 %if %{with gtk}
 # GTK frontend
 BuildRequires:	pkgconfig(gtk+-3.0)
-BuildRequires:	pkgconfig(vte)
+BuildRequires:	pkgconfig(vte-2.91)
 %endif
 # qemu statuc
 BuildRequires:	pcre-static-devel
