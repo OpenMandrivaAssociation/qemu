@@ -65,6 +65,7 @@ BuildRequires:	numa-devel
 %endif
 BuildRequires:	sasl-devel
 BuildRequires:	snappy-devel
+BuildRequires:	systemd
 # We need both because the 'stap' binary is probed for by configure
 BuildRequires:	systemtap
 BuildRequires:	systemtap-devel
