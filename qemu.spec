@@ -3,8 +3,9 @@
 %define _disable_ld_no_undefined 1
 %define sdlabi 2.0
 
-%define qemu_version	2.12.0
-%define qemu_snapshot %nil
+%define qemu_version	3.0.0
+%define qemu_snapshot	%{nil}
+%define qemu_beta	rc3
 
 %ifarch %{ix86} x86_64
 %bcond_without	firmwares # build firmwares from source
@@ -26,11 +27,15 @@
 Summary:	QEMU CPU Emulator
 Name:		qemu
 Version:	%{qemu_version}
+%if "%{qemu_beta}" != ""
+Release:	0.%{qemu_beta}.1
+%else
 Release:	%{?0qemu_snapshot:0.%{qemu_snapshot}.}1
+%endif
 License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
-Source0:	http://wiki.qemu-project.org/download/%{name}-%{qemu_version}%{?qemu_snapshot:%{qemu_snapshot}}.tar.bz2
+Source0:	http://wiki.qemu-project.org/download/%{name}-%{qemu_version}%{?qemu_snapshot:%{qemu_snapshot}}%{?qemu_beta:-%{qemu_beta}}.tar.xz
 Source3:	80-kvm.rules
 # KSM control scripts
 Source4:	ksm.service
@@ -328,6 +333,30 @@ need for a dedicated virtual machine.
 The static nature of this build makes it usable for doing ppc64 emulation in
 guest environment, ie. a chroot.
 
+%package	static-riscv32
+Summary:	Static build of qemu riscv32 user mode
+Group:		Emulators
+
+%description	static-riscv32
+This package contains a static build of the user mode riscv32 qemu emulator,
+which allows you to run mipsel binaries in your host environment without any
+need for a dedicated virtual machine.
+
+The static nature of this build makes it usable for doing riscv64 emulation in
+guest environment, ie. a chroot.
+
+%package	static-riscv64
+Summary:	Static build of qemu riscv64 user mode
+Group:		Emulators
+
+%description	static-riscv64
+This package contains a static build of the user mode riscv64 qemu emulator,
+which allows you to run mipsel binaries in your host environment without any
+need for a dedicated virtual machine.
+
+The static nature of this build makes it usable for doing riscv64 emulation in
+guest environment, ie. a chroot.
+
 %package	static-sparc
 Summary:	Static build of qemu sparc user mode
 Group:		Emulators
@@ -353,7 +382,7 @@ The static nature of this build makes it usable for doing sparc64 emulation in
 guest environment, ie. a chroot.
 
 %prep
-%setup -q -n %{name}-%{qemu_version}%{?qemu_snapshot:%{qemu_snapshot}}
+%setup -q -n %{name}-%{qemu_version}%{?qemu_snapshot:%{qemu_snapshot}}%{?qemu_beta:-%{qemu_beta}}
 %apply_patches
 sed -i 's!MAX_ARG_PAGES 33!MAX_ARG_PAGES 64!g' linux-user/qemu.h
 
@@ -365,7 +394,7 @@ extraldflags="-Wl,--build-id";
 buildldflags="VL_LDFLAGS=-Wl,--build-id"
 
 # (tpg) list of targets
-%define _target_list aarch64-linux-user,arm-linux-user,mips-linux-user,mipsel-linux-user,i386-linux-user,x86_64-linux-user,sparc-linux-user,sparc64-linux-user,ppc-linux-user,ppc64-linux-user
+%define _target_list aarch64-linux-user,arm-linux-user,mips-linux-user,mipsel-linux-user,i386-linux-user,x86_64-linux-user,sparc-linux-user,sparc64-linux-user,ppc-linux-user,ppc64-linux-user,riscv32-linux-user,riscv64-linux-user
 
 mkdir -p qemu-static
 pushd qemu-static
@@ -434,6 +463,9 @@ dobuild() {
 	--enable-system \
 	--enable-user \
 	--enable-linux-user \
+	--enable-tools \
+	--enable-opengl \
+	--enable-libusb \
 	--python=%{__python2} \
 	--prefix=%{_prefix} \
 	--libdir=%{_libdir} \
@@ -463,6 +495,8 @@ dobuild() {
 %endif
 %if %{with rbd}
 	--enable-rbd \
+%else
+	--disable-rbd \
 %endif
 %if %{with fdt}
 	--enable-fdt \
@@ -575,7 +609,7 @@ magic_sh4='\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x2a\x
 magic_sh4eb='\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x2a:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
 magic_sparc32plus='\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x12:\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
 
-for i in aarch64 arm mips mipsel i386 x86_64 ppc ppc64 sparc sparc64; do
+for i in aarch64 arm mips mipsel i386 x86_64 ppc ppc64 sparc sparc64 riscv32 riscv64; do
 	install -m755 qemu-static/$i-linux-user/qemu-$i -D %{buildroot}%{_bindir}/qemu-static-$i
 	echo ":$i:M::$(eval echo \$magic_$i):%{_bindir}/qemu-static-$i:" >%{buildroot}%{_binfmtdir}/qemu-$i.conf
 done
@@ -612,6 +646,9 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-ppc.conf
 %endif
 %ifarch ppc64
 rm -f %{buildroot}%{_binfmtdir}/qemu-ppc64.conf
+%endif
+%ifarch riscv32 riscv64
+rm -f %{buildroot}%{_binfmtdir}/qemu-riscv*.conf
 %endif
 
 
@@ -707,6 +744,8 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-ppc64.conf
 %{_bindir}/qemu-ppc64
 %{_bindir}/qemu-ppc64abi32
 %{_bindir}/qemu-ppc64le
+%{_bindir}/qemu-riscv32
+%{_bindir}/qemu-riscv64
 %{_bindir}/qemu-s390x
 %{_bindir}/qemu-sh4
 %{_bindir}/qemu-sh4eb
@@ -815,6 +854,18 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-ppc64.conf
 %{_bindir}/qemu-static-ppc64
 %ifnarch ppc64
 %{_binfmtdir}/qemu-ppc64.conf
+%endif
+
+%files -n qemu-static-riscv32
+%{_bindir}/qemu-static-riscv32
+%ifnarch riscv32 riscv64
+%{_binfmtdir}/qemu-riscv32.conf
+%endif
+
+%files -n qemu-static-riscv64
+%{_bindir}/qemu-static-riscv64
+%ifnarch riscv32 riscv64
+%{_binfmtdir}/qemu-riscv64.conf
 %endif
 
 %files -n qemu-static-sparc
