@@ -398,7 +398,7 @@ buildldflags="VL_LDFLAGS=-Wl,--build-id"
 
 mkdir -p qemu-static
 pushd qemu-static
-../configure	--python=%{__python2} \
+../configure	--python=%{__python} \
 		--target-list=%{_target_list} \
 		--disable-tools \
 		--disable-linux-aio \
@@ -466,7 +466,7 @@ dobuild() {
 	--enable-tools \
 	--enable-opengl \
 	--enable-libusb \
-	--python=%{__python2} \
+	--python=%{__python} \
 	--prefix=%{_prefix} \
 	--libdir=%{_libdir} \
 	--sysconfdir=%{_sysconfdir} \
