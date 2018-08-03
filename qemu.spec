@@ -91,6 +91,9 @@ BuildRequires:	pkgconfig(sdl2)
 BuildRequires:	pkgconfig(uuid)
 BuildRequires:	pkgconfig(vdehist)
 BuildRequires:	pkgconfig(zlib)
+BuildRequires:	pkgconfig(epoxy)
+BuildRequires:	pkgconfig(gbm)
+BuildRequires:	pkgconfig(gl)
 %if %{with usbredir}
 BuildRequires:	usbredir-devel >= 0.5.2
 BuildRequires:	pkgconfig(libusbredirhost) >= 0.5.2
