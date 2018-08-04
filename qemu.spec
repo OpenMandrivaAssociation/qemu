@@ -28,7 +28,7 @@ Summary:	QEMU CPU Emulator
 Name:		qemu
 Version:	%{qemu_version}
 %if "%{qemu_beta}" != ""
-Release:	0.%{qemu_beta}.1
+Release:	0.%{qemu_beta}.2
 %else
 Release:	%{?0qemu_snapshot:0.%{qemu_snapshot}.}1
 %endif
@@ -453,6 +453,9 @@ pushd qemu-static
 		--disable-numa \
 		--disable-lzo \
 		--disable-rbd \
+%ifarch %{ix86} %{x86_64}
+		--enable-membarrier \
+%endif
 		--static \
 		--enable-kvm \
 		--extra-ldflags="%ldflags -static -Wl,-z,relro -Wl,-z,now" \
@@ -469,6 +472,7 @@ dobuild() {
 	--enable-tools \
 	--enable-opengl \
 	--enable-libusb \
+	--enable-gnutls \
 	--python=%{__python} \
 	--prefix=%{_prefix} \
 	--libdir=%{_libdir} \
@@ -511,6 +515,19 @@ dobuild() {
 %endif
 	--enable-sdl \
 	--with-sdlabi="%{sdlabi}" \
+	--enable-curses \
+	--enable-vnc \
+	--enable-vnc-sasl \
+	--enable-vnc-jpeg \
+	--enable-vnc-png \
+	--enable-curl \
+%ifarch %{ix86} %{x86_64}
+	--enable-membarrier \
+%endif
+	--enable-fdt \
+	--enable-linux-aio \
+	--enable-cap-ng \
+	--enable-attr \
 %if %{with usbredir}
 	--enable-usb-redir \
 %else
@@ -520,7 +537,7 @@ dobuild() {
 	--enable-libnfs \
 	--enable-guest-agent \
 	--enable-modules \
-%ifnarch armv7hl
+%ifnarch %{arm}
 	--enable-numa \
 %endif
         "$@"
@@ -598,6 +615,7 @@ magic_ppc='\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x
 magic_ppc64='\x7fELF\x02\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x15:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
 magic_sparc='\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x02:\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
 magic_sparc64='\x7fELF\x02\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x2b:\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
+magic_riscv64='\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xf3\x00:\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
 
 # We don't currently build the qemu binaries for the following
 # architectures, but let's keep the magic values here just in case...
