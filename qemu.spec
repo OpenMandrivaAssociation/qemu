@@ -5,9 +5,9 @@
 
 %define qemu_version	3.0.0
 %define qemu_snapshot	%{nil}
-%define qemu_beta	rc3
+%define qemu_beta	%{nil}
 
-%ifarch %{ix86} x86_64
+%ifarch %{ix86} %{x86_64}
 %bcond_without	firmwares # build firmwares from source
 %endif
 
@@ -16,7 +16,7 @@
 %bcond_without usbredir         # enabled
 %bcond_without xfsprogs         # enabled
 %bcond_without spice            # enabled
-%ifarch %{ix86} x86_64
+%ifarch %{ix86} %{x86_64}
 %bcond_without seccomp          # enabled
 %else
 %bcond_with seccomp             # disabled
@@ -28,14 +28,14 @@ Summary:	QEMU CPU Emulator
 Name:		qemu
 Version:	%{qemu_version}
 %if "%{qemu_beta}" != ""
-Release:	0.%{qemu_beta}.2
+Release:	0.%{qemu_beta}.1
 %else
 Release:	%{?0qemu_snapshot:0.%{qemu_snapshot}.}1
 %endif
 License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
-Source0:	http://wiki.qemu-project.org/download/%{name}-%{qemu_version}%{?qemu_snapshot:%{qemu_snapshot}}%{?qemu_beta:-%{qemu_beta}}.tar.xz
+Source0:	http://wiki.qemu-project.org/download/%{name}-%{qemu_version}%{?qemu_snapshot:%{qemu_snapshot}}%{?qemu_beta:%{qemu_beta}}.tar.xz
 Source3:	80-kvm.rules
 # KSM control scripts
 Source4:	ksm.service
@@ -385,7 +385,7 @@ The static nature of this build makes it usable for doing sparc64 emulation in
 guest environment, ie. a chroot.
 
 %prep
-%setup -q -n %{name}-%{qemu_version}%{?qemu_snapshot:%{qemu_snapshot}}%{?qemu_beta:-%{qemu_beta}}
+%setup -q -n %{name}-%{qemu_version}%{?qemu_snapshot:%{qemu_snapshot}}%{?qemu_beta:%{qemu_beta}}
 %apply_patches
 sed -i 's!MAX_ARG_PAGES 33!MAX_ARG_PAGES 64!g' linux-user/qemu.h
 
@@ -488,7 +488,7 @@ dobuild() {
 	--enable-kvm \
 	--enable-tcg-interpreter \
 	--enable-tpm \
-%ifarch %{ix86} x86_64
+%ifarch %{ix86} %{x86_64}
 	--enable-xen \
 	--enable-xen-pci-passthrough \
 %else
@@ -575,7 +575,7 @@ install -D -p -m 0644 %{SOURCE3} %{buildroot}%{_udevrulesdir}
 mkdir -p %{buildroot}%{_sysconfdir}/qemu/
 install -D -m 0644 %{SOURCE12} %{buildroot}%{_sysconfdir}/qemu/
 
-%ifarch %{ix86} x86_64 %{arm}
+%ifarch %{ix86} %{x86_64} %{arm}
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig/modules
 mkdir -p %{buildroot}%{_bindir}/
 mkdir -p %{buildroot}%{_datadir}/%{name}
@@ -595,7 +595,7 @@ rm -rf %{buildroot}%{_includedir}/cacard
 
 install -d -m 755 %{buildroot}%{_sbindir}
 install -m 755 scripts/qemu-binfmt-conf.sh %{buildroot}%{_sbindir}
-%ifnarch %ix86 x86_64
+%ifnarch %ix86 %{x86_64}
 ln -sf ../../../emul/ia32-linux %{buildroot}/usr/share/qemu/qemu-i386
 %endif
 %ifnarch ia64
@@ -644,10 +644,10 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-aarch64.conf
 %ifarch %{armx} aarch64
 rm -f %{buildroot}%{_binfmtdir}/qemu-arm.conf
 %endif
-%ifarch x86_64
+%ifarch %{x86_64}
 rm -f %{buildroot}%{_binfmtdir}/qemu-x86_64.conf
 %endif
-%ifarch %{ix86} x86_64
+%ifarch %{ix86} %{x86_64}
 rm -f %{buildroot}%{_binfmtdir}/qemu-i?86.conf
 %endif
 %ifarch mips
@@ -779,10 +779,10 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-riscv*.conf
 %{_bindir}/qemu-nios2
 %{_bindir}/qemu-or1k
 %{_sbindir}/qemu-binfmt-conf.sh
-%ifnarch %ix86 x86_64 ia64
+%ifnarch %ix86 %{x86_64} ia64
 %dir /emul/ia32-linux
 %endif
-%ifnarch %ix86 x86_64
+%ifnarch %ix86 %{x86_64}
 %dir %{_datadir}/%{name}
 %{_datadir}/%{name}/qemu-i386
 %endif
@@ -855,13 +855,13 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-riscv*.conf
 
 %files -n qemu-static-x86_64
 %{_bindir}/qemu-static-x86_64
-%ifnarch x86_64
+%ifnarch %{x86_64}
 %{_binfmtdir}/qemu-x86_64.conf
 %endif
 
 %files -n qemu-static-i386
 %{_bindir}/qemu-static-i386
-%ifnarch %{ix86} x86_64
+%ifnarch %{ix86} %{x86_64}
 %{_binfmtdir}/qemu-i?86.conf
 %endif
 
