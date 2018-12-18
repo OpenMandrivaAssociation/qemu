@@ -3,7 +3,7 @@
 %define _disable_ld_no_undefined 1
 %define sdlabi 2.0
 
-%define qemu_version	3.0.0
+%define qemu_version	3.1.0
 %define qemu_snapshot	%{nil}
 %define qemu_beta	%{nil}
 
@@ -510,9 +510,6 @@ dobuild() {
 %else
 	--disable-fdt \
 %endif
-%if %{with gtk}
-	--with-gtkabi="3.0" \
-%endif
 	--enable-sdl \
 	--with-sdlabi="%{sdlabi}" \
 	--enable-curses \
@@ -689,15 +686,19 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-riscv*.conf
 %{_bindir}/qemu-system-*
 %{_bindir}/qemu-pr-helper
 %{_bindir}/qemu-keymap
+%{_bindir}/qemu-edid
 %{_bindir}/virtfs-proxy-helper
 %{_mandir}/man1/qemu.1*
 %{_mandir}/man1/virtfs-proxy-helper.*
+%{_mandir}/man7/qemu-cpu-models.7*
 %dir %{_datadir}/qemu
 %{_datadir}/qemu/keymaps
 %{_datadir}/qemu/trace-events-all
 %{_datadir}/qemu/openbios-sparc32
 %{_datadir}/qemu/openbios-sparc64
 %{_datadir}/qemu/openbios-ppc
+%{_datadir}/qemu/vgabios-bochs-display.bin
+%{_datadir}/qemu/vgabios-ramfb.bin
 %{_datadir}/qemu/*.dtb
 %{_datadir}/qemu/qemu-icon.bmp
 %{_libexecdir}/qemu-bridge-helper

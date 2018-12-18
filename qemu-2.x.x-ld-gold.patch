@@ -1,34 +1,25 @@
-Change-Id: Icd66ea29658329fbd5e6461d1def0c78c81d2671
-Signed-off-by: Ilya Palachev <address@hidden>
----
- linux-user/syscall.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/linux-user/syscall.c b/linux-user/syscall.c
-index a41dd43..a08f5ef 100644
---- a/linux-user/syscall.c
-+++ b/linux-user/syscall.c
-@@ -8127,6 +8127,10 @@ abi_long do_syscall(void *cpu_env, int num, abi_ulong arg1,
+diff -up qemu-3.1.0/linux-user/syscall.c.0000~ qemu-3.1.0/linux-user/syscall.c
+--- qemu-3.1.0/linux-user/syscall.c.0000~	2018-12-12 00:54:51.187616557 +0100
++++ qemu-3.1.0/linux-user/syscall.c	2018-12-12 15:17:53.989192378 +0100
+@@ -9677,6 +9677,10 @@ static abi_long do_syscall1(void *cpu_en
              arg4 = arg5;
              arg5 = arg6;
          }
-+        if (!arg3) {
++	if (!arg3) {
 +            ret = 0;
 +            break;
 +        }
          if (!(p = lock_user(VERIFY_WRITE, arg2, arg3, 0)))
-             goto efault;
+             return -TARGET_EFAULT;
          ret = get_errno(pread64(arg1, p, arg3, target_offset64(arg4, arg5)));
-@@ -8137,6 +8141,10 @@ abi_long do_syscall(void *cpu_env, int num, abi_ulong arg1,
+@@ -9687,6 +9691,10 @@ static abi_long do_syscall1(void *cpu_en
              arg4 = arg5;
              arg5 = arg6;
          }
-+        if (!arg3) {
++	if (!arg3) {
 +            ret = 0;
 +            break;
 +        }
          if (!(p = lock_user(VERIFY_READ, arg2, arg3, 1)))
-             goto efault;
+             return -TARGET_EFAULT;
          ret = get_errno(pwrite64(arg1, p, arg3, target_offset64(arg4, arg5)));
--- 
-2.1.3
