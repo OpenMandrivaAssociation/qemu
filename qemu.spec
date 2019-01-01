@@ -30,7 +30,7 @@ Version:	%{qemu_version}
 %if "%{qemu_beta}" != ""
 Release:	0.%{qemu_beta}.1
 %else
-Release:	%{?0qemu_snapshot:0.%{qemu_snapshot}.}1
+Release:	%{?0qemu_snapshot:0.%{qemu_snapshot}.}2
 %endif
 License:	GPLv2+
 Group:		Emulators
@@ -834,70 +834,106 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-riscv*.conf
 %{_bindir}/qemu-static-aarch64
 %ifnarch aarch64
 %{_binfmtdir}/qemu-aarch64.conf
+
+%post -n qemu-static-aarch64
+%{_bindir}/systemctl restart systemd-binfmt
 %endif
 
 %files -n qemu-static-arm
 %{_bindir}/qemu-static-arm
 %ifnarch %{arm} %{armx} aarch64
 %{_binfmtdir}/qemu-arm.conf
+
+%post -n qemu-static-arm
+%{_bindir}/systemctl restart systemd-binfmt
 %endif
 
 %files -n qemu-static-mips
 %{_bindir}/qemu-static-mips
 %ifnarch mips
 %{_binfmtdir}/qemu-mips.conf
+
+%post -n qemu-static-mips
+%{_bindir}/systemctl restart systemd-binfmt
 %endif
 
 %files -n qemu-static-mipsel
 %{_bindir}/qemu-static-mipsel
 %ifnarch mipsel
 %{_binfmtdir}/qemu-mipsel.conf
+
+%post -n qemu-static-mipsel
+%{_bindir}/systemctl restart systemd-binfmt
 %endif
 
 %files -n qemu-static-x86_64
 %{_bindir}/qemu-static-x86_64
 %ifnarch %{x86_64}
 %{_binfmtdir}/qemu-x86_64.conf
+
+%post -n qemu-static-x86_64
+%{_bindir}/systemctl restart systemd-binfmt
 %endif
 
 %files -n qemu-static-i386
 %{_bindir}/qemu-static-i386
 %ifnarch %{ix86} %{x86_64}
 %{_binfmtdir}/qemu-i?86.conf
+
+%post -n qemu-static-i386
+%{_bindir}/systemctl restart systemd-binfmt
 %endif
 
 %files -n qemu-static-ppc
 %{_bindir}/qemu-static-ppc
 %ifnarch ppc ppc64
 %{_binfmtdir}/qemu-ppc.conf
+
+%post -n qemu-static-ppc
+%{_bindir}/systemctl restart systemd-binfmt
 %endif
 
 %files -n qemu-static-ppc64
 %{_bindir}/qemu-static-ppc64
 %ifnarch ppc64
 %{_binfmtdir}/qemu-ppc64.conf
+
+%post -n qemu-static-ppc64
+%{_bindir}/systemctl restart systemd-binfmt
 %endif
 
 %files -n qemu-static-riscv32
 %{_bindir}/qemu-static-riscv32
 %ifnarch riscv32 riscv64
 %{_binfmtdir}/qemu-riscv32.conf
+
+%post -n qemu-static-riscv32
+%{_bindir}/systemctl restart systemd-binfmt
 %endif
 
 %files -n qemu-static-riscv64
 %{_bindir}/qemu-static-riscv64
 %ifnarch riscv32 riscv64
 %{_binfmtdir}/qemu-riscv64.conf
+
+%post -n qemu-static-riscv64
+%{_bindir}/systemctl restart systemd-binfmt
 %endif
 
 %files -n qemu-static-sparc
 %{_bindir}/qemu-static-sparc
 %ifnarch sparc sparc64
 %{_binfmtdir}/qemu-sparc.conf
+
+%post -n qemu-static-sparc
+%{_bindir}/systemctl restart systemd-binfmt
 %endif
 
 %files -n qemu-static-sparc64
 %{_bindir}/qemu-static-sparc64
 %ifnarch sparc64
 %{_binfmtdir}/qemu-sparc64.conf
+
+%post -n qemu-static-sparc64
+%{_bindir}/systemctl restart systemd-binfmt
 %endif
