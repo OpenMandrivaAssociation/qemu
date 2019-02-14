@@ -3,7 +3,7 @@
 %define _disable_ld_no_undefined 1
 %define sdlabi 2.0
 
-%define qemu_version	2.12.0
+%define qemu_version	2.12.1
 %define qemu_snapshot %nil
 
 %ifarch %{ix86} x86_64
@@ -70,6 +70,7 @@ BuildRequires:	systemtap
 BuildRequires:	systemtap-devel
 BuildRequires:	pkgconfig(bluez)
 BuildRequires:	pkgconfig(gnutls)
+BuildRequires:	pkgconfig(libcacard)
 BuildRequires:	pkgconfig(libcap-ng)
 BuildRequires:	pkgconfig(libcurl)
 BuildRequires:	pkgconfig(libiscsi)
@@ -529,14 +530,6 @@ mkdir -p %{buildroot}%{_datadir}/%{name}
 %makeinstall_std -C system BUILD_DOCS="yes"
 
 install -D -p -m 0644 qemu.sasl %{buildroot}%{_sysconfdir}/sasl2/qemu.conf
-
-# remove unpackaged files
-rm -rf %{buildroot}%{_docdir}/qemu %{buildroot}%{_bindir}/vscclient
-rm -f %{buildroot}%{_libdir}/libcacard*
-rm -f %{buildroot}/usr/lib/libcacard*
-rm -f %{buildroot}%{_libdir}/pkgconfig/libcacard.pc
-rm -f %{buildroot}/usr/lib/pkgconfig/libcacard.pc
-rm -rf %{buildroot}%{_includedir}/cacard
 
 install -d -m 755 %{buildroot}%{_sbindir}
 install -m 755 scripts/qemu-binfmt-conf.sh %{buildroot}%{_sbindir}
