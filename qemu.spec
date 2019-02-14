@@ -94,6 +94,7 @@ BuildRequires:	pkgconfig(zlib)
 BuildRequires:	pkgconfig(epoxy)
 BuildRequires:	pkgconfig(gbm)
 BuildRequires:	pkgconfig(gl)
+BuildRequires:	pkgconfig(libcacard)
 %if %{with usbredir}
 BuildRequires:	usbredir-devel >= 0.5.2
 BuildRequires:	pkgconfig(libusbredirhost) >= 0.5.2
@@ -581,14 +582,6 @@ mkdir -p %{buildroot}%{_datadir}/%{name}
 %makeinstall_std -C system BUILD_DOCS="yes"
 
 install -D -p -m 0644 qemu.sasl %{buildroot}%{_sysconfdir}/sasl2/qemu.conf
-
-# remove unpackaged files
-rm -rf %{buildroot}%{_docdir}/qemu %{buildroot}%{_bindir}/vscclient
-rm -f %{buildroot}%{_libdir}/libcacard*
-rm -f %{buildroot}/usr/lib/libcacard*
-rm -f %{buildroot}%{_libdir}/pkgconfig/libcacard.pc
-rm -f %{buildroot}/usr/lib/pkgconfig/libcacard.pc
-rm -rf %{buildroot}%{_includedir}/cacard
 
 install -d -m 755 %{buildroot}%{_sbindir}
 install -m 755 scripts/qemu-binfmt-conf.sh %{buildroot}%{_sbindir}
