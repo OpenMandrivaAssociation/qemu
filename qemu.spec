@@ -1,11 +1,10 @@
 %define _disable_lto 1
 %define _disable_rebuild_configure 1
 %define _disable_ld_no_undefined 1
-%define sdlabi 2.0
 
-%define qemu_version	3.1.0
+%define qemu_version	4.0.0
 %define qemu_snapshot	%{nil}
-%define qemu_beta	%{nil}
+%define qemu_beta	rc0
 
 %ifarch %{ix86} %{x86_64}
 %bcond_without	firmwares # build firmwares from source
@@ -35,7 +34,7 @@ Release:	%{?0qemu_snapshot:0.%{qemu_snapshot}.}2
 License:	GPLv2+
 Group:		Emulators
 Url:		http://wiki.qemu.org/Main_Page
-Source0:	http://wiki.qemu-project.org/download/%{name}-%{qemu_version}%{?qemu_snapshot:%{qemu_snapshot}}%{?qemu_beta:%{qemu_beta}}.tar.xz
+Source0:	http://wiki.qemu-project.org/download/%{name}-%{qemu_version}%{?qemu_snapshot:%{qemu_snapshot}}%{?qemu_beta:-%{qemu_beta}}.tar.xz
 Source3:	80-kvm.rules
 # KSM control scripts
 Source4:	ksm.service
@@ -48,7 +47,6 @@ Source10:	qemu-guest-agent.service
 Source11:	99-qemu-guest-agent.rules
 Source12:	bridge.conf
 Source13:	qemu.rpmlintrc
-Patch0:		qemu-2.x.x-ld-gold.patch
 
 BuildRequires:	gettext
 BuildRequires:	flex
@@ -386,7 +384,7 @@ The static nature of this build makes it usable for doing sparc64 emulation in
 guest environment, ie. a chroot.
 
 %prep
-%setup -q -n %{name}-%{qemu_version}%{?qemu_snapshot:%{qemu_snapshot}}%{?qemu_beta:%{qemu_beta}}
+%setup -q -n %{name}-%{qemu_version}%{?qemu_snapshot:%{qemu_snapshot}}%{?qemu_beta:-%{qemu_beta}}
 %apply_patches
 sed -i 's!MAX_ARG_PAGES 33!MAX_ARG_PAGES 64!g' linux-user/qemu.h
 
@@ -512,7 +510,6 @@ dobuild() {
 	--disable-fdt \
 %endif
 	--enable-sdl \
-	--with-sdlabi="%{sdlabi}" \
 	--enable-curses \
 	--enable-vnc \
 	--enable-vnc-sasl \
@@ -667,6 +664,7 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-riscv*.conf
 
 %files -f %{name}.lang
 %doc README system/qemu-doc.html
+%doc %{_docdir}/%{name}
 %config(noreplace)%{_sysconfdir}/sasl2/qemu.conf
 %{_unitdir}/ksm.service
 /lib/systemd/ksmctl
@@ -676,12 +674,15 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-riscv*.conf
 %{_sbindir}/ksmtuned
 %config(noreplace) %{_sysconfdir}/ksmtuned.conf
 %config(noreplace) %{_sysconfdir}/qemu/bridge.conf
+%{_bindir}/elf2dmp
 %{_bindir}/qemu-system-*
 %{_bindir}/qemu-pr-helper
 %{_bindir}/qemu-keymap
 %{_bindir}/qemu-edid
+%{_bindir}/qemu-trace-stap
 %{_bindir}/virtfs-proxy-helper
 %{_mandir}/man1/qemu.1*
+%{_mandir}/man1/qemu-trace-stap.1*
 %{_mandir}/man1/virtfs-proxy-helper.*
 %{_mandir}/man7/qemu-cpu-models.7*
 %dir %{_datadir}/qemu
@@ -690,12 +691,12 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-riscv*.conf
 %{_datadir}/qemu/openbios-sparc32
 %{_datadir}/qemu/openbios-sparc64
 %{_datadir}/qemu/openbios-ppc
+%{_datadir}/qemu/pvh.bin
 %{_datadir}/qemu/vgabios-bochs-display.bin
 %{_datadir}/qemu/vgabios-ramfb.bin
 %{_datadir}/qemu/*.dtb
-%{_datadir}/qemu/qemu-icon.bmp
+%{_datadir}/applications/qemu.desktop
 %{_libexecdir}/qemu-bridge-helper
-%{_datadir}/qemu/*.svg
 %{_datadir}/systemtap/tapset/*
 %{_datadir}/%{name}/efi-rtl8139.rom
 %{_datadir}/%{name}/efi-ne2k_pci.rom
@@ -713,6 +714,7 @@ rm -f %{buildroot}%{_binfmtdir}/qemu-riscv*.conf
 %{_datadir}/%{name}/skiboot.lid
 %{_datadir}/%{name}/qemu_vga.ndrv
 %{_datadir}/%{name}/s390-netboot.img
+%{_datadir}/icons/*/*/*/qemu.*
 %dir %{_libdir}/qemu
 %{_libdir}/qemu/block-curl.so
 %{_libdir}/qemu/block-iscsi.so
