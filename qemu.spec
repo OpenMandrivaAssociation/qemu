@@ -120,6 +120,7 @@ BuildRequires:	fdt-devel
 # xen
 BuildRequires:	xen-devel
 %endif
+BuildRequires:	python-sphinx
 # For virtfs
 %if %{with gtk}
 # GTK frontend
