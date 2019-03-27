@@ -4,7 +4,7 @@
 
 %define qemu_version	4.0.0
 %define qemu_snapshot	%{nil}
-%define qemu_beta	rc0
+%define qemu_beta	rc1
 
 %ifarch %{ix86} %{x86_64}
 %bcond_without	firmwares # build firmwares from source
