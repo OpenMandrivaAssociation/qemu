@@ -1,2 +1,0 @@
-# prebuilt bios images
-addFilter("E: unstripped-binary-or-object")
