@@ -329,6 +329,7 @@ BuildRequires:	perl-Test-Harness
 BuildRequires:	python-devel
 
 BuildRequires:	pcre-static-devel
+BuildRequires:	glibc-static-devel
 BuildRequires:	gpg-error-static-devel
 
 %if 0%{?hostqemu:1}
