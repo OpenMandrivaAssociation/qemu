@@ -616,15 +616,11 @@ Obsoletes: %{name}-user < 2:2.6.0-5%{?dist}
 This package provides the user mode emulation of qemu targets
 
 %if %{user_static}
-%package user-static
+%package user-static-tapset
 Summary: QEMU user mode emulation of qemu targets static build
 Requires: %{name}-common = %{epoch}:%{version}-%{release}
-Requires(post): systemd-units
-Requires(postun): systemd-units
-# qemu-user-binfmt + qemu-user-static both provide binfmt rules
-Conflicts: %{name}-user-binfmt
-Provides: %{name}-user-binfmt
-%description user-static
+
+%description user-static-tapset
 This package provides the user mode emulation of qemu targets built as
 static binaries
 %endif
@@ -941,6 +937,43 @@ Requires: %{name}-common = %{epoch}:%{version}-%{release}
 %description system-xtensa-core
 This package provides the QEMU system emulator for Xtensa boards.
 
+%define static_arches aarch64 aarch64_be alpha arm armeb hppa m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc32plus xtensa xtensaeb
+
+%define static_wo_binfmt cris i386 nios2 ppc64abi32 sparc sparc64 tilegx trace-stap x86_64
+
+%{expand:%(for arch in %static_arches; do archstatic=${arch}; cat <<EOF
+%%package       $archstatic-static
+Summary:        Qemu static binary for $archstatic
+# no one should require this, but provided anyway for maximum compatibility:
+Provides:       qemu-static-$archstatic = %{EVRD}
+Group:          System/Libraries
+
+%%description $archstatic-static
+QEMU static binary for $archstatic
+
+%%files $archstatic-static
+%{_bindir}/qemu-$archstatic-static
+/usr/lib/binfmt.d/qemu-$archstatic-static.conf
+
+%post -n qemu-$archstatic-static
+%{_bindir}/systemctl restart systemd-binfmt
+EOF
+done)}
+
+%{expand:%(for arch in %static_wo_binfmt; do archstatic=${arch}; cat <<EOF
+%%package       $archstatic-static
+Summary:        Qemu static binary for $archstatic
+# no one should require this, but provided anyway for maximum compatibility:
+Provides:       qemu-static-$archstatic = %{EVRD}
+Group:          System/Libraries
+
+%%description $archstatic-static
+QEMU static binary for $archstatic
+
+%%files $archstatic-static
+%{_bindir}/qemu-$archstatic-static
+EOF
+done)}
 
 
 %prep
@@ -1269,13 +1302,6 @@ getent passwd qemu >/dev/null || \
 %postun user-binfmt
 /bin/systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
-%if %{user_static}
-%post user-static
-/bin/systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
-%postun user-static
-/bin/systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
-%endif
-
 %post guest-agent
 %systemd_post qemu-guest-agent.service
 %preun guest-agent
@@ -1569,11 +1595,7 @@ getent passwd qemu >/dev/null || \
 %{_exec_prefix}/lib/binfmt.d/qemu-*-dynamic.conf
 
 %if %{user_static}
-%files user-static
-# Just use wildcard matches here: we will catch any new/missing files
-# in the qemu-user filelists
-%{_exec_prefix}/lib/binfmt.d/qemu-*-static.conf
-%{_bindir}/qemu-*-static
+%files user-static-tapset
 %{_datadir}/systemtap/tapset/qemu-*-static.stp
 %endif
 
