@@ -1374,7 +1374,7 @@ getent passwd qemu >/dev/null || \
 %{_unitdir}/qemu-pr-helper.service
 %{_unitdir}/qemu-pr-helper.socket
 %attr(4755, root, root) %{_libexecdir}/qemu-bridge-helper
-%{_libexecdir}/vhost-user-gpu
+#% {_libexecdir}/vhost-user-gpu
 %config(noreplace) %{_sysconfdir}/sasl2/qemu.conf
 %dir %{_sysconfdir}/qemu
 %config(noreplace) %{_sysconfdir}/qemu/bridge.conf
