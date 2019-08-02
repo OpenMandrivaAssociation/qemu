@@ -271,7 +271,7 @@ BuildRequires: glusterfs-api-devel >= 3.4.0
 # Needed for usb passthrough for qemu >= 1.5
 BuildRequires:	pkgconfig(libusb-1.0)
 # SSH block driver
-BuildRequires:	pkgconfig(libssh2)
+BuildRequires:	pkgconfig(libssh)
 # GTK frontend
 %if %{with gtk}
 # GTK frontend
