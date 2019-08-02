@@ -1324,6 +1324,7 @@ getent passwd qemu >/dev/null || \
 %doc %{qemudocdir}/qemu-qmp-ref.txt
 %doc %{qemudocdir}/README
 %doc %{qemudocdir}/interop
+%doc %{qemudocdir}/specs
 %dir %{_datadir}/%{name}/
 %{_datadir}/applications/qemu.desktop
 %{_datadir}/icons/hicolor/*/apps/*
@@ -1335,6 +1336,7 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/%{name}/vgabios-stdvga.bin
 %{_datadir}/%{name}/vgabios-vmware.bin
 %{_datadir}/%{name}/vgabios-virtio.bin
+%{_datadir}/%{name}/vgabios-ati.bin
 %{_datadir}/%{name}/pxe-e1000.rom
 %{_datadir}/%{name}/efi-e1000.rom
 #{_datadir}/%{name}/pxe-e1000e.rom
@@ -1351,6 +1353,11 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/%{name}/efi-virtio.rom
 #{_datadir}/%{name}/pxe-vmxnet3.rom
 %{_datadir}/%{name}/efi-vmxnet3.rom
+%{_datadir}/%{name}/edk2-licenses.txt
+%{_datadir}/%{name}/edk2*.fd
+%{_datadir}/%{name}/firmware/*.json
+%{_datadir}/%{name}/qemu-nsis.bmp
+%{_datadir}/%{name}/vhost-user/50-qemu-gpu.json
 %{_mandir}/man1/qemu.1*
 %{_mandir}/man1/qemu-trace-stap.1*
 %{_mandir}/man1/virtfs-proxy-helper.1*
@@ -1367,6 +1374,7 @@ getent passwd qemu >/dev/null || \
 %{_unitdir}/qemu-pr-helper.service
 %{_unitdir}/qemu-pr-helper.socket
 %attr(4755, root, root) %{_libexecdir}/qemu-bridge-helper
+%{_libexecdir}/vhost-user-gpu
 %config(noreplace) %{_sysconfdir}/sasl2/qemu.conf
 %dir %{_sysconfdir}/qemu
 %config(noreplace) %{_sysconfdir}/qemu/bridge.conf
@@ -1715,6 +1723,9 @@ getent passwd qemu >/dev/null || \
 %{_bindir}/qemu-system-riscv32
 %{_bindir}/qemu-system-riscv64
 %{_datadir}/systemtap/tapset/qemu-system-riscv*.stp
+%{_datadir}/qemu/opensbi-riscv32-virt-fw_jump.bin
+%{_datadir}/qemu/opensbi-riscv64-sifive_u-fw_jump.bin
+%{_datadir}/qemu/opensbi-riscv64-virt-fw_jump.bin
 %{_mandir}/man1/qemu-system-riscv*.1*
 
 
