@@ -1357,7 +1357,7 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/%{name}/edk2*.fd
 %{_datadir}/%{name}/firmware/*.json
 %{_datadir}/%{name}/qemu-nsis.bmp
-%{_datadir}/%{name}/vhost-user/50-qemu-gpu.json
+#% {_datadir}/%{name}/vhost-user/50-qemu-gpu.json
 %{_mandir}/man1/qemu.1*
 %{_mandir}/man1/qemu-trace-stap.1*
 %{_mandir}/man1/virtfs-proxy-helper.1*
