@@ -60,7 +60,7 @@
 # Matches xen ExclusiveArch
 %global have_xen 0
 %ifarch %{ix86} x86_64 armv7hl aarch64
-%global have_xen 1
+%global have_xen 0
 %endif
 
 %bcond_with rbd                 # disabled
@@ -145,7 +145,7 @@
 %{obsoletes_block_rbd}
 
 # Release candidate version tracking
-# global rcver rc3
+%global rcver rc3
 %if 0%{?rcver:1}
 %global rcrel .%{rcver}
 %global rcstr -%{rcver}
@@ -154,7 +154,7 @@
 
 Summary: QEMU is a FAST! processor emulator
 Name: qemu
-Version: 4.0.0
+Version: 4.1.0
 Release: 1%{?rcrel}%{?dist}
 Epoch: 2
 License: GPLv2 and BSD and MIT and CC-BY
@@ -178,11 +178,6 @@ Source15: qemu-pr-helper.socket
 Source20: kvm-x86.modprobe.conf
 # /etc/security/limits.d/95-kvm-ppc64-memlock.conf
 Source21: 95-kvm-ppc64-memlock.conf
-
-# Don't block migration with nested VMX (bz #1697997)
-# Not upstream: temporary workaround until kernel supports lands for nested
-# VMX migration
-Patch0001: 0001-Revert-target-i386-kvm-add-VMX-migration-blocker.patch
 
 
 # documentation deps
