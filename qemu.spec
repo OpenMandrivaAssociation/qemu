@@ -87,7 +87,7 @@
 %endif
 
 # All modules should be listed here.
-%ifarch %{ix86} %{arm} %{x86_64} riscv64
+%ifarch %{ix86} %{armx} %{x86_64} riscv64
 %define with_block_rbd 0
 %else
 %define with_block_rbd 1
