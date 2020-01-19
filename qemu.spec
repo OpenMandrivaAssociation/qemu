@@ -51,10 +51,11 @@
 %global have_iasl 0
 %endif
 
+%ifarch %{ix86} %{x86_64} %{armx}
+%global have_spice 1
+%else
 # Matches spice ExclusiveArch
 %global have_spice 0
-%ifarch %{ix86} x86_64 %{arm} aarch64
-%global have_spice 1
 %endif
 
 # Matches xen ExclusiveArch
@@ -981,7 +982,7 @@ done)}
 %autopatch -p1
 
 %build
-%setup_compile_flags
+%set_build_flags
 # drop -g flag to prevent memory exhaustion by linker
 %ifarch s390
 %global optflags %(echo %{optflags} | sed 's/-g//')
@@ -1049,7 +1050,7 @@ echo "==="
 cat config-host.mak
 echo "==="
 
-make V=1 %{?_smp_mflags} $buildldflags
+make %{?_smp_mflags} $buildldflags
 
 popd
 
