@@ -305,6 +305,8 @@ BuildRequires:	pkgconfig(libcacard)
 BuildRequires:	virglrenderer-devel
 # qemu 2.6: Needed for gtk GL support
 BuildRequires:	pkgconfig(gl)
+# gpu vhost
+BuildRequires:	pkgconfig(gbm)
 # qemu 2.11: preferred disassembler for TCG
 #BuildRequires:	capstone-devel
 # qemu 2.12: parallels disk images require libxml2 now
