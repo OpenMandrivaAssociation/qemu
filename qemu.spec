@@ -330,6 +330,8 @@ BuildRequires:	perl-Test-Harness
 BuildRequires:	python-devel
 BuildRequires:	pkgconfig(vdeplug)
 
+BUildRequires:	pkgconfig(glib-2.0)
+
 BuildRequires:	pcre-static-devel
 BuildRequires:	glibc-static-devel
 BuildRequires:	gpg-error-static-devel
