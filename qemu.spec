@@ -1,6 +1,8 @@
 %define _disable_lto 1
 %define _disable_rebuild_configure 1
-%define _disable_ld_no_undefined 1
+%global _disable_ld_no_undefined 1
+# For -Ttext-segment
+%global ldflags %{ldflags} -fuse-ld=lld -flto
 
 %ifarch %{ix86}
 %global kvm_package   system-x86
@@ -146,17 +148,17 @@
 %{obsoletes_block_rbd}
 
 # Release candidate version tracking
-%global rcver %nil
-%if 0%{?rcver}
-%global rcrel .%{rcver}
-%global rcstr -%{rcver}
+%global rcver 3
+%if "%{?rcver}" != ""
+%global rcrel .rc%{rcver}
+%global rcstr -rc%{rcver}
 %endif
 
 
 Summary: QEMU is a FAST! processor emulator
 Name: qemu
-Version: 4.2.0
-Release: 1%{?rcrel}%{?dist}
+Version: 5.0.0
+Release: 0%{?rcrel}%{?dist}
 Epoch: 3
 License: GPLv2 and BSD and MIT and CC-BY
 URL: http://www.qemu.org/
@@ -181,6 +183,7 @@ Source20: kvm-x86.modprobe.conf
 Source21: 95-kvm-ppc64-memlock.conf
 
 
+BuildRequires: %mklibname zstd -s -d
 # documentation deps
 BuildRequires: texinfo
 # For /usr/bin/pod2man
@@ -325,6 +328,7 @@ BuildRequires:	python-sphinx
 BuildRequires:	perl-Test-Harness
 # Required for making python shebangs versioned
 BuildRequires:	python-devel
+BuildRequires:	pkgconfig(vdeplug)
 
 BuildRequires:	pcre-static-devel
 BuildRequires:	glibc-static-devel
@@ -832,6 +836,10 @@ Requires: %{name}-common = %{epoch}:%{version}-%{release}
 %description system-riscv-core
 This package provides the QEMU system emulator for RISC-V systems.
 
+%package system-rx
+Summary: QEMU system emulator for Renesas RX
+%description system-rx
+This package provides the QEMU system emulator for Renesas RX
 
 %package system-s390x
 Summary: QEMU system emulator for S390
@@ -1031,7 +1039,6 @@ run_configure() {
         --extra-ldflags="%{ldflags} $extraldflags -Wl,-z,relro -Wl,-z,now" \
         --extra-cflags="%{optflags} -fPIC" \
         "$@" || cat config.log
-    sed -i -e 's| -Wl,--no-undefined||g' config-host.mak
 }
 
 mkdir build-dynamic
@@ -1046,11 +1053,7 @@ run_configure \
     --tls-priority=@QEMU,SYSTEM \
     --enable-mpath \
     %{spiceflag}
-
-echo "config-host.mak contents:"
-echo "==="
-cat config-host.mak
-echo "==="
+sed -i -e 's|-Wl,--no-undefined ||g' config-host.mak
 
 make %{?_smp_mflags} $buildldflags
 
@@ -1323,8 +1326,6 @@ getent passwd qemu >/dev/null || \
 %doc %{qemudocdir}/COPYING
 %doc %{qemudocdir}/COPYING.LIB
 %doc %{qemudocdir}/LICENSE
-%doc %{qemudocdir}/qemu-doc.html
-%doc %{qemudocdir}/qemu-doc.txt
 %doc %{qemudocdir}/qemu-ga-ref.html
 %doc %{qemudocdir}/qemu-ga-ref.txt
 %doc %{qemudocdir}/qemu-qmp-ref.html
@@ -1369,6 +1370,7 @@ getent passwd qemu >/dev/null || \
 %{_mandir}/man1/qemu.1*
 %{_mandir}/man1/qemu-trace-stap.1*
 %{_mandir}/man1/virtfs-proxy-helper.1*
+%{_mandir}/man1/virtiofsd.1*
 %{_mandir}/man7/qemu-block-drivers.7*
 %{_mandir}/man7/qemu-cpu-models.7*
 %{_mandir}/man7/qemu-ga-ref.7*
@@ -1379,6 +1381,9 @@ getent passwd qemu >/dev/null || \
 %{_bindir}/qemu-pr-helper
 %{_bindir}/qemu-trace-stap
 %{_bindir}/virtfs-proxy-helper
+%{_bindir}/qemu-storage-daemon
+%{_libexecdir}/virtiofsd
+%{_datadir}/qemu/vhost-user/50-qemu-virtiofsd.json
 %{_unitdir}/qemu-pr-helper.service
 %{_unitdir}/qemu-pr-helper.socket
 %attr(4755, root, root) %{_libexecdir}/qemu-bridge-helper
@@ -1603,6 +1608,12 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/systemtap/tapset/qemu-xtensaeb-log.stp
 %{_datadir}/systemtap/tapset/qemu-xtensaeb-simpletrace.stp
 
+%dir %doc %{_docdir}/qemu
+%doc %{_docdir}/qemu/index.html
+%doc %{_docdir}/qemu/user
+%doc %{_docdir}/qemu/system
+%doc %{_docdir}/qemu/tools
+
 %files user-binfmt
 %{_exec_prefix}/lib/binfmt.d/qemu-*-dynamic.conf
 
@@ -1611,6 +1622,12 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/systemtap/tapset/qemu-*-static.stp
 %endif
 
+%files system-rx
+%{_bindir}/qemu-system-rx
+%{_datadir}/man/man1/qemu-system-rx.1*
+%{_datadir}/systemtap/tapset/qemu-system-rx-log.stp
+%{_datadir}/systemtap/tapset/qemu-system-rx-simpletrace.stp
+%{_datadir}/systemtap/tapset/qemu-system-rx.stp
 
 %files system-aarch64
 %files system-aarch64-core
@@ -1716,7 +1733,6 @@ getent passwd qemu >/dev/null || \
 %{_mandir}/man1/qemu-system-ppc64.1*
 %{_datadir}/%{name}/bamboo.dtb
 %{_datadir}/%{name}/canyonlands.dtb
-%{_datadir}/%{name}/ppc_rom.bin
 %{_datadir}/%{name}/qemu_vga.ndrv
 %{_datadir}/%{name}/skiboot.lid
 %{_datadir}/%{name}/u-boot.e500
@@ -1734,6 +1750,7 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/qemu/opensbi-riscv32-virt-fw_jump.bin
 %{_datadir}/qemu/opensbi-riscv64-sifive_u-fw_jump.bin
 %{_datadir}/qemu/opensbi-riscv64-virt-fw_jump.bin
+%{_datadir}/qemu/opensbi-riscv32-sifive_u-fw_jump.bin
 %{_mandir}/man1/qemu-system-riscv*.1*
 
 
