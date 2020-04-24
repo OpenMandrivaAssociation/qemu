@@ -4,6 +4,8 @@
 # For -Ttext-segment
 %global ldflags %{ldflags} -fuse-ld=lld -flto
 
+%bcond_without seccomp
+
 %ifarch %{ix86}
 %global kvm_package   system-x86
 # need_qemu_kvm should only ever be used by x86
@@ -1372,7 +1374,11 @@ getent passwd qemu >/dev/null || \
 %{_mandir}/man1/qemu.1*
 %{_mandir}/man1/qemu-trace-stap.1*
 %{_mandir}/man1/virtfs-proxy-helper.1*
+%if %{with seccomp}
 %{_mandir}/man1/virtiofsd.1*
+%{_libexecdir}/virtiofsd
+%{_datadir}/qemu/vhost-user/50-qemu-virtiofsd.json
+%endif
 %{_mandir}/man7/qemu-block-drivers.7*
 %{_mandir}/man7/qemu-cpu-models.7*
 %{_mandir}/man7/qemu-ga-ref.7*
@@ -1384,8 +1390,6 @@ getent passwd qemu >/dev/null || \
 %{_bindir}/qemu-trace-stap
 %{_bindir}/virtfs-proxy-helper
 %{_bindir}/qemu-storage-daemon
-%{_libexecdir}/virtiofsd
-%{_datadir}/qemu/vhost-user/50-qemu-virtiofsd.json
 %{_unitdir}/qemu-pr-helper.service
 %{_unitdir}/qemu-pr-helper.socket
 %attr(4755, root, root) %{_libexecdir}/qemu-bridge-helper
