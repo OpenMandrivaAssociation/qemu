@@ -150,7 +150,7 @@
 %{obsoletes_block_rbd}
 
 # Release candidate version tracking
-#global rcver 1
+%global rcver 0
 %if "%{?rcver}" != ""
 %global rcrel .rc%{rcver}
 %global rcstr -rc%{rcver}
@@ -159,8 +159,8 @@
 
 Summary: QEMU is a FAST! processor emulator
 Name: qemu
-Version: 5.0.0
-Release: 1%{?rcrel}
+Version: 5.1.0
+Release: %{?rcver:0%{rcrel}.}1
 Epoch: 3
 License: GPLv2 and BSD and MIT and CC-BY
 URL: http://www.qemu.org/
@@ -183,7 +183,6 @@ Source15: qemu-pr-helper.socket
 Source20: kvm-x86.modprobe.conf
 # /etc/security/limits.d/95-kvm-ppc64-memlock.conf
 Source21: 95-kvm-ppc64-memlock.conf
-
 
 BuildRequires: %mklibname zstd -s -d
 # documentation deps
@@ -351,6 +350,7 @@ Requires: %{name}-user = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-aarch64 = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-alpha = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-arm = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-avr = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-cris = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-lm32 = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-m68k = %{epoch}:%{version}-%{release}
@@ -682,6 +682,20 @@ Requires: %{name}-common = %{epoch}:%{version}-%{release}
 This package provides the QEMU system emulator for ARM boards.
 
 
+%package system-avr
+Summary: QEMU system emulator for ARM
+Requires: %{name}-system-avr-core = %{epoch}:%{version}-%{release}
+%{requires_all_modules}
+%description system-avr
+This package provides the QEMU system emulator for AVR systems.
+
+%package system-avr-core
+Summary: QEMU system emulator for ARM
+Requires: %{name}-common = %{epoch}:%{version}-%{release}
+%description system-avr-core
+This package provides the QEMU system emulator for AVR boards.
+
+
 %package system-cris
 Summary: QEMU system emulator for CRIS
 Requires: %{name}-system-cris-core = %{epoch}:%{version}-%{release}
@@ -997,6 +1011,10 @@ done)}
 
 %build
 %set_build_flags
+
+export CC=gcc
+export CXX=g++
+
 # drop -g flag to prevent memory exhaustion by linker
 %ifarch s390
 %global optflags %(echo %{optflags} | sed 's/-g//')
@@ -1330,10 +1348,6 @@ getent passwd qemu >/dev/null || \
 %doc %{qemudocdir}/COPYING
 %doc %{qemudocdir}/COPYING.LIB
 %doc %{qemudocdir}/LICENSE
-%doc %{qemudocdir}/qemu-ga-ref.html
-%doc %{qemudocdir}/qemu-ga-ref.txt
-%doc %{qemudocdir}/qemu-qmp-ref.html
-%doc %{qemudocdir}/qemu-qmp-ref.txt
 %doc %{qemudocdir}/interop
 %doc %{qemudocdir}/specs
 %dir %{_datadir}/%{name}/
@@ -1377,6 +1391,8 @@ getent passwd qemu >/dev/null || \
 %if %{with seccomp}
 %{_mandir}/man1/virtiofsd.1*
 %{_libexecdir}/virtiofsd
+%{_libexecdir}/qemu-pr-helper
+%{_libexecdir}/virtfs-proxy-helper
 %{_datadir}/qemu/vhost-user/50-qemu-virtiofsd.json
 %endif
 %{_mandir}/man7/qemu-block-drivers.7*
@@ -1386,9 +1402,7 @@ getent passwd qemu >/dev/null || \
 %{_bindir}/elf2dmp
 %{_bindir}/qemu-edid
 %{_bindir}/qemu-keymap
-%{_bindir}/qemu-pr-helper
 %{_bindir}/qemu-trace-stap
-%{_bindir}/virtfs-proxy-helper
 %{_bindir}/qemu-storage-daemon
 %{_unitdir}/qemu-pr-helper.service
 %{_unitdir}/qemu-pr-helper.socket
@@ -1398,6 +1412,9 @@ getent passwd qemu >/dev/null || \
 %dir %{_sysconfdir}/qemu
 %config(noreplace) %{_sysconfdir}/qemu/bridge.conf
 %dir %{_libdir}/qemu
+%{_libdir}/qemu/hw-display-qxl.so
+%{_libdir}/qemu/hw-usb-redirect.so
+%{_libdir}/qemu/hw-usb-smartcard.so
 
 %files guest-agent
 %{_bindir}/qemu-ga
@@ -1655,6 +1672,13 @@ getent passwd qemu >/dev/null || \
 %{_bindir}/qemu-system-arm
 %{_datadir}/systemtap/tapset/qemu-system-arm*.stp
 %{_mandir}/man1/qemu-system-arm.1*
+
+
+%files system-avr
+%files system-avr-core
+%{_bindir}/qemu-system-avr
+%{_datadir}/systemtap/tapset/qemu-system-avr*.stp
+%{_mandir}/man1/qemu-system-avr.1*
 
 
 %files system-cris
