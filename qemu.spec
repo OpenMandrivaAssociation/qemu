@@ -34,10 +34,7 @@
 
 %global user_static 1
 
-%global have_kvm 0
-%if 0%{?kvm_package:1}
-%global have_kvm 1
-%endif
+%global have_kvm 0%{?kvm_package:1}
 
 # Matches numactl ExcludeArch
 %global have_numactl 1
@@ -150,7 +147,7 @@
 %{obsoletes_block_rbd}
 
 # Release candidate version tracking
-%global rcver 0
+%global rcver 2
 %if "%{?rcver}" != ""
 %global rcrel .rc%{rcver}
 %global rcstr -rc%{rcver}
