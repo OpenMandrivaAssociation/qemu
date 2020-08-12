@@ -147,7 +147,7 @@
 %{obsoletes_block_rbd}
 
 # Release candidate version tracking
-%global rcver 3
+#global rcver 3
 %if "%{?rcver}" != ""
 %global rcrel .rc%{rcver}
 %global rcstr -rc%{rcver}
