@@ -979,7 +979,7 @@ QEMU static binary for $archstatic
 
 %%files $archstatic-static
 %{_bindir}/qemu-$archstatic-static
-/usr/lib/binfmt.d/qemu-$archstatic-static.conf
+%optional /usr/lib/binfmt.d/qemu-$archstatic-static.conf
 
 %post -n qemu-$archstatic-static
 %{_bindir}/systemctl restart systemd-binfmt
