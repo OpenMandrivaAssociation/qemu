@@ -965,7 +965,7 @@ This package provides the QEMU system emulator for Xtensa boards.
 
 %ifarch %{armx}
 	#list with conf file in binfmt
-	%define static_arches aarch64_be i386 i486 x86_64 alpha armeb hppa m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
+	%define static_arches aarch64_be i386 x86_64 alpha armeb hppa m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
 	#list without conf file in binfmt
 	%define static_wo_binfmt cris aarch64 arm nios2 ppc64abi32 tilegx trace-stap
 %else
@@ -1262,7 +1262,8 @@ for regularfmt in %{binfmt_dir}/*; do
   cat $regularfmt | tr -d '\n' | sed "s/:$/-static:F/" > $staticfmt
 done
 %endif
-
+#remove conf file, qemu-i486-static not available
+rm -rf %{binfmt_dir}/qemu-i486-static.conf
 
 # Install rules to use the bridge helper with libvirt's virbr0
 install -m 0644 %{_sourcedir}/bridge.conf %{buildroot}%{_sysconfdir}/qemu
