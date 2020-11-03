@@ -963,9 +963,17 @@ Requires: %{name}-common = %{epoch}:%{version}-%{release}
 %description system-xtensa-core
 This package provides the QEMU system emulator for Xtensa boards.
 
-%define static_arches aarch64 aarch64_be alpha arm armeb hppa m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
-
-%define static_wo_binfmt cris i386 nios2 ppc64abi32 tilegx trace-stap x86_64
+%ifarch %{armx}
+	#list with conf file in binfmt
+	%define static_arches aarch64_be i386 i486 x86_64 alpha armeb hppa m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
+	#list without conf file in binfmt
+	%define static_wo_binfmt cris aarch64 arm nios2 ppc64abi32 tilegx trace-stap
+%else
+	#list with conf file in binfmt
+	%define static_arches aarch64 aarch64_be alpha arm armeb hppa m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
+	#list without conf file in binfmt
+	%define static_wo_binfmt cris i386 nios2 ppc64abi32 tilegx trace-stap x86_64
+%endif
 
 %{expand:%(for arch in %static_arches; do archstatic=${arch}; cat <<EOF
 %%package       $archstatic-static
