@@ -156,7 +156,7 @@
 
 Summary: QEMU is a FAST! processor emulator
 Name: qemu
-Version: 5.1.0
+Version: 5.2.0
 Release: %{?rcver:0%{rcrel}.}1
 Epoch: 3
 License: GPLv2 and BSD and MIT and CC-BY
@@ -180,6 +180,8 @@ Source15: qemu-pr-helper.socket
 Source20: kvm-x86.modprobe.conf
 # /etc/security/limits.d/95-kvm-ppc64-memlock.conf
 Source21: 95-kvm-ppc64-memlock.conf
+
+Patch0: qemu-5.2.0-modules-buildfix.patch
 
 BuildRequires: %mklibname zstd -s -d
 # documentation deps
@@ -349,7 +351,7 @@ Requires: %{name}-system-alpha = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-arm = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-avr = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-cris = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-lm32 = %{epoch}:%{version}-%{release}
+Obsoletes: %{name}-system-lm32 < %{epoch}:%{version}-%{release}
 Requires: %{name}-system-m68k = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-microblaze = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-mips = %{epoch}:%{version}-%{release}
@@ -362,7 +364,7 @@ Requires: %{name}-system-s390x = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-sh4 = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-sparc = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-tricore = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-unicore32 = %{epoch}:%{version}-%{release}
+Obsoletes: %{name}-system-unicore32 < %{epoch}:%{version}-%{release}
 Requires: %{name}-system-x86 = %{epoch}:%{version}-%{release}
 Requires: %{name}-system-xtensa = %{epoch}:%{version}-%{release}
 Requires: %{name}-img = %{epoch}:%{version}-%{release}
@@ -455,12 +457,6 @@ This package does not need to be installed on the host OS.
 Summary: QEMU command line tool for manipulating disk images
 %description img
 This package provides a command line tool for manipulating disk images
-
-
-%package -n ivshmem-tools
-Summary: Client and server for QEMU ivshmem device
-%description -n ivshmem-tools
-This package provides client and server tools for QEMU's ivshmem device.
 
 
 %package  block-curl
@@ -721,20 +717,6 @@ Requires: %{name}-common = %{epoch}:%{version}-%{release}
 This package provides the QEMU system emulator for HPPA.
 
 
-%package system-lm32
-Summary: QEMU system emulator for LatticeMico32
-Requires: %{name}-system-lm32-core = %{epoch}:%{version}-%{release}
-%{requires_all_modules}
-%description system-lm32
-This package provides the QEMU system emulator for LatticeMico32 boards.
-
-%package system-lm32-core
-Summary: QEMU system emulator for LatticsMico32
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
-%description system-lm32-core
-This package provides the QEMU system emulator for LatticeMico32 boards.
-
-
 %package system-m68k
 Summary: QEMU system emulator for ColdFire (m68k)
 Requires: %{name}-system-m68k-core = %{epoch}:%{version}-%{release}
@@ -912,20 +894,6 @@ Requires: %{name}-common = %{epoch}:%{version}-%{release}
 This package provides the QEMU system emulator for Tricore.
 
 
-%package system-unicore32
-Summary: QEMU system emulator for Unicore32
-Requires: %{name}-system-unicore32-core = %{epoch}:%{version}-%{release}
-%{requires_all_modules}
-%description system-unicore32
-This package provides the QEMU system emulator for Unicore32 boards.
-
-%package system-unicore32-core
-Summary: QEMU system emulator for Unicore32
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
-%description system-unicore32-core
-This package provides the QEMU system emulator for Unicore32 boards.
-
-
 %package system-x86
 Summary: QEMU system emulator for x86
 Requires: %{name}-system-x86-core = %{epoch}:%{version}-%{release}
@@ -967,12 +935,12 @@ This package provides the QEMU system emulator for Xtensa boards.
 	#list with conf file in binfmt
 	%define static_arches aarch64_be i386 x86_64 alpha armeb hppa m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
 	#list without conf file in binfmt
-	%define static_wo_binfmt cris aarch64 arm nios2 ppc64abi32 tilegx trace-stap
+	%define static_wo_binfmt cris aarch64 arm nios2 trace-stap
 %else
 	#list with conf file in binfmt
 	%define static_arches aarch64 aarch64_be alpha arm armeb hppa m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
 	#list without conf file in binfmt
-	%define static_wo_binfmt cris i386 nios2 ppc64abi32 tilegx trace-stap x86_64
+	%define static_wo_binfmt cris i386 nios2 trace-stap x86_64
 %endif
 
 %{expand:%(for arch in %static_arches; do archstatic=${arch}; cat <<EOF
@@ -1011,8 +979,7 @@ done)}
 
 
 %prep
-%setup -q -n qemu-%{version}%{?rcstr}
-%autopatch -p1
+%autosetup -p1 -n qemu-%{version}%{?rcstr}
 
 %build
 %set_build_flags
@@ -1066,6 +1033,8 @@ run_configure() {
         --extra-ldflags="%{ldflags} $extraldflags -Wl,-z,relro -Wl,-z,now" \
         --extra-cflags="%{optflags} -fPIC" \
         "$@" || cat config.log
+    # FIXME finding where this comes from would be nicer than hacking it out
+    sed -i -e 's|-Wl,--no-undefined ||g' config-host.mak build.ninja
 }
 
 mkdir build-dynamic
@@ -1080,7 +1049,6 @@ run_configure \
     --tls-priority=@QEMU,SYSTEM \
     --enable-mpath \
     %{spiceflag}
-sed -i -e 's|-Wl,--no-undefined ||g' config-host.mak
 
 make %{?_smp_mflags} $buildldflags
 
@@ -1186,7 +1154,7 @@ popd
 %find_lang %{name}
 
 chmod -x %{buildroot}%{_mandir}/man1/*
-install -D -p -m 0644 -t %{buildroot}%{qemudocdir} Changelog COPYING COPYING.LIB LICENSE
+install -D -p -m 0644 -t %{buildroot}%{qemudocdir} COPYING COPYING.LIB LICENSE
 for emu in %{buildroot}%{_bindir}/qemu-system-*; do
     ln -sf qemu.1.gz %{buildroot}%{_mandir}/man1/$(basename $emu).1.gz
 done
@@ -1350,7 +1318,6 @@ getent passwd qemu >/dev/null || \
 
 %files common -f %{name}.lang
 %dir %{qemudocdir}
-%doc %{qemudocdir}/Changelog
 %doc %{qemudocdir}/COPYING
 %doc %{qemudocdir}/COPYING.LIB
 %doc %{qemudocdir}/LICENSE
@@ -1397,7 +1364,6 @@ getent passwd qemu >/dev/null || \
 %if %{with seccomp}
 %{_mandir}/man1/virtiofsd.1*
 %{_libexecdir}/virtiofsd
-%{_libexecdir}/qemu-pr-helper
 %{_libexecdir}/virtfs-proxy-helper
 %{_datadir}/qemu/vhost-user/50-qemu-virtiofsd.json
 %endif
@@ -1412,6 +1378,8 @@ getent passwd qemu >/dev/null || \
 %{_bindir}/qemu-storage-daemon
 %{_unitdir}/qemu-pr-helper.service
 %{_unitdir}/qemu-pr-helper.socket
+%{_bindir}/qemu-pr-helper
+%{_mandir}/man8/qemu-pr-helper.8*
 %attr(4755, root, root) %{_libexecdir}/qemu-bridge-helper
 %{_libexecdir}/vhost-user-gpu
 %config(noreplace) %{_sysconfdir}/sasl2/qemu.conf
@@ -1419,6 +1387,11 @@ getent passwd qemu >/dev/null || \
 %config(noreplace) %{_sysconfdir}/qemu/bridge.conf
 %dir %{_libdir}/qemu
 %{_libdir}/qemu/hw-display-qxl.so
+%{_libdir}/qemu/hw-display-virtio-gpu-pci.so
+%{_libdir}/qemu/hw-display-virtio-gpu.so
+%{_libdir}/qemu/hw-display-virtio-vga.so
+%{_libdir}/qemu/ui-egl-headless.so
+%{_libdir}/qemu/ui-opengl.so
 %{_libdir}/qemu/hw-usb-redirect.so
 %{_libdir}/qemu/hw-usb-smartcard.so
 
@@ -1478,11 +1451,9 @@ getent passwd qemu >/dev/null || \
 %{_libdir}/qemu/ui-sdl.so
 %files ui-spice
 %{_libdir}/qemu/ui-spice-app.so
-
-
-%files -n ivshmem-tools
-%{_bindir}/ivshmem-client
-%{_bindir}/ivshmem-server
+%{_libdir}/qemu/audio-spice.so
+%{_libdir}/qemu/chardev-spice.so
+%{_libdir}/qemu/ui-spice-core.so
 
 
 %if %{have_kvm}
@@ -1517,7 +1488,6 @@ getent passwd qemu >/dev/null || \
 %{_bindir}/qemu-or1k
 %{_bindir}/qemu-ppc
 %{_bindir}/qemu-ppc64
-%{_bindir}/qemu-ppc64abi32
 %{_bindir}/qemu-ppc64le
 %{_bindir}/qemu-riscv32
 %{_bindir}/qemu-riscv64
@@ -1527,7 +1497,6 @@ getent passwd qemu >/dev/null || \
 %{_bindir}/qemu-sparc
 %{_bindir}/qemu-sparc32plus
 %{_bindir}/qemu-sparc64
-%{_bindir}/qemu-tilegx
 %{_bindir}/qemu-xtensa
 %{_bindir}/qemu-xtensaeb
 
@@ -1597,9 +1566,6 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/systemtap/tapset/qemu-ppc64.stp
 %{_datadir}/systemtap/tapset/qemu-ppc64-log.stp
 %{_datadir}/systemtap/tapset/qemu-ppc64-simpletrace.stp
-%{_datadir}/systemtap/tapset/qemu-ppc64abi32.stp
-%{_datadir}/systemtap/tapset/qemu-ppc64abi32-log.stp
-%{_datadir}/systemtap/tapset/qemu-ppc64abi32-simpletrace.stp
 %{_datadir}/systemtap/tapset/qemu-ppc64le.stp
 %{_datadir}/systemtap/tapset/qemu-ppc64le-log.stp
 %{_datadir}/systemtap/tapset/qemu-ppc64le-simpletrace.stp
@@ -1627,9 +1593,6 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/systemtap/tapset/qemu-sparc64.stp
 %{_datadir}/systemtap/tapset/qemu-sparc64-log.stp
 %{_datadir}/systemtap/tapset/qemu-sparc64-simpletrace.stp
-%{_datadir}/systemtap/tapset/qemu-tilegx.stp
-%{_datadir}/systemtap/tapset/qemu-tilegx-log.stp
-%{_datadir}/systemtap/tapset/qemu-tilegx-simpletrace.stp
 %{_datadir}/systemtap/tapset/qemu-xtensa.stp
 %{_datadir}/systemtap/tapset/qemu-xtensa-log.stp
 %{_datadir}/systemtap/tapset/qemu-xtensa-simpletrace.stp
@@ -1700,13 +1663,6 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/systemtap/tapset/qemu-system-hppa*.stp
 %{_mandir}/man1/qemu-system-hppa.1*
 %{_datadir}/%{name}/hppa-firmware.img
-
-
-%files system-lm32
-%files system-lm32-core
-%{_bindir}/qemu-system-lm32
-%{_datadir}/systemtap/tapset/qemu-system-lm32*.stp
-%{_mandir}/man1/qemu-system-lm32.1*
 
 
 %files system-m68k
@@ -1783,11 +1739,11 @@ getent passwd qemu >/dev/null || \
 %{_bindir}/qemu-system-riscv32
 %{_bindir}/qemu-system-riscv64
 %{_datadir}/systemtap/tapset/qemu-system-riscv*.stp
-%{_datadir}/qemu/opensbi-riscv32-virt-fw_jump.bin
-%{_datadir}/qemu/opensbi-riscv64-sifive_u-fw_jump.bin
-%{_datadir}/qemu/opensbi-riscv64-virt-fw_jump.bin
-%{_datadir}/qemu/opensbi-riscv32-sifive_u-fw_jump.bin
 %{_mandir}/man1/qemu-system-riscv*.1*
+%{_datadir}/qemu/opensbi-riscv32-generic-fw_dynamic.bin
+%{_datadir}/qemu/opensbi-riscv32-generic-fw_dynamic.elf
+%{_datadir}/qemu/opensbi-riscv64-generic-fw_dynamic.bin
+%{_datadir}/qemu/opensbi-riscv64-generic-fw_dynamic.elf
 
 
 %files system-s390x
@@ -1826,13 +1782,6 @@ getent passwd qemu >/dev/null || \
 %{_mandir}/man1/qemu-system-tricore.1*
 
 
-%files system-unicore32
-%files system-unicore32-core
-%{_bindir}/qemu-system-unicore32
-%{_datadir}/systemtap/tapset/qemu-system-unicore32*.stp
-%{_mandir}/man1/qemu-system-unicore32.1*
-
-
 %files system-x86
 %files system-x86-core
 %{_bindir}/qemu-system-i386
@@ -1853,7 +1802,8 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/%{name}/slof.bin
 %{_datadir}/qemu/vgabios-bochs-display.bin
 %{_datadir}/qemu/vgabios-ramfb.bin
-
+%{_datadir}/qemu/qboot.rom
+%{_datadir}/qemu/npcm7xx_bootrom.bin
 %{_datadir}/%{name}/pvh.bin
 %{_datadir}/%{name}/sgabios.bin
 %if 0%{?need_qemu_kvm}
