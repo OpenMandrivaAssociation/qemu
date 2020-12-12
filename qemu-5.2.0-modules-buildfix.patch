@@ -1,0 +1,41 @@
+diff -up qemu-5.2.0/configure.omv~ qemu-5.2.0/configure
+--- qemu-5.2.0/configure.omv~	2020-12-11 14:30:35.627269518 +0100
++++ qemu-5.2.0/configure	2020-12-11 14:30:42.136357129 +0100
+@@ -7014,6 +7014,7 @@ NINJA=$ninja $meson setup \
+         -Diconv=$iconv -Dcurses=$curses -Dlibudev=$libudev\
+         -Ddocs=$docs -Dsphinx_build=$sphinx_build -Dinstall_blobs=$blobs \
+         -Dvhost_user_blk_server=$vhost_user_blk_server \
++	-Db_lundef=false \
+         $cross_arg \
+         "$PWD" "$source_path"
+ 
+diff -up qemu-5.2.0/meson/mesonbuild/linkers.py.omv~ qemu-5.2.0/meson/mesonbuild/linkers.py
+--- qemu-5.2.0/meson/mesonbuild/linkers.py.omv~	2020-12-11 14:57:30.774088609 +0100
++++ qemu-5.2.0/meson/mesonbuild/linkers.py	2020-12-11 14:57:36.886171292 +0100
+@@ -542,8 +542,8 @@ class GnuLikeDynamicLinkerMixin:
+             return []
+         return ['-pthread']
+ 
+-    def no_undefined_args(self) -> T.List[str]:
+-        return self._apply_prefix('--no-undefined')
++#    def no_undefined_args(self) -> T.List[str]:
++#        return self._apply_prefix('--no-undefined')
+ 
+     def fatal_warnings(self) -> T.List[str]:
+         return self._apply_prefix('--fatal-warnings')
+diff -up qemu-5.2.0/meson/mesonbuild/compilers/compilers.py.omv~ qemu-5.2.0/meson/mesonbuild/compilers/compilers.py
+diff -up qemu-5.2.0/meson/mesonbuild/compilers/mixins/gnu.py.omv~ qemu-5.2.0/meson/mesonbuild/compilers/mixins/gnu.py
+--- qemu-5.2.0/meson/mesonbuild/compilers/mixins/gnu.py.omv~	2020-12-12 16:02:07.744791005 +0100
++++ qemu-5.2.0/meson/mesonbuild/compilers/mixins/gnu.py	2020-12-12 16:02:22.227005636 +0100
+@@ -142,8 +142,8 @@ class GnuLikeCompiler(metaclass=abc.ABCM
+     def __init__(self):
+         self.base_options = ['b_pch', 'b_lto', 'b_pgo', 'b_coverage',
+                              'b_ndebug', 'b_staticpic', 'b_pie']
+-        if not (self.info.is_windows() or self.info.is_cygwin() or self.info.is_openbsd()):
+-            self.base_options.append('b_lundef')
++#        if not (self.info.is_windows() or self.info.is_cygwin() or self.info.is_openbsd()):
++#            self.base_options.append('b_lundef')
+         if not self.info.is_windows() or self.info.is_cygwin():
+             self.base_options.append('b_asneeded')
+         if not self.info.is_hurd():
+diff -up qemu-5.2.0/meson/mesonbuild/compilers/mixins/intel.py.omv~ qemu-5.2.0/meson/mesonbuild/compilers/mixins/intel.py
