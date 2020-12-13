@@ -332,6 +332,7 @@ BuildRequires:	pkgconfig(vdeplug)
 
 BUildRequires:	pkgconfig(glib-2.0)
 
+BuildRequires:	meson
 BuildRequires:	pcre-static-devel
 BuildRequires:	glibc-static-devel
 BuildRequires:	gpg-error-static-devel
