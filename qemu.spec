@@ -1,10 +1,6 @@
 %define _disable_lto 1
 %define _disable_rebuild_configure 1
-%global _disable_ld_no_undefined 1
-# For -Ttext-segment
-%global ldflags %{ldflags} -fuse-ld=lld -flto
-
-%bcond_without seccomp
+%define _disable_ld_no_undefined 1
 
 %ifarch %{ix86}
 %global kvm_package   system-x86
@@ -22,7 +18,7 @@
 %ifarch s390x
 %global kvm_package   system-s390x
 %endif
-%ifarch armv7hnl
+%ifarch %{arm}
 %global kvm_package   system-arm
 %endif
 %ifarch aarch64
@@ -34,7 +30,10 @@
 
 %global user_static 1
 
-%global have_kvm 0%{?kvm_package:1}
+%global have_kvm 0
+%if 0%{?kvm_package:1}
+%global have_kvm 1
+%endif
 
 # Matches numactl ExcludeArch
 %global have_numactl 1
@@ -61,14 +60,12 @@
 
 # Matches xen ExclusiveArch
 %global have_xen 0
-%ifarch %{ix86} x86_64 armv7hl aarch64
-%global have_xen 0
-%endif
 
 %bcond_with rbd                 # disabled
 %bcond_without gtk              # enabled
 %bcond_without usbredir         # enabled
 %bcond_without spice            # enabled
+%bcond_without seccomp          # enabled
 
 %ifarch %{ix86} %{x86_64} %{armx}
 %global have_edk2 0
@@ -84,46 +81,65 @@
 %ifarch %{ix86}
 %global hostqemu i386-softmmu/qemu-system-i386
 %endif
-%ifarch x86_64
+%ifarch %{x86_64}
 %global hostqemu x86_64-softmmu/qemu-system-x86_64
 %endif
 
 # All modules should be listed here.
-%ifarch %{ix86} %{armx} %{x86_64} riscv64
+%ifarch %{ix86} %{arm}
 %define with_block_rbd 0
 %else
-%define with_block_rbd 1
+%define with_block_rbd 0
 %endif
+# not in main yet
 %global with_block_gluster 0
 
-%define evr %{epoch}:%{version}-%{release}
+%define EVRD %{epoch}:%{version}-%{release}
 
-%define requires_block_curl Requires: %{name}-block-curl = %{evr}
-%define requires_block_dmg Requires: %{name}-block-dmg = %{evr}
+%define requires_block_curl Requires: %{name}-block-curl = %{EVRD}
+%define requires_block_dmg Requires: %{name}-block-dmg = %{EVRD}
 %if %{with_block_gluster}
-%define requires_block_gluster Requires: %{name}-block-gluster = %{evr}
+%define requires_block_gluster Requires: %{name}-block-gluster = %{EVRD}
 %define obsoletes_block_gluster %{nil}
 %else
 %define requires_block_gluster %{nil}
-%define obsoletes_block_gluster Obsoletes: %{name}-block-gluster < %{evr}
+%define obsoletes_block_gluster Obsoletes: %{name}-block-gluster < %{EVRD}
 %endif
-%define requires_block_iscsi Requires: %{name}-block-iscsi = %{evr}
-%define requires_block_nfs Requires: %{name}-block-nfs = %{evr}
+%define requires_block_iscsi Requires: %{name}-block-iscsi = %{EVRD}
+%define requires_block_nfs Requires: %{name}-block-nfs = %{EVRD}
 %if %{with_block_rbd}
-%define requires_block_rbd Requires: %{name}-block-rbd = %{evr}
+%define requires_block_rbd Requires: %{name}-block-rbd = %{EVRD}
 %define obsoletes_block_rbd %{nil}
 %else
 %define requires_block_rbd %{nil}
-%define obsoletes_block_rbd Obsoletes: %{name}-block-rbd < %{evr}
+%define obsoletes_block_rbd Obsoletes: %{name}-block-rbd < %{EVRD}
 %endif
-%define requires_block_ssh Requires: %{name}-block-ssh = %{evr}
-%define requires_audio_alsa Requires: %{name}-audio-alsa = %{evr}
-%define requires_audio_oss Requires: %{name}-audio-oss = %{evr}
-%define requires_audio_pa Requires: %{name}-audio-pa = %{evr}
-%define requires_audio_sdl Requires: %{name}-audio-sdl = %{evr}
-%define requires_ui_curses Requires: %{name}-ui-curses = %{evr}
-%define requires_ui_gtk Requires: %{name}-ui-gtk = %{evr}
-%define requires_ui_sdl Requires: %{name}-ui-sdl = %{evr}
+%define requires_block_ssh Requires: %{name}-block-ssh = %{EVRD}
+%define requires_audio_alsa Requires: %{name}-audio-alsa = %{EVRD}
+%define requires_audio_oss Requires: %{name}-audio-oss = %{EVRD}
+%define requires_audio_pa Requires: %{name}-audio-pa = %{EVRD}
+%define requires_audio_sdl Requires: %{name}-audio-sdl = %{EVRD}
+%define requires_ui_curses Requires: %{name}-ui-curses = %{EVRD}
+%define requires_ui_gtk Requires: %{name}-ui-gtk = %{EVRD}
+%define requires_ui_sdl Requires: %{name}-ui-sdl = %{EVRD}
+%define requires_ui_egl_headless Requires: %{name}-ui-egl-headless = %{EVRD}
+%define requires_ui_opengl Requires: %{name}-ui-opengl = %{EVRD}
+%define requires_device_display_virtio_gpu Requires: %{name}-device-display-virtio-gpu = %{EVRD}
+%define requires_device_display_virtio_gpu_pci Requires: %{name}-device-display-virtio-gpu-pci = %{EVRD}
+%define requires_device_display_virtio_vga Requires: %{name}-device-display-virtio-vga = %{EVRD}
+%if %{have_spice}
+%define requires_ui_spice_app Requires: %{name}-ui-spice-app = %{EVRD}
+%define requires_ui_spice_core Requires: %{name}-ui-spice-core = %{EVRD}
+%define requires_device_display_qxl Requires: %{name}-device-display-qxl = %{EVRD}
+%define requires_audio_spice Requires: %{name}-audio-spice = %{EVRD}
+%define requires_char_spice Requires: %{name}-char-spice = %{EVRD}
+%else
+%define requires_ui_spice_app %{nil}
+%define requires_ui_spice_core %{nil}
+%define requires_device_display_qxl %{nil}
+%define requires_audio_spice %{nil}
+%define requires_char_spice %{nil}
+%endif
 
 %global requires_all_modules \
 %{requires_block_curl} \
@@ -137,32 +153,35 @@
 %{requires_audio_oss} \
 %{requires_audio_pa} \
 %{requires_audio_sdl} \
+%{requires_ui_egl_headless} \
+%{requires_ui_opengl} \
+%{requires_device_display_virtio_gpu} \
+%{requires_device_display_virtio_gpu_pci} \
+%{requires_device_display_virtio_vga} \
 %{requires_ui_curses} \
 %{requires_ui_gtk} \
-%{requires_ui_sdl}
+%{requires_ui_sdl} \
+%{requires_ui_spice_app} \
+%{requires_ui_spice_core} \
+%{requires_char_spice} \
+%{requires_device_display_qxl}
 
 # Modules which can be conditionally built
 %global obsoletes_some_modules \
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-# Release candidate version tracking
-#global rcver 3
-%if "%{?rcver}" != ""
-%global rcrel .rc%{rcver}
-%global rcstr -rc%{rcver}
-%endif
+Summary:	QEMU is a FAST! processor emulator
+Name:		qemu
+Version:	5.2.0
+Release:	1
+Group:		Emulators
+Epoch:		3
+License:	GPLv2 and BSD and MIT and CC-BY
+URL:		http://www.qemu.org/
 
-
-Summary: QEMU is a FAST! processor emulator
-Name: qemu
-Version: 5.2.0
-Release: %{?rcver:0%{rcrel}.}1
-Epoch: 3
-License: GPLv2 and BSD and MIT and CC-BY
-URL: http://www.qemu.org/
-
-Source0: http://wiki.qemu-project.org/download/%{name}-%{version}%{?rcstr}.tar.xz
+Source0: https://download.qemu.org/%{name}-%{version}.tar.xz
+Source1: qemu.rpmlintrc
 
 # guest agent service
 Source10: qemu-guest-agent.service
@@ -181,13 +200,13 @@ Source20: kvm-x86.modprobe.conf
 # /etc/security/limits.d/95-kvm-ppc64-memlock.conf
 Source21: 95-kvm-ppc64-memlock.conf
 
-Patch0: qemu-5.2.0-modules-buildfix.patch
-
 BuildRequires: %mklibname zstd -s -d
+BuildRequires: meson
 # documentation deps
 BuildRequires: texinfo
+BuildRequires: capstone-devel
 # For /usr/bin/pod2man
-BuildRequires: perl-podlators
+#BuildRequires: perl-podlators
 # For sanity test
 # BuildRequires: qemu-sanity-check-nodeps
 %if %{have_iasl}
@@ -195,12 +214,17 @@ BuildRequires: perl-podlators
 BuildRequires: iasl
 %endif
 # For chrpath calls in specfile
-BuildRequires: chrpath
+BuildRequires:	chrpath
+BuildRequires:	pkgconfig(libibverbs)
 
 # -display sdl support
 BuildRequires:	pkgconfig(sdl2)
+BuildRequires:	pkgconfig(SDL2_image)
+BuildRequires:	pkgconfig(libzstd)
 # used in various places for compression
 BuildRequires:	zlib-devel
+BuildRequires:	pkgconfig(vdeplug)
+BuildRequires:	xfsprogs-devel
 
 # used in various places for crypto
 BuildRequires:	gnutls-devel
@@ -212,6 +236,7 @@ BuildRequires:	libaio-devel
 BuildRequires:	pkgconfig(libpulse)
 # alsa audio output
 BuildRequires:	alsa-oss-devel
+BuildRequires:	pkgconfig(alsa)
 # qemu-pr-helper multipath support (requires libudev too)
 BuildRequires:	device-mapper-multipath-devel
 BuildRequires:	systemd
@@ -248,7 +273,7 @@ BuildRequires: pkgconfig(libseccomp) >= 2.3.0
 BuildRequires: pkgconfig(libcurl)
 %if %{with_block_rbd}
 # For rbd block driver
-BuildRequires: rados2-devel
+BuildRequires: ceph-devel
 %endif
 # We need both because the 'stap' binary is probed for by configure
 BuildRequires: systemtap
@@ -270,7 +295,6 @@ BuildRequires:	pkgconfig(pixman-1)
 %if %{with_block_gluster}
 # For gluster support
 BuildRequires: glusterfs-devel >= 3.4.0
-BuildRequires: glusterfs-api-devel >= 3.4.0
 %endif
 # Needed for usb passthrough for qemu >= 1.5
 BuildRequires:	pkgconfig(libusb-1.0)
@@ -292,7 +316,7 @@ BuildRequires: xen-devel
 %endif
 %if %{have_numactl}
 # qemu 2.1: needed for memdev hostmem backend
-%ifnarch %{armx} %{risc}
+%ifnarch %{arm} %{risc}
 BuildRequires:	numa-devel
 %endif
 %endif
@@ -311,10 +335,11 @@ BuildRequires:	pkgconfig(gl)
 # gpu vhost
 BuildRequires:	pkgconfig(gbm)
 # qemu 2.11: preferred disassembler for TCG
-#BuildRequires:	capstone-devel
+BuildRequires:	capstone-devel
+BuildRequires:	pkgconfig(slirp)
 # qemu 2.12: parallels disk images require libxml2 now
 BuildRequires:	pkgconfig(libxml-2.0)
-%ifarch x86_64
+%ifarch %{x86_64}
 # qemu 3.1: Used for nvdimm
 #BuildRequires: libpmem-devel
 %endif
@@ -323,16 +348,14 @@ BuildRequires:	pkgconfig(udev)
 # qemu 4.0: Use for qauth infrastructure
 BuildRequires:	pam-devel
 # qemu 4.0: sphinx-build used for some docs
-BuildRequires:	python-sphinx
+BuildRequires:	python3-sphinx
 # qemu 4.0: Used by test suite ./scripts/tap-driver.pl
 BuildRequires:	perl-Test-Harness
 # Required for making python shebangs versioned
-BuildRequires:	python-devel
-BuildRequires:	pkgconfig(vdeplug)
+BuildRequires:	python3-devel
+BuildRequires:	pkgconfig(glib-2.0)
+BuildRequires:	glib2-static-devel
 
-BUildRequires:	pkgconfig(glib-2.0)
-
-BuildRequires:	meson
 BuildRequires:	pcre-static-devel
 BuildRequires:	glibc-static-devel
 BuildRequires:	gpg-error-static-devel
@@ -346,29 +369,26 @@ BuildRequires:	gpg-error-static-devel
 BuildRequires: grubby
 %endif
 
-Requires: %{name}-user = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-aarch64 = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-alpha = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-arm = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-avr = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-cris = %{epoch}:%{version}-%{release}
-Obsoletes: %{name}-system-lm32 < %{epoch}:%{version}-%{release}
-Requires: %{name}-system-m68k = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-microblaze = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-mips = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-moxie = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-nios2 = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-or1k = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-ppc = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-riscv = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-s390x = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-sh4 = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-sparc = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-tricore = %{epoch}:%{version}-%{release}
-Obsoletes: %{name}-system-unicore32 < %{epoch}:%{version}-%{release}
-Requires: %{name}-system-x86 = %{epoch}:%{version}-%{release}
-Requires: %{name}-system-xtensa = %{epoch}:%{version}-%{release}
-Requires: %{name}-img = %{epoch}:%{version}-%{release}
+Requires: %{name}-user = %{EVRD}
+Requires: %{name}-system-aarch64 = %{EVRD}
+Requires: %{name}-system-alpha = %{EVRD}
+Requires: %{name}-system-arm = %{EVRD}
+Requires: %{name}-system-avr = %{EVRD}
+Requires: %{name}-system-cris = %{EVRD}
+Requires: %{name}-system-m68k = %{EVRD}
+Requires: %{name}-system-microblaze = %{EVRD}
+Requires: %{name}-system-mips = %{EVRD}
+Requires: %{name}-system-nios2 = %{EVRD}
+Requires: %{name}-system-or1k = %{EVRD}
+Requires: %{name}-system-ppc = %{EVRD}
+Requires: %{name}-system-riscv = %{EVRD}
+Requires: %{name}-system-s390x = %{EVRD}
+Requires: %{name}-system-sh4 = %{EVRD}
+Requires: %{name}-system-sparc = %{EVRD}
+Requires: %{name}-system-tricore = %{EVRD}
+Requires: %{name}-system-x86 = %{EVRD}
+Requires: %{name}-system-xtensa = %{EVRD}
+Requires: %{name}-img = %{EVRD}
 
 
 %description
@@ -462,7 +482,7 @@ This package provides a command line tool for manipulating disk images
 
 %package  block-curl
 Summary: QEMU CURL block driver
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description block-curl
 This package provides the additional CURL block driver for QEMU.
 
@@ -472,7 +492,7 @@ http, https, ftp and other transports provided by the CURL library.
 
 %package  block-dmg
 Summary: QEMU block driver for DMG disk images
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description block-dmg
 This package provides the additional DMG block driver for QEMU.
 
@@ -482,7 +502,7 @@ Install this package if you want to open '.dmg' files.
 %if %{with_block_gluster}
 %package  block-gluster
 Summary: QEMU Gluster block driver
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description block-gluster
 This package provides the additional Gluster block driver for QEMU.
 
@@ -492,7 +512,7 @@ Install this package if you want to access remote Gluster storage.
 
 %package  block-iscsi
 Summary: QEMU iSCSI block driver
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description block-iscsi
 This package provides the additional iSCSI block driver for QEMU.
 
@@ -501,7 +521,7 @@ Install this package if you want to access iSCSI volumes.
 
 %package  block-nfs
 Summary: QEMU NFS block driver
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 
 %description block-nfs
 This package provides the additional NFS block driver for QEMU.
@@ -512,7 +532,9 @@ Install this package if you want to access remote NFS storage.
 %if %{with_block_rbd}
 %package  block-rbd
 Summary: QEMU Ceph/RBD block driver
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+Provides: qemu-kvm-block-rbd = %{EVRD}
+Requires: %{name}-common = %{EVRD}
+
 %description block-rbd
 This package provides the additional Ceph/RBD block driver for QEMU.
 
@@ -522,7 +544,8 @@ using the rbd protocol.
 
 %package  block-ssh
 Summary: QEMU SSH block driver
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
+Provides: qemu-kvm-block-ssh = %{EVRD}
 %description block-ssh
 This package provides the additional SSH block driver for QEMU.
 
@@ -532,57 +555,120 @@ the Secure Shell (SSH) protocol.
 
 %package  audio-alsa
 Summary: QEMU ALSA audio driver
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description audio-alsa
 This package provides the additional ALSA audio driver for QEMU.
 
 %package  audio-oss
 Summary: QEMU OSS audio driver
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description audio-oss
 This package provides the additional OSS audio driver for QEMU.
 
 %package  audio-pa
 Summary: QEMU PulseAudio audio driver
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description audio-pa
 This package provides the additional PulseAudi audio driver for QEMU.
 
 %package  audio-sdl
 Summary: QEMU SDL audio driver
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description audio-sdl
 This package provides the additional SDL audio driver for QEMU.
 
 
 %package  ui-curses
 Summary: QEMU curses UI driver
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description ui-curses
 This package provides the additional curses UI for QEMU.
 
 %package  ui-gtk
 Summary: QEMU GTK UI driver
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description ui-gtk
 This package provides the additional GTK UI for QEMU.
 
 %package  ui-sdl
 Summary: QEMU SDL UI driver
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description ui-sdl
 This package provides the additional SDL UI for QEMU.
 
-%package  ui-spice
+%package  ui-egl-headless
+Summary: QEMU EGL headless driver
+Requires: %{name}-common = %{EVRD}
+Requires: %{name}-ui-opengl = %{EVRD}
+%description ui-egl-headless
+This package provides the additional egl-headless UI for QEMU.
+
+%package  ui-opengl
+Summary: QEMU OpenGL driver
+Requires: %{name}-common = %{EVRD}
+%description ui-opengl
+This package provides the additional opengl UI for QEMU.
+
+%package device-display-virtio-gpu
+Summary: QEMU virtio-gpu display device
+Requires: %{name}-common = %{EVRD}
+%description device-display-virtio-gpu
+This package provides the virtio-gpu display device for QEMU.
+
+%package device-display-virtio-gpu-pci
+Summary: QEMU virtio-gpu-pci display device
+Requires: %{name}-common = %{EVRD}
+
+%description device-display-virtio-gpu-pci
+This package provides the virtio-gpu-pci display device for QEMU.
+
+%package device-display-virtio-vga
+Summary: QEMU virtio-vga display device
+Requires: %{name}-common = %{EVRD}
+%description device-display-virtio-vga
+This package provides the virtio-vga display device for QEMU.
+
+%if %{have_spice}
+%package  ui-spice-core
 Summary: QEMU Spice UI driver
-Requires: %{name}-common%{?_isa} = %{epoch}:%{version}-%{release}
-%description ui-spice
+Requires: %{name}-common = %{EVRD}
+%description ui-spice-core
 This package provides the additional Spice UI for QEMU.
+
+%package  ui-spice-app
+Summary: QEMU spice-app UI driver
+Requires: %{name}-common = %{EVRD}
+Requires: %{name}-ui-spice-core = %{EVRD}
+Requires: %{name}-char-spice = %{EVRD}
+%description ui-spice-app
+This package provides the additional spice-app UI for QEMU.
+
+%package device-display-qxl
+Summary: QEMU QXL display device
+Requires: %{name}-common = %{EVRD}
+Requires: %{name}-ui-spice-core = %{EVRD}
+%description device-display-qxl
+This package provides the QXL display device for QEMU.
+
+%package  char-spice
+Summary: QEMU spice chardev driver
+Requires: %{name}-common = %{EVRD}
+Requires: %{name}-ui-spice-core = %{EVRD}
+%description char-spice
+This package provides the spice chardev driver for QEMU.
+
+%package  audio-spice
+Summary: QEMU spice audio driver
+Requires: %{name}-common = %{EVRD}
+Requires: %{name}-ui-spice-core = %{EVRD}
+%description audio-spice
+This package provides the spice audio driver for QEMU.
+%endif
 
 %if %{have_kvm}
 %package kvm
 Summary: QEMU metapackage for KVM support
-Requires: qemu-%{kvm_package} = %{epoch}:%{version}-%{release}
+Requires: qemu-%{kvm_package} = %{EVRD}
 %description kvm
 This is a meta-package that provides a qemu-system-<arch> package for native
 architectures where kvm can be enabled. For example, in an x86 system, this
@@ -591,7 +677,7 @@ will install qemu-system-x86
 
 %package kvm-core
 Summary: QEMU metapackage for KVM support
-Requires: qemu-%{kvm_package}-core = %{epoch}:%{version}-%{release}
+Requires: qemu-%{kvm_package}-core = %{EVRD}
 %description kvm-core
 This is a meta-package that provides a qemu-system-<arch>-core package
 for native architectures where kvm can be enabled. For example, in an
@@ -601,7 +687,7 @@ x86 system, this will install qemu-system-x86-core
 
 %package user
 Summary: QEMU user mode emulation of qemu targets
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 # On upgrade, make qemu-user get replaced with qemu-user + qemu-user-binfmt
 Obsoletes: %{name}-user < 2:2.6.0-5%{?dist}
 %description user
@@ -610,7 +696,7 @@ This package provides the user mode emulation of qemu targets
 
 %package user-binfmt
 Summary: QEMU user mode emulation of qemu targets
-Requires: %{name}-user = %{epoch}:%{version}-%{release}
+Requires: %{name}-user = %{EVRD}
 Requires(post): systemd-units
 Requires(postun): systemd-units
 # qemu-user-binfmt + qemu-user-static both provide binfmt rules
@@ -623,7 +709,7 @@ This package provides the user mode emulation of qemu targets
 %if %{user_static}
 %package user-static-tapset
 Summary: QEMU user mode emulation of qemu targets static build
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 
 %description user-static-tapset
 This package provides the user mode emulation of qemu targets built as
@@ -633,14 +719,14 @@ static binaries
 
 %package system-aarch64
 Summary: QEMU system emulator for AArch64
-Requires: %{name}-system-aarch64-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-aarch64-core = %{EVRD}
 %{requires_all_modules}
 %description system-aarch64
 This package provides the QEMU system emulator for AArch64.
 
 %package system-aarch64-core
 Summary: QEMU system emulator for AArch64
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %if %{have_edk2}
 Requires: edk2-aarch64
 %endif
@@ -650,147 +736,132 @@ This package provides the QEMU system emulator for AArch64.
 
 %package system-alpha
 Summary: QEMU system emulator for Alpha
-Requires: %{name}-system-alpha-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-alpha-core = %{EVRD}
 %{requires_all_modules}
 %description system-alpha
 This package provides the QEMU system emulator for Alpha systems.
 
 %package system-alpha-core
 Summary: QEMU system emulator for Alpha
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-alpha-core
 This package provides the QEMU system emulator for Alpha systems.
 
 
 %package system-arm
 Summary: QEMU system emulator for ARM
-Requires: %{name}-system-arm-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-arm-core = %{EVRD}
 %{requires_all_modules}
 %description system-arm
 This package provides the QEMU system emulator for ARM systems.
 
 %package system-arm-core
 Summary: QEMU system emulator for ARM
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-arm-core
 This package provides the QEMU system emulator for ARM boards.
 
-
 %package system-avr
 Summary: QEMU system emulator for ARM
-Requires: %{name}-system-avr-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-avr-core = %{EVRD}
 %{requires_all_modules}
 %description system-avr
 This package provides the QEMU system emulator for AVR systems.
 
 %package system-avr-core
 Summary: QEMU system emulator for ARM
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-avr-core
 This package provides the QEMU system emulator for AVR boards.
 
 
 %package system-cris
 Summary: QEMU system emulator for CRIS
-Requires: %{name}-system-cris-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-cris-core = %{EVRD}
 %{requires_all_modules}
 %description system-cris
 This package provides the system emulator for CRIS systems.
 
 %package system-cris-core
 Summary: QEMU system emulator for CRIS
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-cris-core
 This package provides the system emulator for CRIS boards.
 
 
 %package system-hppa
 Summary: QEMU system emulator for HPPA
-Requires: %{name}-system-hppa-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-hppa-core = %{EVRD}
 %{requires_all_modules}
 %description system-hppa
 This package provides the QEMU system emulator for HPPA.
 
 %package system-hppa-core
 Summary: QEMU system emulator for hppa
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-hppa-core
 This package provides the QEMU system emulator for HPPA.
 
 
 %package system-m68k
 Summary: QEMU system emulator for ColdFire (m68k)
-Requires: %{name}-system-m68k-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-m68k-core = %{EVRD}
 %{requires_all_modules}
 %description system-m68k
 This package provides the QEMU system emulator for ColdFire boards.
 
 %package system-m68k-core
 Summary: QEMU system emulator for ColdFire (m68k)
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-m68k-core
 This package provides the QEMU system emulator for ColdFire boards.
 
 
 %package system-microblaze
 Summary: QEMU system emulator for Microblaze
-Requires: %{name}-system-microblaze-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-microblaze-core = %{EVRD}
 %{requires_all_modules}
 %description system-microblaze
 This package provides the QEMU system emulator for Microblaze boards.
 
 %package system-microblaze-core
 Summary: QEMU system emulator for Microblaze
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-microblaze-core
 This package provides the QEMU system emulator for Microblaze boards.
 
 
 %package system-mips
 Summary: QEMU system emulator for MIPS
-Requires: %{name}-system-mips-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-mips-core = %{EVRD}
 %{requires_all_modules}
 %description system-mips
 This package provides the QEMU system emulator for MIPS systems.
 
 %package system-mips-core
 Summary: QEMU system emulator for MIPS
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-mips-core
 This package provides the QEMU system emulator for MIPS systems.
 
 
-%package system-moxie
-Summary: QEMU system emulator for Moxie
-Requires: %{name}-system-moxie-core = %{epoch}:%{version}-%{release}
-%{requires_all_modules}
-%description system-moxie
-This package provides the QEMU system emulator for Moxie boards.
-
-%package system-moxie-core
-Summary: QEMU system emulator for Moxie
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
-%description system-moxie-core
-This package provides the QEMU system emulator for Moxie boards.
-
-
 %package system-nios2
 Summary: QEMU system emulator for nios2
-Requires: %{name}-system-nios2-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-nios2-core = %{EVRD}
 %{requires_all_modules}
 %description system-nios2
 This package provides the QEMU system emulator for NIOS2.
 
 %package system-nios2-core
 Summary: QEMU system emulator for nios2
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-nios2-core
 This package provides the QEMU system emulator for NIOS2.
 
 
 %package system-or1k
 Summary: QEMU system emulator for OpenRisc32
-Requires: %{name}-system-or1k-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-or1k-core = %{EVRD}
 Obsoletes: %{name}-system-or32 < 2:2.9.0
 %{requires_all_modules}
 %description system-or1k
@@ -798,7 +869,7 @@ This package provides the QEMU system emulator for OpenRisc32 boards.
 
 %package system-or1k-core
 Summary: QEMU system emulator for OpenRisc32
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 Obsoletes: %{name}-system-or32-core < 2:2.9.0
 %description system-or1k-core
 This package provides the QEMU system emulator for OpenRisc32 boards.
@@ -806,14 +877,14 @@ This package provides the QEMU system emulator for OpenRisc32 boards.
 
 %package system-ppc
 Summary: QEMU system emulator for PPC
-Requires: %{name}-system-ppc-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-ppc-core = %{EVRD}
 %{requires_all_modules}
 %description system-ppc
 This package provides the QEMU system emulator for PPC and PPC64 systems.
 
 %package system-ppc-core
 Summary: QEMU system emulator for PPC
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 Requires: seabios
 Requires: sgabios
 Requires: vgabios
@@ -823,81 +894,77 @@ This package provides the QEMU system emulator for PPC and PPC64 systems.
 
 %package system-riscv
 Summary: QEMU system emulator for RISC-V
-Requires: %{name}-system-riscv-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-riscv-core = %{EVRD}
 %{requires_all_modules}
 %description system-riscv
 This package provides the QEMU system emulator for RISC-V systems.
 
 %package system-riscv-core
 Summary: QEMU system emulator for RISC-V
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-riscv-core
 This package provides the QEMU system emulator for RISC-V systems.
 
-%package system-rx
-Summary: QEMU system emulator for Renesas RX
-%description system-rx
-This package provides the QEMU system emulator for Renesas RX
 
 %package system-s390x
 Summary: QEMU system emulator for S390
-Requires: %{name}-system-s390x-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-s390x-core = %{EVRD}
 %{requires_all_modules}
 %description system-s390x
 This package provides the QEMU system emulator for S390 systems.
 
 %package system-s390x-core
 Summary: QEMU system emulator for S390
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-s390x-core
 This package provides the QEMU system emulator for S390 systems.
 
 
 %package system-sh4
 Summary: QEMU system emulator for SH4
-Requires: %{name}-system-sh4-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-sh4-core = %{EVRD}
 %{requires_all_modules}
 %description system-sh4
 This package provides the QEMU system emulator for SH4 boards.
 
 %package system-sh4-core
 Summary: QEMU system emulator for SH4
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-sh4-core
 This package provides the QEMU system emulator for SH4 boards.
 
 
 %package system-sparc
 Summary: QEMU system emulator for SPARC
-Requires: %{name}-system-sparc-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-sparc-core = %{EVRD}
 %{requires_all_modules}
 %description system-sparc
 This package provides the QEMU system emulator for SPARC and SPARC64 systems.
 
 %package system-sparc-core
 Summary: QEMU system emulator for SPARC
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-sparc-core
 This package provides the QEMU system emulator for SPARC and SPARC64 systems.
 
 
 %package system-tricore
 Summary: QEMU system emulator for tricore
-Requires: %{name}-system-tricore-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-tricore-core = %{EVRD}
 %{requires_all_modules}
 %description system-tricore
 This package provides the QEMU system emulator for Tricore.
 
 %package system-tricore-core
 Summary: QEMU system emulator for tricore
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-tricore-core
 This package provides the QEMU system emulator for Tricore.
 
 
 %package system-x86
 Summary: QEMU system emulator for x86
-Requires: %{name}-system-x86-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-x86-core = %{EVRD}
 %{requires_all_modules}
 %description system-x86
 This package provides the QEMU system emulator for x86. When being run in a x86
@@ -906,7 +973,7 @@ platform.
 
 %package system-x86-core
 Summary: QEMU system emulator for x86
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 Requires: seabios
 Requires: sgabios
 Requires: vgabios
@@ -921,16 +988,21 @@ platform.
 
 %package system-xtensa
 Summary: QEMU system emulator for Xtensa
-Requires: %{name}-system-xtensa-core = %{epoch}:%{version}-%{release}
+Requires: %{name}-system-xtensa-core = %{EVRD}
 %{requires_all_modules}
 %description system-xtensa
 This package provides the QEMU system emulator for Xtensa boards.
 
 %package system-xtensa-core
 Summary: QEMU system emulator for Xtensa
-Requires: %{name}-common = %{epoch}:%{version}-%{release}
+Requires: %{name}-common = %{EVRD}
 %description system-xtensa-core
 This package provides the QEMU system emulator for Xtensa boards.
+
+%package system-rx
+Summary: QEMU system emulator for Renesas RX
+%description system-rx
+This package provides the QEMU system emulator for Renesas RX
 
 %ifarch %{armx}
 	#list with conf file in binfmt
@@ -956,7 +1028,7 @@ QEMU static binary for $archstatic
 
 %%files $archstatic-static
 %{_bindir}/qemu-$archstatic-static
-%optional /usr/lib/binfmt.d/qemu-$archstatic-static.conf
+/usr/lib/binfmt.d/qemu-$archstatic-static.conf
 
 %post -n qemu-$archstatic-static
 %{_bindir}/systemctl restart systemd-binfmt
@@ -980,14 +1052,13 @@ done)}
 
 
 %prep
-%autosetup -p1 -n qemu-%{version}%{?rcstr}
+%setup -q -n qemu-%{version}%{?rcstr}
+%autopatch -p1
 
 %build
-%set_build_flags
-
 export CC=gcc
 export CXX=g++
-
+%set_build_flags
 # drop -g flag to prevent memory exhaustion by linker
 %ifarch s390
 %global optflags %(echo %{optflags} | sed 's/-g//')
@@ -999,10 +1070,10 @@ sed -i.debug 's/"-g $CFLAGS"/"$CFLAGS"/g' configure
 %global _smp_mflags %{nil}
 %endif
 
-
 # --build-id option is used for giving info to the debug packages.
 extraldflags="-Wl,--build-id";
 buildldflags="VL_LDFLAGS=-Wl,--build-id"
+export LINK_ARGS="%ldflags"
 
 # As of qemu 2.1, --enable-trace-backends supports multiple backends,
 # but there's a performance impact for non-dtrace so we don't use them
@@ -1026,21 +1097,20 @@ run_configure() {
         --disable-strip \
         --disable-werror \
         --enable-kvm \
-        --python=%{__python3} \
 %ifarch s390 %{mips64}
         --enable-tcg-interpreter \
 %endif
         --enable-trace-backend=$tracebackends \
-        --extra-ldflags="%{ldflags} $extraldflags -Wl,-z,relro -Wl,-z,now" \
-        --extra-cflags="%{optflags} -fPIC" \
+        --extra-ldflags="$extraldflags -Wl,-z,relro -Wl,-z,now" \
+        --extra-cflags="%{optflags}" \
         "$@" || cat config.log
-    # FIXME finding where this comes from would be nicer than hacking it out
-    sed -i -e 's|-Wl,--no-undefined ||g' config-host.mak build.ninja
+    sed -i -e 's| -Wl,--no-undefined||g' config-host.mak
 }
 
 mkdir build-dynamic
 pushd build-dynamic
 
+#--enable-slirp=system \
 run_configure \
     --enable-system \
     --enable-linux-user \
@@ -1048,10 +1118,21 @@ run_configure \
     --enable-modules \
     --audio-drv-list=pa,sdl,alsa,oss \
     --tls-priority=@QEMU,SYSTEM \
+    --target-list-exclude=moxie-softmmu \
+    --enable-kvm \
     --enable-mpath \
     %{spiceflag}
 
-make %{?_smp_mflags} $buildldflags
+echo "config-host.mak contents:"
+echo "==="
+cat config-host.mak
+echo "==="
+
+# dirty hack
+pwd
+sed -i 's!-Wl,--no-undefined!!g' build.ninja
+
+%make_build $buildldflags
 
 popd
 
@@ -1063,10 +1144,12 @@ run_configure \
     --disable-system \
     --enable-linux-user \
     --static \
+    --disable-capstone \
     --disable-pie \
     --disable-sdl \
     --disable-gtk \
     --disable-spice \
+    --disable-zstd \
     --disable-tools \
     --disable-guest-agent \
     --disable-guest-agent-msi \
@@ -1083,7 +1166,7 @@ run_configure \
     --disable-xen \
     --disable-rdma
 
-make V=1 %{?_smp_mflags} $buildldflags
+%make_build $buildldflags
 
 popd
 %endif
@@ -1254,7 +1337,6 @@ done
 # RPM won't pick up their dependencies.
 chmod +x %{buildroot}%{_libdir}/qemu/*.so
 
-
 %check
 
 # Tests are hanging on s390 as of 2.3.0
@@ -1263,7 +1345,7 @@ chmod +x %{buildroot}%{_libdir}/qemu/*.so
 # it disabled.
 %global archs_skip_tests s390
 # Tests seem to be broken in 4.2.0 with current glib
-# MALLOC_PERTURB_=${MALLOC_PERTURB_:-$(( ${RANDOM:-0} % 255 + 1))}  QTEST_QEMU_BINARY=aarch64-softmmu/qemu-system-aarch64 QTEST_QEMU_IMG=qemu-img tests/modules-test -m=quick -k --tap < /dev/null | ./scripts/tap-driver.pl --test-name="modules-test" 
+# MALLOC_PERTURB_=${MALLOC_PERTURB_:-$(( ${RANDOM:-0} % 255 + 1))}  QTEST_QEMU_BINARY=aarch64-softmmu/qemu-system-aarch64 QTEST_QEMU_IMG=qemu-img tests/modules-test -m=quick -k --tap < /dev/null | ./scripts/tap-driver.pl --test-name="modules-test"
 #
 #(tests/modules-test:1584256): GLib-ERROR **: 03:34:48.134: duplicate test case path: /aarch64//module/load/sdl
 # ERROR - Bail out! GLib-FATAL-ERROR: duplicate test case path: /aarch64//module/load/sdl
@@ -1288,7 +1370,8 @@ make check V=1
 qemu-sanity-check --qemu=%{?hostqemu} ||:
 %endif
 
-%endif  # archs_skip_tests
+%endif
+# archs_skip_tests
 popd
 
 
@@ -1339,7 +1422,7 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/%{name}/vgabios-ati.bin
 %{_datadir}/%{name}/pxe-e1000.rom
 %{_datadir}/%{name}/efi-e1000.rom
-#{_datadir}/%{name}/pxe-e1000e.rom
+#%%{_datadir}/%%{name}/pxe-e1000e.rom
 %{_datadir}/%{name}/efi-e1000e.rom
 %{_datadir}/%{name}/pxe-eepro100.rom
 %{_datadir}/%{name}/efi-eepro100.rom
@@ -1351,7 +1434,7 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/%{name}/efi-rtl8139.rom
 %{_datadir}/%{name}/pxe-virtio.rom
 %{_datadir}/%{name}/efi-virtio.rom
-#{_datadir}/%{name}/pxe-vmxnet3.rom
+#%%{_datadir}/%%{name}/pxe-vmxnet3.rom
 %{_datadir}/%{name}/efi-vmxnet3.rom
 %{_datadir}/%{name}/edk2-licenses.txt
 %{_datadir}/%{name}/edk2*.fd
@@ -1362,37 +1445,34 @@ getent passwd qemu >/dev/null || \
 %{_mandir}/man1/qemu.1*
 %{_mandir}/man1/qemu-trace-stap.1*
 %{_mandir}/man1/virtfs-proxy-helper.1*
-%if %{with seccomp}
-%{_mandir}/man1/virtiofsd.1*
-%{_libexecdir}/virtiofsd
-%{_libexecdir}/virtfs-proxy-helper
-%{_datadir}/qemu/vhost-user/50-qemu-virtiofsd.json
-%endif
 %{_mandir}/man7/qemu-block-drivers.7*
 %{_mandir}/man7/qemu-cpu-models.7*
 %{_mandir}/man7/qemu-ga-ref.7*
 %{_mandir}/man7/qemu-qmp-ref.7*
+%{_mandir}/man8/qemu-pr-helper.8*
 %{_bindir}/elf2dmp
 %{_bindir}/qemu-edid
 %{_bindir}/qemu-keymap
 %{_bindir}/qemu-trace-stap
+%if %{with seccomp}
+%{_mandir}/man1/virtiofsd.1*
+%{_libexecdir}/virtiofsd
+%{_bindir}/qemu-pr-helper
+%{_libexecdir}/virtfs-proxy-helper
+%{_datadir}/qemu/vhost-user/50-qemu-virtiofsd.json
+%endif
 %{_bindir}/qemu-storage-daemon
 %{_unitdir}/qemu-pr-helper.service
 %{_unitdir}/qemu-pr-helper.socket
-%{_bindir}/qemu-pr-helper
-%{_mandir}/man8/qemu-pr-helper.8*
 %attr(4755, root, root) %{_libexecdir}/qemu-bridge-helper
 %{_libexecdir}/vhost-user-gpu
 %config(noreplace) %{_sysconfdir}/sasl2/qemu.conf
 %dir %{_sysconfdir}/qemu
 %config(noreplace) %{_sysconfdir}/qemu/bridge.conf
 %dir %{_libdir}/qemu
+%if %{have_spice}
 %{_libdir}/qemu/hw-display-qxl.so
-%{_libdir}/qemu/hw-display-virtio-gpu-pci.so
-%{_libdir}/qemu/hw-display-virtio-gpu.so
-%{_libdir}/qemu/hw-display-virtio-vga.so
-%{_libdir}/qemu/ui-egl-headless.so
-%{_libdir}/qemu/ui-opengl.so
+%endif
 %{_libdir}/qemu/hw-usb-redirect.so
 %{_libdir}/qemu/hw-usb-smartcard.so
 
@@ -1443,18 +1523,36 @@ getent passwd qemu >/dev/null || \
 %files audio-sdl
 %{_libdir}/qemu/audio-sdl.so
 
-
 %files ui-curses
 %{_libdir}/qemu/ui-curses.so
 %files ui-gtk
 %{_libdir}/qemu/ui-gtk.so
 %files ui-sdl
 %{_libdir}/qemu/ui-sdl.so
-%files ui-spice
-%{_libdir}/qemu/ui-spice-app.so
+%files ui-egl-headless
+%{_libdir}/qemu/ui-egl-headless.so
+%files ui-opengl
+%{_libdir}/qemu/ui-opengl.so
+
+%files device-display-virtio-gpu
+%{_libdir}/qemu/hw-display-virtio-gpu.so
+%files device-display-virtio-gpu-pci
+%{_libdir}/qemu/hw-display-virtio-gpu-pci.so
+%files device-display-virtio-vga
+%{_libdir}/qemu/hw-display-virtio-vga.so
+
+%if %{have_spice}
+%files audio-spice
 %{_libdir}/qemu/audio-spice.so
+%files char-spice
 %{_libdir}/qemu/chardev-spice.so
+%files device-display-qxl
+%{_libdir}/qemu/hw-display-qxl.so
+%files ui-spice-core
 %{_libdir}/qemu/ui-spice-core.so
+%files ui-spice-app
+%{_libdir}/qemu/ui-spice-app.so
+%endif
 
 
 %if %{have_kvm}
@@ -1615,12 +1713,6 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/systemtap/tapset/qemu-*-static.stp
 %endif
 
-%files system-rx
-%{_bindir}/qemu-system-rx
-%{_datadir}/man/man1/qemu-system-rx.1*
-%{_datadir}/systemtap/tapset/qemu-system-rx-log.stp
-%{_datadir}/systemtap/tapset/qemu-system-rx-simpletrace.stp
-%{_datadir}/systemtap/tapset/qemu-system-rx.stp
 
 %files system-aarch64
 %files system-aarch64-core
@@ -1641,14 +1733,8 @@ getent passwd qemu >/dev/null || \
 %files system-arm-core
 %{_bindir}/qemu-system-arm
 %{_datadir}/systemtap/tapset/qemu-system-arm*.stp
+%{_datadir}/%{name}/npcm7xx_bootrom.bin
 %{_mandir}/man1/qemu-system-arm.1*
-
-
-%files system-avr
-%files system-avr-core
-%{_bindir}/qemu-system-avr
-%{_datadir}/systemtap/tapset/qemu-system-avr*.stp
-%{_mandir}/man1/qemu-system-avr.1*
 
 
 %files system-cris
@@ -1696,13 +1782,6 @@ getent passwd qemu >/dev/null || \
 %{_mandir}/man1/qemu-system-mips64.1*
 
 
-%files system-moxie
-%files system-moxie-core
-%{_bindir}/qemu-system-moxie
-%{_datadir}/systemtap/tapset/qemu-system-moxie*.stp
-%{_mandir}/man1/qemu-system-moxie.1*
-
-
 %files system-nios2
 %files system-nios2-core
 %{_bindir}/qemu-system-nios2
@@ -1740,11 +1819,8 @@ getent passwd qemu >/dev/null || \
 %{_bindir}/qemu-system-riscv32
 %{_bindir}/qemu-system-riscv64
 %{_datadir}/systemtap/tapset/qemu-system-riscv*.stp
+%{_datadir}/qemu/opensbi-riscv*.*
 %{_mandir}/man1/qemu-system-riscv*.1*
-%{_datadir}/qemu/opensbi-riscv32-generic-fw_dynamic.bin
-%{_datadir}/qemu/opensbi-riscv32-generic-fw_dynamic.elf
-%{_datadir}/qemu/opensbi-riscv64-generic-fw_dynamic.bin
-%{_datadir}/qemu/opensbi-riscv64-generic-fw_dynamic.elf
 
 
 %files system-s390x
@@ -1800,11 +1876,11 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/qemu/openbios-sparc32
 %{_datadir}/qemu/openbios-sparc64
 %{_datadir}/qemu/openbios-ppc
+%{_datadir}/%{name}/qboot.rom
 %{_datadir}/%{name}/slof.bin
 %{_datadir}/qemu/vgabios-bochs-display.bin
 %{_datadir}/qemu/vgabios-ramfb.bin
-%{_datadir}/qemu/qboot.rom
-%{_datadir}/qemu/npcm7xx_bootrom.bin
+
 %{_datadir}/%{name}/pvh.bin
 %{_datadir}/%{name}/sgabios.bin
 %if 0%{?need_qemu_kvm}
@@ -1843,3 +1919,16 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/%{name}/pxe-ne2k_pci.rom
 %{_datadir}/%{name}/pxe-rtl8139.rom
 %{_datadir}/%{name}/pxe-virtio.rom
+
+%files system-rx
+%{_bindir}/qemu-system-rx
+%{_datadir}/man/man1/qemu-system-rx.1*
+%{_datadir}/systemtap/tapset/qemu-system-rx-log.stp
+%{_datadir}/systemtap/tapset/qemu-system-rx-simpletrace.stp
+%{_datadir}/systemtap/tapset/qemu-system-rx.stp
+
+%files system-avr
+%files system-avr-core
+%{_bindir}/qemu-system-avr
+%{_datadir}/systemtap/tapset/qemu-system-avr*.stp
+%{_mandir}/man1/qemu-system-avr.1*
