@@ -171,16 +171,18 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
+%define beta rc2
+
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	5.2.0
-Release:	1
+Version:	6.0.0
+Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		3
 License:	GPLv2 and BSD and MIT and CC-BY
 URL:		http://www.qemu.org/
 
-Source0: https://download.qemu.org/%{name}-%{version}.tar.xz
+Source0: https://download.qemu.org/%{name}-%{version}%{?beta:-%{beta}}.tar.xz
 Source1: qemu.rpmlintrc
 
 # guest agent service
@@ -1006,12 +1008,12 @@ This package provides the QEMU system emulator for Renesas RX
 
 %ifarch %{armx}
 	#list with conf file in binfmt
-	%define static_arches aarch64_be i386 x86_64 alpha armeb hppa m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
+	%define static_arches aarch64_be i386 x86_64 alpha armeb hexagon hppa m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
 	#list without conf file in binfmt
 	%define static_wo_binfmt cris aarch64 arm nios2 trace-stap
 %else
 	#list with conf file in binfmt
-	%define static_arches aarch64 aarch64_be alpha arm armeb hppa m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
+	%define static_arches aarch64 aarch64_be alpha arm armeb hexagon hppa m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
 	#list without conf file in binfmt
 	%define static_wo_binfmt cris i386 nios2 trace-stap x86_64
 %endif
@@ -1052,12 +1054,11 @@ done)}
 
 
 %prep
-%setup -q -n qemu-%{version}%{?rcstr}
-%autopatch -p1
+%autosetup -p1 -n qemu-%{version}%{?beta:-%{beta}}
 
 %build
-export CC=gcc
-export CXX=g++
+#export CC=gcc
+#export CXX=g++
 %set_build_flags
 # drop -g flag to prevent memory exhaustion by linker
 %ifarch s390
@@ -1407,6 +1408,7 @@ getent passwd qemu >/dev/null || \
 %doc %{qemudocdir}/LICENSE
 %doc %{qemudocdir}/interop
 %doc %{qemudocdir}/specs
+%doc %{_docdir}/qemu
 %dir %{_datadir}/%{name}/
 %{_datadir}/applications/qemu.desktop
 %{_datadir}/icons/hicolor/*/apps/*
@@ -1475,6 +1477,8 @@ getent passwd qemu >/dev/null || \
 %endif
 %{_libdir}/qemu/hw-usb-redirect.so
 %{_libdir}/qemu/hw-usb-smartcard.so
+%{_mandir}/man1/qemu-storage-daemon.1*
+%{_mandir}/man7/qemu-storage-daemon-qmp-ref.7*
 
 %files guest-agent
 %{_bindir}/qemu-ga
@@ -1573,6 +1577,7 @@ getent passwd qemu >/dev/null || \
 %{_bindir}/qemu-arm
 %{_bindir}/qemu-armeb
 %{_bindir}/qemu-cris
+%{_bindir}/qemu-hexagon
 %{_bindir}/qemu-hppa
 %{_bindir}/qemu-m68k
 %{_bindir}/qemu-microblaze
@@ -1623,6 +1628,9 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/systemtap/tapset/qemu-cris.stp
 %{_datadir}/systemtap/tapset/qemu-cris-log.stp
 %{_datadir}/systemtap/tapset/qemu-cris-simpletrace.stp
+%{_datadir}/systemtap/tapset/qemu-hexagon.stp
+%{_datadir}/systemtap/tapset/qemu-hexagon-log.stp
+%{_datadir}/systemtap/tapset/qemu-hexagon-simpletrace.stp
 %{_datadir}/systemtap/tapset/qemu-hppa.stp
 %{_datadir}/systemtap/tapset/qemu-hppa-log.stp
 %{_datadir}/systemtap/tapset/qemu-hppa-simpletrace.stp
@@ -1828,6 +1836,7 @@ getent passwd qemu >/dev/null || \
 %{_bindir}/qemu-system-s390x
 %{_datadir}/systemtap/tapset/qemu-system-s390x*.stp
 %{_mandir}/man1/qemu-system-s390x.1*
+%{_libdir}/qemu/hw-s390x-virtio-gpu-ccw.so
 %{_datadir}/%{name}/s390-ccw.img
 %{_datadir}/%{name}/s390-netboot.img
 
