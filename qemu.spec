@@ -176,7 +176,7 @@
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
 Version:	6.0.0
-Release:	%{?beta:0.%{beta}.}1
+Release:	%{?beta:0.%{beta}.}2
 Group:		Emulators
 Epoch:		3
 License:	GPLv2 and BSD and MIT and CC-BY
