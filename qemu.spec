@@ -171,12 +171,12 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-%define beta rc3
+%define beta rc1
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	6.0.0
-Release:	%{?beta:0.%{beta}.}2
+Version:	6.1.0
+Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		3
 License:	GPLv2 and BSD and MIT and CC-BY
@@ -201,6 +201,8 @@ Source15: qemu-pr-helper.socket
 Source20: kvm-x86.modprobe.conf
 # /etc/security/limits.d/95-kvm-ppc64-memlock.conf
 Source21: 95-kvm-ppc64-memlock.conf
+
+Patch0:	qemu-6.1.0-fix-disable-gnutls.patch
 
 BuildRequires: %mklibname zstd -s -d
 BuildRequires: meson
@@ -361,6 +363,7 @@ BuildRequires:	glib2-static-devel
 BuildRequires:	pcre-static-devel
 BuildRequires:	glibc-static-devel
 BuildRequires:	gpg-error-static-devel
+BuildRequires:	zlib-static-devel
 
 %if 0%{?hostqemu:1}
 # For complicated reasons, this is required so that
@@ -372,24 +375,25 @@ BuildRequires: grubby
 %endif
 
 Requires: %{name}-user = %{EVRD}
-Requires: %{name}-system-aarch64 = %{EVRD}
-Requires: %{name}-system-alpha = %{EVRD}
-Requires: %{name}-system-arm = %{EVRD}
-Requires: %{name}-system-avr = %{EVRD}
-Requires: %{name}-system-cris = %{EVRD}
-Requires: %{name}-system-m68k = %{EVRD}
-Requires: %{name}-system-microblaze = %{EVRD}
-Requires: %{name}-system-mips = %{EVRD}
-Requires: %{name}-system-nios2 = %{EVRD}
-Requires: %{name}-system-or1k = %{EVRD}
-Requires: %{name}-system-ppc = %{EVRD}
-Requires: %{name}-system-riscv = %{EVRD}
-Requires: %{name}-system-s390x = %{EVRD}
-Requires: %{name}-system-sh4 = %{EVRD}
-Requires: %{name}-system-sparc = %{EVRD}
-Requires: %{name}-system-tricore = %{EVRD}
-Requires: %{name}-system-x86 = %{EVRD}
-Requires: %{name}-system-xtensa = %{EVRD}
+Suggests: %{name}-system-aarch64 = %{EVRD}
+Suggests: %{name}-system-alpha = %{EVRD}
+Suggests: %{name}-system-arm = %{EVRD}
+Suggests: %{name}-system-avr = %{EVRD}
+Suggests: %{name}-system-cris = %{EVRD}
+Suggests: %{name}-system-m68k = %{EVRD}
+Suggests: %{name}-system-microblaze = %{EVRD}
+Suggests: %{name}-system-mips = %{EVRD}
+Suggests: %{name}-system-nios2 = %{EVRD}
+Suggests: %{name}-system-or1k = %{EVRD}
+Suggests: %{name}-system-ppc = %{EVRD}
+Suggests: %{name}-system-riscv = %{EVRD}
+Suggests: %{name}-system-s390x = %{EVRD}
+Suggests: %{name}-system-sh4 = %{EVRD}
+Suggests: %{name}-system-sparc = %{EVRD}
+Suggests: %{name}-system-tricore = %{EVRD}
+Suggests: %{name}-system-x86 = %{EVRD}
+Suggests: %{name}-system-xtensa = %{EVRD}
+Suggests: %{name}-device-usb = %{EVRD}
 Requires: %{name}-img = %{EVRD}
 
 
@@ -630,6 +634,12 @@ Requires: %{name}-common = %{EVRD}
 %description device-display-virtio-vga
 This package provides the virtio-vga display device for QEMU.
 
+%package device-usb
+Summary: QEMU USB host plugin
+Requires: %{name}-common = %{EVRD}
+%description device-usb
+QEMU USB host plugin
+
 %if %{have_spice}
 %package  ui-spice-core
 Summary: QEMU Spice UI driver
@@ -729,6 +739,7 @@ This package provides the QEMU system emulator for AArch64.
 %package system-aarch64-core
 Summary: QEMU system emulator for AArch64
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-aarch64 = %{EVRD}
 %if %{have_edk2}
 Requires: edk2-aarch64
 %endif
@@ -746,6 +757,7 @@ This package provides the QEMU system emulator for Alpha systems.
 %package system-alpha-core
 Summary: QEMU system emulator for Alpha
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-alpha = %{EVRD}
 %description system-alpha-core
 This package provides the QEMU system emulator for Alpha systems.
 
@@ -760,6 +772,7 @@ This package provides the QEMU system emulator for ARM systems.
 %package system-arm-core
 Summary: QEMU system emulator for ARM
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-arm = %{EVRD}
 %description system-arm-core
 This package provides the QEMU system emulator for ARM boards.
 
@@ -773,6 +786,7 @@ This package provides the QEMU system emulator for AVR systems.
 %package system-avr-core
 Summary: QEMU system emulator for ARM
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-avr = %{EVRD}
 %description system-avr-core
 This package provides the QEMU system emulator for AVR boards.
 
@@ -787,6 +801,7 @@ This package provides the system emulator for CRIS systems.
 %package system-cris-core
 Summary: QEMU system emulator for CRIS
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-cris = %{EVRD}
 %description system-cris-core
 This package provides the system emulator for CRIS boards.
 
@@ -801,6 +816,7 @@ This package provides the QEMU system emulator for HPPA.
 %package system-hppa-core
 Summary: QEMU system emulator for hppa
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-hppa = %{EVRD}
 %description system-hppa-core
 This package provides the QEMU system emulator for HPPA.
 
@@ -815,6 +831,7 @@ This package provides the QEMU system emulator for ColdFire boards.
 %package system-m68k-core
 Summary: QEMU system emulator for ColdFire (m68k)
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-m68k = %{EVRD}
 %description system-m68k-core
 This package provides the QEMU system emulator for ColdFire boards.
 
@@ -829,6 +846,7 @@ This package provides the QEMU system emulator for Microblaze boards.
 %package system-microblaze-core
 Summary: QEMU system emulator for Microblaze
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-microblaze = %{EVRD}
 %description system-microblaze-core
 This package provides the QEMU system emulator for Microblaze boards.
 
@@ -843,6 +861,7 @@ This package provides the QEMU system emulator for MIPS systems.
 %package system-mips-core
 Summary: QEMU system emulator for MIPS
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-mips = %{EVRD}
 %description system-mips-core
 This package provides the QEMU system emulator for MIPS systems.
 
@@ -857,6 +876,7 @@ This package provides the QEMU system emulator for NIOS2.
 %package system-nios2-core
 Summary: QEMU system emulator for nios2
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-nios2 = %{EVRD}
 %description system-nios2-core
 This package provides the QEMU system emulator for NIOS2.
 
@@ -873,6 +893,7 @@ This package provides the QEMU system emulator for OpenRisc32 boards.
 Summary: QEMU system emulator for OpenRisc32
 Requires: %{name}-common = %{EVRD}
 Obsoletes: %{name}-system-or32-core < 2:2.9.0
+Suggests: %{name}-system-or1k = %{EVRD}
 %description system-or1k-core
 This package provides the QEMU system emulator for OpenRisc32 boards.
 
@@ -887,6 +908,7 @@ This package provides the QEMU system emulator for PPC and PPC64 systems.
 %package system-ppc-core
 Summary: QEMU system emulator for PPC
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-ppc = %{EVRD}
 Requires: seabios
 Requires: sgabios
 Requires: vgabios
@@ -904,6 +926,7 @@ This package provides the QEMU system emulator for RISC-V systems.
 %package system-riscv-core
 Summary: QEMU system emulator for RISC-V
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-riscv = %{EVRD}
 %description system-riscv-core
 This package provides the QEMU system emulator for RISC-V systems.
 
@@ -918,6 +941,7 @@ This package provides the QEMU system emulator for S390 systems.
 %package system-s390x-core
 Summary: QEMU system emulator for S390
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-s390x = %{EVRD}
 %description system-s390x-core
 This package provides the QEMU system emulator for S390 systems.
 
@@ -932,6 +956,7 @@ This package provides the QEMU system emulator for SH4 boards.
 %package system-sh4-core
 Summary: QEMU system emulator for SH4
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-sh4 = %{EVRD}
 %description system-sh4-core
 This package provides the QEMU system emulator for SH4 boards.
 
@@ -946,6 +971,7 @@ This package provides the QEMU system emulator for SPARC and SPARC64 systems.
 %package system-sparc-core
 Summary: QEMU system emulator for SPARC
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-sparc = %{EVRD}
 %description system-sparc-core
 This package provides the QEMU system emulator for SPARC and SPARC64 systems.
 
@@ -960,6 +986,7 @@ This package provides the QEMU system emulator for Tricore.
 %package system-tricore-core
 Summary: QEMU system emulator for tricore
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-tricore = %{EVRD}
 %description system-tricore-core
 This package provides the QEMU system emulator for Tricore.
 
@@ -976,6 +1003,7 @@ platform.
 %package system-x86-core
 Summary: QEMU system emulator for x86
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-x86 = %{EVRD}
 Requires: seabios
 Requires: sgabios
 Requires: vgabios
@@ -998,6 +1026,7 @@ This package provides the QEMU system emulator for Xtensa boards.
 %package system-xtensa-core
 Summary: QEMU system emulator for Xtensa
 Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-xtensa = %{EVRD}
 %description system-xtensa-core
 This package provides the QEMU system emulator for Xtensa boards.
 
@@ -1156,9 +1185,9 @@ run_configure \
     --disable-guest-agent-msi \
     --disable-curses \
     --disable-curl \
-    --disable-gnutls \
     --disable-gcrypt \
-    --disable-nettle \
+    --enable-nettle \
+    --disable-gnutls \
     --disable-cap-ng \
     --disable-brlapi \
     --disable-mpath \
@@ -1333,6 +1362,10 @@ for f in %{buildroot}%{_bindir}/* %{buildroot}%{_libdir}/* \
          %{buildroot}%{_libexecdir}/*; do
   if file $f | grep -q ELF | grep -q -i shared; then chrpath --delete $f; fi
 done
+
+# There's currently nothing out there that uses qemu-plugin.h, so
+# for now there's no need to make a -devel package
+rm -rf %{buildroot}%{_includedir}
 
 # We need to make the modules executable else
 # RPM won't pick up their dependencies.
@@ -1540,10 +1573,18 @@ getent passwd qemu >/dev/null || \
 
 %files device-display-virtio-gpu
 %{_libdir}/qemu/hw-display-virtio-gpu.so
+%{_libdir}/qemu/hw-display-virtio-gpu-gl.so
+
 %files device-display-virtio-gpu-pci
 %{_libdir}/qemu/hw-display-virtio-gpu-pci.so
+%{_libdir}/qemu/hw-display-virtio-gpu-pci-gl.so
+
 %files device-display-virtio-vga
 %{_libdir}/qemu/hw-display-virtio-vga.so
+%{_libdir}/qemu/hw-display-virtio-vga-gl.so
+
+%files device-usb
+%{_libdir}/qemu/hw-usb-host.so
 
 %if %{have_spice}
 %files audio-spice
@@ -1723,6 +1764,8 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-aarch64
+%{_libdir}/qemu/accel-qtest-aarch64.so
+
 %files system-aarch64-core
 %{_bindir}/qemu-system-aarch64
 %{_datadir}/systemtap/tapset/qemu-system-aarch64*.stp
@@ -1730,6 +1773,8 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-alpha
+%{_libdir}/qemu/accel-qtest-alpha.so
+
 %files system-alpha-core
 %{_bindir}/qemu-system-alpha
 %{_datadir}/systemtap/tapset/qemu-system-alpha*.stp
@@ -1738,6 +1783,8 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-arm
+%{_libdir}/qemu/accel-qtest-arm.so
+
 %files system-arm-core
 %{_bindir}/qemu-system-arm
 %{_datadir}/systemtap/tapset/qemu-system-arm*.stp
@@ -1746,6 +1793,8 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-cris
+%{_libdir}/qemu/accel-qtest-cris.so
+
 %files system-cris-core
 %{_bindir}/qemu-system-cris
 %{_datadir}/systemtap/tapset/qemu-system-cris*.stp
@@ -1753,6 +1802,8 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-hppa
+%{_libdir}/qemu/accel-qtest-hppa.so
+
 %files system-hppa-core
 %{_bindir}/qemu-system-hppa
 %{_datadir}/systemtap/tapset/qemu-system-hppa*.stp
@@ -1761,6 +1812,8 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-m68k
+%{_libdir}/qemu/accel-qtest-m68k.so
+
 %files system-m68k-core
 %{_bindir}/qemu-system-m68k
 %{_datadir}/systemtap/tapset/qemu-system-m68k*.stp
@@ -1768,6 +1821,9 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-microblaze
+%{_libdir}/qemu/accel-qtest-microblaze.so
+%{_libdir}/qemu/accel-qtest-microblazeel.so
+
 %files system-microblaze-core
 %{_bindir}/qemu-system-microblaze
 %{_bindir}/qemu-system-microblazeel
@@ -1778,6 +1834,11 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-mips
+%{_libdir}/qemu/accel-qtest-mips.so
+%{_libdir}/qemu/accel-qtest-mipsel.so
+%{_libdir}/qemu/accel-qtest-mips64.so
+%{_libdir}/qemu/accel-qtest-mips64el.so
+
 %files system-mips-core
 %{_bindir}/qemu-system-mips
 %{_bindir}/qemu-system-mipsel
@@ -1791,6 +1852,8 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-nios2
+%{_libdir}/qemu/accel-qtest-nios2.so
+
 %files system-nios2-core
 %{_bindir}/qemu-system-nios2
 %{_datadir}/systemtap/tapset/qemu-system-nios2*.stp
@@ -1798,6 +1861,8 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-or1k
+%{_libdir}/qemu/accel-qtest-or1k.so
+
 %files system-or1k-core
 %{_bindir}/qemu-system-or1k
 %{_datadir}/systemtap/tapset/qemu-system-or1k*.stp
@@ -1805,6 +1870,9 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-ppc
+%{_libdir}/qemu/accel-qtest-ppc.so
+%{_libdir}/qemu/accel-qtest-ppc64.so
+
 %files system-ppc-core
 %{_bindir}/qemu-system-ppc
 %{_bindir}/qemu-system-ppc64
@@ -1823,6 +1891,9 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-riscv
+%{_libdir}/qemu/accel-qtest-riscv32.so
+%{_libdir}/qemu/accel-qtest-riscv64.so
+
 %files system-riscv-core
 %{_bindir}/qemu-system-riscv32
 %{_bindir}/qemu-system-riscv64
@@ -1832,6 +1903,8 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-s390x
+%{_libdir}/qemu/accel-qtest-s390x.so
+
 %files system-s390x-core
 %{_bindir}/qemu-system-s390x
 %{_datadir}/systemtap/tapset/qemu-system-s390x*.stp
@@ -1842,6 +1915,9 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-sh4
+%{_libdir}/qemu/accel-qtest-sh4.so
+%{_libdir}/qemu/accel-qtest-sh4eb.so
+
 %files system-sh4-core
 %{_bindir}/qemu-system-sh4
 %{_bindir}/qemu-system-sh4eb
@@ -1851,6 +1927,9 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-sparc
+%{_libdir}/qemu/accel-qtest-sparc.so
+%{_libdir}/qemu/accel-qtest-sparc64.so
+
 %files system-sparc-core
 %{_bindir}/qemu-system-sparc
 %{_bindir}/qemu-system-sparc64
@@ -1862,6 +1941,8 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-tricore
+%{_libdir}/qemu/accel-qtest-tricore.so
+
 %files system-tricore-core
 %{_bindir}/qemu-system-tricore
 %{_datadir}/systemtap/tapset/qemu-system-tricore*.stp
@@ -1869,6 +1950,11 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-x86
+%{_libdir}/qemu/accel-qtest-i386.so
+%{_libdir}/qemu/accel-qtest-x86_64.so
+%{_libdir}/qemu/accel-tcg-i386.so
+%{_libdir}/qemu/accel-tcg-x86_64.so
+
 %files system-x86-core
 %{_bindir}/qemu-system-i386
 %{_bindir}/qemu-system-x86_64
@@ -1900,6 +1986,9 @@ getent passwd qemu >/dev/null || \
 
 
 %files system-xtensa
+%{_libdir}/qemu/accel-qtest-xtensa.so
+%{_libdir}/qemu/accel-qtest-xtensaeb.so
+
 %files system-xtensa-core
 %{_bindir}/qemu-system-xtensa
 %{_bindir}/qemu-system-xtensaeb
@@ -1930,6 +2019,7 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/%{name}/pxe-virtio.rom
 
 %files system-rx
+%{_libdir}/qemu/accel-qtest-rx.so
 %{_bindir}/qemu-system-rx
 %{_datadir}/man/man1/qemu-system-rx.1*
 %{_datadir}/systemtap/tapset/qemu-system-rx-log.stp
@@ -1937,6 +2027,8 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/systemtap/tapset/qemu-system-rx.stp
 
 %files system-avr
+%{_libdir}/qemu/accel-qtest-avr.so
+
 %files system-avr-core
 %{_bindir}/qemu-system-avr
 %{_datadir}/systemtap/tapset/qemu-system-avr*.stp

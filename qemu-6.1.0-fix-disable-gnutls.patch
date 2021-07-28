@@ -1,0 +1,11 @@
+diff -up qemu-6.1.0-rc1/meson.build.omv~ qemu-6.1.0-rc1/meson.build
+--- qemu-6.1.0-rc1/meson.build.omv~	2021-07-28 22:58:02.565526416 +0200
++++ qemu-6.1.0-rc1/meson.build	2021-07-28 22:58:08.520422635 +0200
+@@ -868,6 +868,7 @@ endif
+ 
+ # Explicit nettle/gcrypt request, so ignore gnutls for crypto
+ if get_option('nettle').enabled() or get_option('gcrypt').enabled()
++  gnutls = not_found
+   gnutls_crypto = not_found
+ endif
+ 
