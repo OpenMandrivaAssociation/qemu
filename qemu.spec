@@ -171,11 +171,11 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-#define beta rc1
+%define beta rc1
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	6.1.0
+Version:	6.2.0
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		3
@@ -241,6 +241,8 @@ BuildRequires:	pkgconfig(libpulse)
 # alsa audio output
 BuildRequires:	alsa-oss-devel
 BuildRequires:	pkgconfig(alsa)
+# Jack audio output
+BuildRequires:	jackit-devel
 # qemu-pr-helper multipath support (requires libudev too)
 BuildRequires:	device-mapper-multipath-devel
 BuildRequires:	systemd
@@ -583,6 +585,11 @@ Requires: %{name}-common = %{EVRD}
 %description audio-sdl
 This package provides the additional SDL audio driver for QEMU.
 
+%package  audio-jack
+Summary: QEMU Jack audio driver
+Requires: %{name}-common = %{EVRD}
+%description audio-jack
+This package provides the additional Jack audio driver for QEMU.
 
 %package  ui-curses
 Summary: QEMU curses UI driver
@@ -1475,6 +1482,7 @@ getent passwd qemu >/dev/null || \
 %{_datadir}/%{name}/edk2*.fd
 %{_datadir}/%{name}/firmware/*.json
 %{_datadir}/%{name}/qemu-nsis.bmp
+%{_datadir}/%{name}/multiboot_dma.bin
 %dir %{_datadir}/%{name}/vhost-user
 %{_datadir}/%{name}/vhost-user/50-qemu-gpu.json
 %{_mandir}/man1/qemu.1*
@@ -1559,6 +1567,8 @@ getent passwd qemu >/dev/null || \
 %{_libdir}/qemu/audio-pa.so
 %files audio-sdl
 %{_libdir}/qemu/audio-sdl.so
+%files audio-jack
+%{_libdir}/%{name}/audio-jack.so
 
 %files ui-curses
 %{_libdir}/qemu/ui-curses.so
