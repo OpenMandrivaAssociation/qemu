@@ -171,7 +171,7 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-%define beta rc1
+%define beta rc3
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
@@ -1274,7 +1274,6 @@ popd
 
 %find_lang %{name}
 
-chmod -x %{buildroot}%{_mandir}/man1/*
 install -D -p -m 0644 -t %{buildroot}%{qemudocdir} COPYING COPYING.LIB LICENSE
 for emu in %{buildroot}%{_bindir}/qemu-system-*; do
     ln -sf qemu.1.gz %{buildroot}%{_mandir}/man1/$(basename $emu).1.gz
