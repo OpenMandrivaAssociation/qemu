@@ -345,6 +345,7 @@ BuildRequires:	capstone-devel
 BuildRequires:	pkgconfig(slirp)
 # qemu 2.12: parallels disk images require libxml2 now
 BuildRequires:	pkgconfig(libxml-2.0)
+BuildRequires:	pkgconfig(liburing)
 %ifarch %{x86_64}
 # qemu 3.1: Used for nvdimm
 #BuildRequires: libpmem-devel
@@ -354,7 +355,8 @@ BuildRequires:	pkgconfig(udev)
 # qemu 4.0: Use for qauth infrastructure
 BuildRequires:	pam-devel
 # qemu 4.0: sphinx-build used for some docs
-BuildRequires:	python3-sphinx
+BuildRequires:	python-sphinx
+BuildRequires:	python-sphinx_rtd_theme
 # qemu 4.0: Used by test suite ./scripts/tap-driver.pl
 BuildRequires:	perl-Test-Harness
 # Required for making python shebangs versioned
@@ -1134,6 +1136,7 @@ run_configure() {
         --disable-strip \
         --disable-werror \
         --enable-kvm \
+	--enable-docs \
 %ifarch s390 %{mips64}
         --enable-tcg-interpreter \
 %endif
