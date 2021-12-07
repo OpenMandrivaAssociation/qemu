@@ -1125,6 +1125,9 @@ tracebackends="dtrace"
 %endif
 
 run_configure() {
+    # We force -O3 below (--extra-cflags) because as of
+    # qemu 6.2.0-rc3, clang 13.0.0, -Os casues a crash
+    # at build time.
     ../configure \
         --prefix=%{_prefix} \
         --libdir=%{_libdir} \
@@ -1142,7 +1145,7 @@ run_configure() {
 %endif
         --enable-trace-backend=$tracebackends \
         --extra-ldflags="$extraldflags -Wl,-z,relro -Wl,-z,now" \
-        --extra-cflags="%{optflags}" \
+        --extra-cflags="%{optflags} -O3" \
         "$@" || cat config.log
     sed -i -e 's| -Wl,--no-undefined||g' config-host.mak
 }
