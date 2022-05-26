@@ -119,11 +119,13 @@
 %define requires_audio_oss Requires: %{name}-audio-oss = %{EVRD}
 %define requires_audio_pa Requires: %{name}-audio-pa = %{EVRD}
 %define requires_audio_sdl Requires: %{name}-audio-sdl = %{EVRD}
+%define requires_audio_dbus Requires: %{name}-audio-dbus = %{EVRD}
 %define requires_ui_curses Requires: %{name}-ui-curses = %{EVRD}
 %define requires_ui_gtk Requires: %{name}-ui-gtk = %{EVRD}
 %define requires_ui_sdl Requires: %{name}-ui-sdl = %{EVRD}
 %define requires_ui_egl_headless Requires: %{name}-ui-egl-headless = %{EVRD}
 %define requires_ui_opengl Requires: %{name}-ui-opengl = %{EVRD}
+%define requires_ui_dbus Requires: %{name}-ui-dbus = %{EVRD}
 %define requires_device_display_virtio_gpu Requires: %{name}-device-display-virtio-gpu = %{EVRD}
 %define requires_device_display_virtio_gpu_pci Requires: %{name}-device-display-virtio-gpu-pci = %{EVRD}
 %define requires_device_display_virtio_vga Requires: %{name}-device-display-virtio-vga = %{EVRD}
@@ -153,8 +155,10 @@
 %{requires_audio_oss} \
 %{requires_audio_pa} \
 %{requires_audio_sdl} \
+%{requires_audio_dbus} \
 %{requires_ui_egl_headless} \
 %{requires_ui_opengl} \
+%{requires_ui_dbus} \
 %{requires_device_display_virtio_gpu} \
 %{requires_device_display_virtio_gpu_pci} \
 %{requires_device_display_virtio_vga} \
@@ -175,10 +179,10 @@
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	6.2.0
+Version:	7.0.0
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
-Epoch:		3
+Epoch:		1
 License:	GPLv2 and BSD and MIT and CC-BY
 URL:		http://www.qemu.org/
 
@@ -593,6 +597,12 @@ Requires: %{name}-common = %{EVRD}
 %description audio-jack
 This package provides the additional Jack audio driver for QEMU.
 
+%package  audio-dbus
+Summary: QEMU D-Bus audio driver
+Requires: %{name}-common = %{EVRD}
+%description audio-dbus
+This package provides the additional D-Bus audio driver for QEMU.
+
 %package  ui-curses
 Summary: QEMU curses UI driver
 Requires: %{name}-common = %{EVRD}
@@ -623,6 +633,12 @@ Summary: QEMU OpenGL driver
 Requires: %{name}-common = %{EVRD}
 %description ui-opengl
 This package provides the additional opengl UI for QEMU.
+
+%package  ui-dbus
+Summary: QEMU D-Bus UI driver
+Requires: %{name}-common = %{EVRD}
+%description ui-dbus
+This package provides the additional D-Bus UI for QEMU.
 
 %package device-display-virtio-gpu
 Summary: QEMU virtio-gpu display device
@@ -1130,6 +1146,7 @@ run_configure() {
     # qemu 6.2.0-rc4, clang 13.0.0
     # -O3 is a workaround for incompatible implementations
     # of _Float32 and friends.
+export SKIP_DOCKER_BUILD=1
     ../configure \
         --prefix=%{_prefix} \
         --libdir=%{_libdir} \
@@ -1449,13 +1466,7 @@ getent passwd qemu >/dev/null || \
 
 
 %files common -f %{name}.lang
-%dir %{qemudocdir}
-%doc %{qemudocdir}/COPYING
-%doc %{qemudocdir}/COPYING.LIB
-%doc %{qemudocdir}/LICENSE
-%doc %{qemudocdir}/interop
-%doc %{qemudocdir}/specs
-%doc %{_docdir}/qemu
+%doc %{qemudocdir}
 %dir %{_datadir}/%{name}/
 %{_datadir}/applications/qemu.desktop
 %{_datadir}/icons/hicolor/*/apps/*
@@ -1576,6 +1587,8 @@ getent passwd qemu >/dev/null || \
 %{_libdir}/qemu/audio-sdl.so
 %files audio-jack
 %{_libdir}/%{name}/audio-jack.so
+%files audio-dbus
+%{_libdir}/qemu/audio-dbus.so
 
 %files ui-curses
 %{_libdir}/qemu/ui-curses.so
@@ -1587,6 +1600,8 @@ getent passwd qemu >/dev/null || \
 %{_libdir}/qemu/ui-egl-headless.so
 %files ui-opengl
 %{_libdir}/qemu/ui-opengl.so
+%files ui-dbus
+%{_libdir}/qemu/ui-dbus.so
 
 %files device-display-virtio-gpu
 %{_libdir}/qemu/hw-display-virtio-gpu.so
@@ -2015,6 +2030,8 @@ getent passwd qemu >/dev/null || \
 
 %files -n seabios
 %{_datadir}/%{name}/bios.bin
+%{_datadir}/qemu/vof-nvram.bin
+%{_datadir}/qemu/vof.bin
 
 %files -n vgabios
 %{_datadir}/%{name}/vgabios.bin
