@@ -725,8 +725,7 @@ x86 system, this will install qemu-system-x86-core
 %package user
 Summary: QEMU user mode emulation of qemu targets
 Requires: %{name}-common = %{EVRD}
-# On upgrade, make qemu-user get replaced with qemu-user + qemu-user-binfmt
-Obsoletes: %{name}-user < 2:2.6.0-5%{?dist}
+
 %description user
 This package provides the user mode emulation of qemu targets
 
@@ -738,8 +737,7 @@ Requires(post): systemd-units
 Requires(postun): systemd-units
 # qemu-user-binfmt + qemu-user-static both provide binfmt rules
 Conflicts: %{name}-user-static
-# On upgrade, make qemu-user get replaced with qemu-user + qemu-user-binfmt
-Obsoletes: %{name}-user < 2:2.6.0-5%{?dist}
+
 %description user-binfmt
 This package provides the user mode emulation of qemu targets
 
@@ -1448,17 +1446,19 @@ getent passwd qemu >/dev/null || \
     -c "qemu user" qemu
 
 %post user-binfmt
-/bin/systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
+systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
+
 %postun user-binfmt
-/bin/systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
+systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 %post guest-agent
 %systemd_post qemu-guest-agent.service
+
 %preun guest-agent
 %systemd_preun qemu-guest-agent.service
+
 %postun guest-agent
 %systemd_postun_with_restart qemu-guest-agent.service
-
 
 
 %files
