@@ -175,11 +175,11 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-#define beta rc4
+%define beta rc1
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	7.0.0
+Version:	7.1.0
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
@@ -207,6 +207,7 @@ Source20: kvm-x86.modprobe.conf
 Source21: 95-kvm-ppc64-memlock.conf
 
 Patch0:	qemu-6.1.0-fix-disable-gnutls.patch
+Patch1: qemu-7.1.0-rc1-glibc-2.36.patch
 
 BuildRequires: %mklibname zstd -s -d
 BuildRequires: meson
@@ -388,6 +389,7 @@ Suggests: %{name}-system-alpha = %{EVRD}
 Suggests: %{name}-system-arm = %{EVRD}
 Suggests: %{name}-system-avr = %{EVRD}
 Suggests: %{name}-system-cris = %{EVRD}
+Suggests: %{name}-system-loongarch64 = %{EVRD}
 Suggests: %{name}-system-m68k = %{EVRD}
 Suggests: %{name}-system-microblaze = %{EVRD}
 Suggests: %{name}-system-mips = %{EVRD}
@@ -844,6 +846,21 @@ Suggests: %{name}-system-hppa = %{EVRD}
 This package provides the QEMU system emulator for HPPA.
 
 
+%package system-loongarch64
+Summary: QEMU system emulator for LoongArch64
+Requires: %{name}-system-loongarch64-core = %{EVRD}
+%{requires_all_modules}
+%description system-loongarch64
+This package provides the QEMU system emulator for LoongArch64 boards.
+
+%package system-loongarch64-core
+Summary: QEMU system emulator for LoongArch64
+Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-loongarch64 = %{EVRD}
+%description system-loongarch64-core
+This package provides the QEMU system emulator for ColdFire boards.
+
+
 %package system-m68k
 Summary: QEMU system emulator for ColdFire (m68k)
 Requires: %{name}-system-m68k-core = %{EVRD}
@@ -1060,12 +1077,12 @@ This package provides the QEMU system emulator for Renesas RX
 
 %ifarch %{armx}
 	#list with conf file in binfmt
-	%define static_arches aarch64_be i386 x86_64 alpha armeb hexagon hppa m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
+	%define static_arches aarch64_be i386 x86_64 alpha armeb hexagon hppa loongarch64 m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
 	#list without conf file in binfmt
 	%define static_wo_binfmt cris aarch64 arm nios2 trace-stap
 %else
 	#list with conf file in binfmt
-	%define static_arches aarch64 aarch64_be alpha arm armeb hexagon hppa m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
+	%define static_arches aarch64 aarch64_be alpha arm armeb hexagon hppa loongarch64 m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
 	#list without conf file in binfmt
 	%define static_wo_binfmt cris i386 nios2 trace-stap x86_64
 %endif
@@ -1652,6 +1669,7 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_bindir}/qemu-cris
 %{_bindir}/qemu-hexagon
 %{_bindir}/qemu-hppa
+%{_bindir}/qemu-loongarch64
 %{_bindir}/qemu-m68k
 %{_bindir}/qemu-microblaze
 %{_bindir}/qemu-microblazeel
@@ -1707,6 +1725,9 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/systemtap/tapset/qemu-hppa.stp
 %{_datadir}/systemtap/tapset/qemu-hppa-log.stp
 %{_datadir}/systemtap/tapset/qemu-hppa-simpletrace.stp
+%{_datadir}/systemtap/tapset/qemu-loongarch64.stp
+%{_datadir}/systemtap/tapset/qemu-loongarch64-log.stp
+%{_datadir}/systemtap/tapset/qemu-loongarch64-simpletrace.stp
 %{_datadir}/systemtap/tapset/qemu-m68k.stp
 %{_datadir}/systemtap/tapset/qemu-m68k-log.stp
 %{_datadir}/systemtap/tapset/qemu-m68k-simpletrace.stp
@@ -1842,6 +1863,14 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_mandir}/man1/qemu-system-hppa.1*
 %{_datadir}/%{name}/hppa-firmware.img
 
+
+%files system-loongarch64
+%{_libdir}/qemu/accel-qtest-loongarch64.so
+
+%files system-loongarch64-core
+%{_bindir}/qemu-system-loongarch64
+%{_datadir}/systemtap/tapset/qemu-system-loongarch64*.stp
+%{_mandir}/man1/qemu-system-loongarch64.1*
 
 %files system-m68k
 %{_libdir}/qemu/accel-qtest-m68k.so

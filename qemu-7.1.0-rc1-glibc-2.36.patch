@@ -1,0 +1,11 @@
+diff -up qemu-7.1.0-rc1/linux-user/syscall.c.omv~ qemu-7.1.0-rc1/linux-user/syscall.c
+--- qemu-7.1.0-rc1/linux-user/syscall.c.omv~	2022-08-07 00:36:39.364140767 +0200
++++ qemu-7.1.0-rc1/linux-user/syscall.c	2022-08-07 00:37:03.364526397 +0200
+@@ -22,6 +22,7 @@
+ #include "qemu/path.h"
+ #include "qemu/memfd.h"
+ #include "qemu/queue.h"
++#define _LINUX_MOUNT_H 1 // prevent clash between linux/mount.h and sys/mount.h
+ #include <elf.h>
+ #include <endian.h>
+ #include <grp.h>
