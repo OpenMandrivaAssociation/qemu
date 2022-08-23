@@ -175,7 +175,7 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-%define beta rc2
+%define beta rc3
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
@@ -1379,7 +1379,7 @@ rom_link() {
 %global binfmt_dir %{buildroot}%{_exec_prefix}/lib/binfmt.d
 mkdir -p %{binfmt_dir}
 
-./scripts/qemu-binfmt-conf.sh --systemd ALL --exportdir %{binfmt_dir} --qemu-path %{_bindir}
+./scripts/qemu-binfmt-conf.sh --credential yes --systemd ALL --exportdir %{binfmt_dir} --qemu-path %{_bindir}
 for i in %{binfmt_dir}/*; do
     mv $i $(echo $i | sed 's/.conf/-dynamic.conf/')
 done
