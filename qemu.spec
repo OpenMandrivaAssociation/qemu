@@ -180,7 +180,7 @@
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
 Version:	7.1.0
-Release:	%{?beta:0.%{beta}.}1
+Release:	%{?beta:0.%{beta}.}2
 Group:		Emulators
 Epoch:		1
 License:	GPLv2 and BSD and MIT and CC-BY
@@ -467,9 +467,6 @@ Requires:	ipxe
 Requires:	seabios
 Requires:	sgabios
 Requires:	vgabios
-Requires(post): /usr/bin/getent
-Requires(post): /usr/sbin/groupadd
-Requires(post): /usr/sbin/useradd
 Requires(post): systemd-units
 Requires(preun): systemd-units
 Requires(postun): systemd-units
@@ -1387,7 +1384,7 @@ done
 %if %{user_static}
 for regularfmt in %{binfmt_dir}/*; do
   staticfmt="$(echo $regularfmt | sed 's/-dynamic/-static/g')"
-  cat $regularfmt | tr -d '\n' | sed "s/:$/-static:F/" > $staticfmt
+  cat $regularfmt | tr -d '\n' | sed "s/:OC$/-static:OCF/" > $staticfmt
 done
 %endif
 #remove conf file, qemu-i486-static not available
@@ -1454,13 +1451,6 @@ qemu-sanity-check --qemu=%{?hostqemu} ||:
 # archs_skip_tests
 popd
 
-
-%post common
-getent group kvm >/dev/null || groupadd -g 36 -r kvm
-getent group qemu >/dev/null || groupadd -g 107 -r qemu
-getent passwd qemu >/dev/null || \
-  useradd -r -u 107 -g qemu -G kvm -d / -s /sbin/nologin \
-    -c "qemu user" qemu
 
 %post user-binfmt
 systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
