@@ -369,7 +369,7 @@ BuildRequires:	python3-devel
 BuildRequires:	pkgconfig(glib-2.0)
 BuildRequires:	glib2-static-devel
 
-BuildRequires:	pcre-static-devel
+BuildRequires:	%{_lib}pcre2-static-devel
 BuildRequires:	glibc-static-devel
 BuildRequires:	gpg-error-static-devel
 BuildRequires:	zlib-static-devel
