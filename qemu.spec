@@ -175,12 +175,12 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-#define beta rc4
+%define beta rc1
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	7.1.0
-Release:	%{?beta:0.%{beta}.}3
+Version:	7.2.0
+Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
 License:	GPLv2 and BSD and MIT and CC-BY
@@ -589,6 +589,12 @@ Summary: QEMU SDL audio driver
 Requires: %{name}-common = %{EVRD}
 %description audio-sdl
 This package provides the additional SDL audio driver for QEMU.
+
+%package  audio-sndio
+Summary: QEMU SNDIO audio driver
+Requires: %{name}-common = %{EVRD}
+%description audio-sndio
+This package provides the additional SNDIO audio driver for QEMU.
 
 %package  audio-jack
 Summary: QEMU Jack audio driver
@@ -1592,6 +1598,8 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_libdir}/qemu/audio-pa.so
 %files audio-sdl
 %{_libdir}/qemu/audio-sdl.so
+%files audio-sndio
+%{_libdir}/qemu/audio-sndio.so
 %files audio-jack
 %{_libdir}/%{name}/audio-jack.so
 %files audio-dbus
