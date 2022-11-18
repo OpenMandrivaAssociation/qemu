@@ -593,6 +593,7 @@ This package provides the additional SDL audio driver for QEMU.
 
 %package  audio-sndio
 Summary: QEMU SNDIO audio driver
+BuildRequires: pkgconfig(sndio)
 Requires: %{name}-common = %{EVRD}
 %description audio-sndio
 This package provides the additional SNDIO audio driver for QEMU.
