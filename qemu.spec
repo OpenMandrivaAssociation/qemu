@@ -373,6 +373,7 @@ BuildRequires:	%{_lib}pcre2-static-devel
 BuildRequires:	glibc-static-devel
 BuildRequires:	gpg-error-static-devel
 BuildRequires:	zlib-static-devel
+BuildRequires:	stdc++-static-devel
 
 %if 0%{?hostqemu:1}
 # For complicated reasons, this is required so that
