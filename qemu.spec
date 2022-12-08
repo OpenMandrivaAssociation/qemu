@@ -175,7 +175,7 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-%define beta rc2
+%define beta rc4
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
