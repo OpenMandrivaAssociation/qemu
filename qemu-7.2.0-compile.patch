@@ -1,0 +1,18 @@
+diff -up qemu-7.2.0/linux-user/syscall.c.omv~ qemu-7.2.0/linux-user/syscall.c
+--- qemu-7.2.0/linux-user/syscall.c.omv~	2023-02-23 13:34:34.143136323 +0100
++++ qemu-7.2.0/linux-user/syscall.c	2023-02-23 13:34:51.487280478 +0100
+@@ -127,12 +127,14 @@
+ #define FIBMAP     _IO(0x00,1)
+ #define FIGETBSZ   _IO(0x00,2)
+ 
++#if 0 // We get this from <linux/fs.h>
+ struct file_clone_range {
+         __s64 src_fd;
+         __u64 src_offset;
+         __u64 src_length;
+         __u64 dest_offset;
+ };
++#endif
+ 
+ #define FICLONE         _IOW(0x94, 9, int)
+ #define FICLONERANGE    _IOW(0x94, 13, struct file_clone_range)
