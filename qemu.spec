@@ -235,6 +235,7 @@ BuildRequires:	pkgconfig(libzstd)
 BuildRequires:	zlib-devel
 BuildRequires:	pkgconfig(vdeplug)
 BuildRequires:	xfsprogs-devel
+BuildRequires:	flex
 
 # used in various places for crypto
 BuildRequires:	gnutls-devel
