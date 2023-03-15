@@ -175,11 +175,11 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-#define beta rc4
+%define beta rc0
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	7.2.0
+Version:	8.0.0
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
@@ -207,8 +207,8 @@ Source20: kvm-x86.modprobe.conf
 Source21: 95-kvm-ppc64-memlock.conf
 
 Patch0:	qemu-6.1.0-fix-disable-gnutls.patch
-Patch1: qemu-7.1.0-rc1-glibc-2.36.patch
-Patch2: qemu-7.2.0-compile.patch
+#Patch1: qemu-7.1.0-rc1-glibc-2.36.patch
+#Patch2: qemu-7.2.0-compile.patch
 
 BuildRequires: %mklibname zstd -s -d
 BuildRequires: meson
@@ -443,16 +443,6 @@ VGABIOS provides the video ROM BIOSes for the following variants of VGA
 emulated devices: Std VGA, QXL, Cirrus CLGD 5446 and VMware emulated
 video card.
 
-%package -n	sgabios
-Summary:        Serial Graphics Adapter BIOS for QEMU
-Group:          Emulators
-BuildArch:      noarch
-
-%description -n	sgabios
-The Google Serial Graphics Adapter BIOS or SGABIOS provides a means for legacy
-x86 software to communicate with an attached serial console as if a video card
-were attached.
-
 %package -n	seabios
 Summary:        X86 BIOS for QEMU
 Group:          Emulators
@@ -467,7 +457,6 @@ is the default BIOS for QEMU.
 Summary: QEMU common files needed by all QEMU targets
 Requires:	ipxe
 Requires:	seabios
-Requires:	sgabios
 Requires:	vgabios
 Requires(post): systemd-units
 Requires(preun): systemd-units
@@ -956,7 +945,6 @@ Summary: QEMU system emulator for PPC
 Requires: %{name}-common = %{EVRD}
 Suggests: %{name}-system-ppc = %{EVRD}
 Requires: seabios
-Requires: sgabios
 Requires: vgabios
 %description system-ppc-core
 This package provides the QEMU system emulator for PPC and PPC64 systems.
@@ -1051,7 +1039,6 @@ Summary: QEMU system emulator for x86
 Requires: %{name}-common = %{EVRD}
 Suggests: %{name}-system-x86 = %{EVRD}
 Requires: seabios
-Requires: sgabios
 Requires: vgabios
 %if %{have_edk2}
 Requires: edk2-ovmf
@@ -1183,7 +1170,7 @@ export SKIP_DOCKER_BUILD=1
 %ifarch s390 %{mips64}
         --enable-tcg-interpreter \
 %endif
-        --enable-trace-backend=$tracebackends \
+        --enable-trace-backends=$tracebackends \
         --extra-ldflags="$extraldflags -Wl,-z,relro -Wl,-z,now" \
         --extra-cflags="%{optflags} -O3 -gdwarf-3" \
         "$@" || cat config.log
@@ -1350,8 +1337,6 @@ install -D -p -m 0644 qemu.sasl %{buildroot}%{_sysconfdir}/sasl2/qemu.conf
 # Provided by package seabios
 #rm -rf %{buildroot}%{_datadir}/%{name}/bios.bin
 #rm -rf %{buildroot}%{_datadir}/%{name}/bios-256k.bin
-# Provided by package sgabios
-#rm -rf %{buildroot}%{_datadir}/%{name}/sgabios.bin
 
 pxe_link() {
   ln -s ../ipxe/$2.rom %{buildroot}%{_datadir}/%{name}/pxe-$1.rom
@@ -1379,7 +1364,6 @@ rom_link() {
 #rom_link ../seavgabios/vgabios-virtio.bin vgabios-virtio.bin
 #rom_link ../seabios/bios.bin bios.bin
 #rom_link ../seabios/bios-256k.bin bios-256k.bin
-#rom_link ../sgabios/sgabios.bin sgabios.bin
 
 # Install binfmt
 %global binfmt_dir %{buildroot}%{_exec_prefix}/lib/binfmt.d
@@ -1532,11 +1516,8 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_bindir}/qemu-keymap
 %{_bindir}/qemu-trace-stap
 %if %{with seccomp}
-%{_mandir}/man1/virtiofsd.1*
-%{_libexecdir}/virtiofsd
 %{_bindir}/qemu-pr-helper
 %{_libexecdir}/virtfs-proxy-helper
-%{_datadir}/qemu/vhost-user/50-qemu-virtiofsd.json
 %endif
 %{_bindir}/qemu-storage-daemon
 %{_unitdir}/qemu-pr-helper.service
@@ -2039,7 +2020,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/qemu/vgabios-ramfb.bin
 
 %{_datadir}/%{name}/pvh.bin
-%{_datadir}/%{name}/sgabios.bin
 %if 0%{?need_qemu_kvm}
 %{_bindir}/qemu-kvm
 %{_mandir}/man1/qemu-kvm.1*
@@ -2070,9 +2050,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/%{name}/vgabios-stdvga.bin
 %{_datadir}/%{name}/vgabios-vmware.bin
 %{_datadir}/%{name}/vgabios-virtio.bin
-
-%files -n sgabios
-%{_datadir}/%{name}/sgabios.bin
 
 %files -n ipxe
 %{_datadir}/%{name}/pxe-e1000.rom
