@@ -236,6 +236,7 @@ BuildRequires:	zlib-devel
 BuildRequires:	pkgconfig(vdeplug)
 BuildRequires:	xfsprogs-devel
 BuildRequires:	flex
+BuildRequires:	bison
 
 # used in various places for crypto
 BuildRequires:	gnutls-devel
