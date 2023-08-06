@@ -118,7 +118,6 @@
 %define requires_audio_alsa Requires: %{name}-audio-alsa = %{EVRD}
 %define requires_audio_oss Requires: %{name}-audio-oss = %{EVRD}
 %define requires_audio_pa Requires: %{name}-audio-pa = %{EVRD}
-%define requires_audio_pipewire Requires: %{name}-audio-pipewire = %{EVRD}
 %define requires_audio_sdl Requires: %{name}-audio-sdl = %{EVRD}
 %define requires_audio_dbus Requires: %{name}-audio-dbus = %{EVRD}
 %define requires_ui_curses Requires: %{name}-ui-curses = %{EVRD}
@@ -155,7 +154,6 @@
 %{requires_audio_alsa} \
 %{requires_audio_oss} \
 %{requires_audio_pa} \
-%{requires_audio_pipewire} \
 %{requires_audio_sdl} \
 %{requires_audio_dbus} \
 %{requires_ui_egl_headless} \
@@ -177,11 +175,11 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-%define beta rc2
+#define beta rc3
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	8.1.0
+Version:	8.0.3
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
@@ -248,8 +246,6 @@ BuildRequires:	sasl-devel
 BuildRequires:	libaio-devel
 # pulseaudio audio output
 BuildRequires:	pkgconfig(libpulse)
-# pipewire audio output
-BuildRequires:	pkgconfig(libpipewire-0.3)
 # alsa audio output
 BuildRequires:	alsa-oss-devel
 BuildRequires:	pkgconfig(alsa)
@@ -579,13 +575,7 @@ This package provides the additional OSS audio driver for QEMU.
 Summary: QEMU PulseAudio audio driver
 Requires: %{name}-common = %{EVRD}
 %description audio-pa
-This package provides the additional PulseAudio audio driver for QEMU.
-
-%package  audio-pipewire
-Summary: QEMU PipeWire audio driver
-Requires: %{name}-common = %{EVRD}
-%description audio-pipewire
-This package provides the additional PipeWire audio driver for QEMU.
+This package provides the additional PulseAudi audio driver for QEMU.
 
 %package  audio-sdl
 Summary: QEMU SDL audio driver
@@ -1419,10 +1409,6 @@ rm -rf %{buildroot}%{_includedir}
 # RPM won't pick up their dependencies.
 chmod +x %{buildroot}%{_libdir}/qemu/*.so
 
-# We have a libfdt package, no need to duplicate it here
-# (in fact, we need to figure out why it is being built)
-rm -f %{buildroot}%{_libdir}/libfdt.a %{buildroot}%{_libdir}/pkgconfig/libfdt.pc
-
 %check
 
 # Tests are hanging on s390 as of 2.3.0
@@ -1596,8 +1582,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_libdir}/qemu/audio-oss.so
 %files audio-pa
 %{_libdir}/qemu/audio-pa.so
-%files audio-pipewire
-%{_libdir}/qemu/audio-pipewire.so
 %files audio-sdl
 %{_libdir}/qemu/audio-sdl.so
 %files audio-sndio
