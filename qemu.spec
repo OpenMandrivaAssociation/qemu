@@ -177,7 +177,7 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-%define beta rc3
+%define beta rc4
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
@@ -209,8 +209,6 @@ Source20: kvm-x86.modprobe.conf
 Source21: 95-kvm-ppc64-memlock.conf
 
 Patch0:	qemu-6.1.0-fix-disable-gnutls.patch
-# Rebased from https://patchew.org/QEMU/20230812155004.326182-1-richard.henderson@linaro.org/
-Patch1: fix-1763.patch
 #Patch1: qemu-7.1.0-rc1-glibc-2.36.patch
 #Patch2: qemu-7.2.0-compile.patch
 
