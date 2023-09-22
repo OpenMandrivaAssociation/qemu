@@ -181,7 +181,7 @@
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	8.1.0
+Version:	8.1.1
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
@@ -695,6 +695,13 @@ Requires: %{name}-common = %{EVRD}
 Requires: %{name}-ui-spice-core = %{EVRD}
 %description device-display-qxl
 This package provides the QXL display device for QEMU.
+
+%package  char-baum
+Summary: QEMU baum chardev driver
+Requires: %{name}-common = %{EVRD}
+Requires: %{name}-ui-spice-core = %{EVRD}
+%description char-baum
+This package provides the baum chardev driver for QEMU.
 
 %package  char-spice
 Summary: QEMU spice chardev driver
@@ -1648,6 +1655,8 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_libdir}/qemu/ui-spice-app.so
 %endif
 
+%files char-baum
+%{_libdir}/qemu/chardev-baum.so
 
 %if %{have_kvm}
 %files kvm
