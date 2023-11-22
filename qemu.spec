@@ -181,7 +181,7 @@
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	8.1.2
+Version:	8.1.3
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
@@ -1656,7 +1656,7 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %endif
 
 %files char-baum
-%{_libdir}/qemu/chardev-baum.so
+#{_libdir}/qemu/chardev-baum.so
 
 %if %{have_kvm}
 %files kvm
