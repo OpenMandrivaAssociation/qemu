@@ -181,7 +181,7 @@
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	8.1.3
+Version:	8.2.0
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
@@ -381,15 +381,6 @@ BuildRequires:	glibc-static-devel
 BuildRequires:	gpg-error-static-devel
 BuildRequires:	zlib-static-devel
 BuildRequires:	stdc++-static-devel
-
-%if 0%{?hostqemu:1}
-# For complicated reasons, this is required so that
-# /bin/kernel-install puts the kernel directly into /boot, instead of
-# into a /boot/<machine-id> subdirectory (in Fedora >= 23).  This is
-# so we can run qemu-sanity-check.  Read the kernel-install script to
-# understand why.
-BuildRequires: grubby
-%endif
 
 Requires: %{name}-user = %{EVRD}
 Suggests: %{name}-system-aarch64 = %{EVRD}
