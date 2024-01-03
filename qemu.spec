@@ -182,7 +182,7 @@
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
 Version:	8.2.0
-Release:	%{?beta:0.%{beta}.}1
+Release:	%{?beta:0.%{beta}.}2
 Group:		Emulators
 Epoch:		1
 License:	GPLv2 and BSD and MIT and CC-BY
@@ -455,9 +455,6 @@ Summary: QEMU common files needed by all QEMU targets
 Requires:	ipxe
 Requires:	seabios
 Requires:	vgabios
-Requires(post): systemd-units
-Requires(preun): systemd-units
-Requires(postun): systemd-units
 %{obsoletes_some_modules}
 %description common
 This package provides the common files needed by all QEMU targets
@@ -465,9 +462,6 @@ This package provides the common files needed by all QEMU targets
 
 %package guest-agent
 Summary: QEMU guest agent
-Requires(post): systemd-units
-Requires(preun): systemd-units
-Requires(postun): systemd-units
 %description guest-agent
 This package provides an agent to run inside guests, which communicates
 with the host over a virtio-serial channel named "org.qemu.guest_agent.0"
@@ -740,8 +734,6 @@ This package provides the user mode emulation of qemu targets
 %package user-binfmt
 Summary: QEMU user mode emulation of qemu targets
 Requires: %{name}-user = %{EVRD}
-Requires(post): systemd-units
-Requires(postun): systemd-units
 # qemu-user-binfmt + qemu-user-static both provide binfmt rules
 Conflicts: %{name}-user-static
 
