@@ -304,6 +304,7 @@ BuildRequires: pkgconfig(libpng)
 BuildRequires: pkgconfig(bluez)
 # For Braille device support
 #BuildRequires: brlapi-devel
+BuildRequires: dtc
 %if %{with fdt}
 # For FDT device tree support
 BuildRequires:	fdt-devel
