@@ -305,10 +305,7 @@ BuildRequires: pkgconfig(bluez)
 # For Braille device support
 #BuildRequires: brlapi-devel
 BuildRequires: dtc
-%if %{with fdt}
-# For FDT device tree support
-BuildRequires:	fdt-devel
-%endif
+BuildRequires: pkgconfig(libfdt)
 # Hard requirement for version >= 1.3
 BuildRequires:	pkgconfig(pixman-1)
 %if %{with_block_gluster}
