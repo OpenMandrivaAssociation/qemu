@@ -177,11 +177,11 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-#define beta rc4
+%define beta rc4
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	8.2.2
+Version:	9.0.0
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
@@ -379,6 +379,8 @@ BuildRequires:	glibc-static-devel
 BuildRequires:	gpg-error-static-devel
 BuildRequires:	zlib-static-devel
 BuildRequires:	stdc++-static-devel
+BuildRequires:	%{_lib}elfutils-static-devel
+BuildRequires:	%{_lib}bpf-static-devel
 
 Requires: %{name}-user = %{EVRD}
 Suggests: %{name}-system-aarch64 = %{EVRD}
@@ -1715,6 +1717,18 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/systemtap/tapset/qemu-hppa.stp
 %{_datadir}/systemtap/tapset/qemu-hppa-log.stp
 %{_datadir}/systemtap/tapset/qemu-hppa-simpletrace.stp
+%{_datadir}/systemtap/tapset/qemu-img-log.stp
+%{_datadir}/systemtap/tapset/qemu-img-simpletrace.stp
+%{_datadir}/systemtap/tapset/qemu-img.stp
+%{_datadir}/systemtap/tapset/qemu-io-log.stp
+%{_datadir}/systemtap/tapset/qemu-io-simpletrace.stp
+%{_datadir}/systemtap/tapset/qemu-io.stp
+%{_datadir}/systemtap/tapset/qemu-nbd-log.stp
+%{_datadir}/systemtap/tapset/qemu-nbd-simpletrace.stp
+%{_datadir}/systemtap/tapset/qemu-nbd.stp
+%{_datadir}/systemtap/tapset/qemu-storage-daemon-log.stp
+%{_datadir}/systemtap/tapset/qemu-storage-daemon-simpletrace.stp
+%{_datadir}/systemtap/tapset/qemu-storage-daemon.stp
 %{_datadir}/systemtap/tapset/qemu-loongarch64.stp
 %{_datadir}/systemtap/tapset/qemu-loongarch64-log.stp
 %{_datadir}/systemtap/tapset/qemu-loongarch64-simpletrace.stp
@@ -1852,6 +1866,7 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/systemtap/tapset/qemu-system-hppa*.stp
 %{_mandir}/man1/qemu-system-hppa.1*
 %{_datadir}/%{name}/hppa-firmware.img
+%{_datadir}/qemu/hppa-firmware64.img
 
 
 %files system-loongarch64
