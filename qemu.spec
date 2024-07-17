@@ -181,7 +181,7 @@
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	9.0.1
+Version:	9.0.2
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
