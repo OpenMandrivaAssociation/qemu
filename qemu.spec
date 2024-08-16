@@ -177,11 +177,11 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-#define beta rc4
+%define beta rc2
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	9.0.2
+Version:	9.1.0
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
@@ -392,7 +392,6 @@ Suggests: %{name}-system-loongarch64 = %{EVRD}
 Suggests: %{name}-system-m68k = %{EVRD}
 Suggests: %{name}-system-microblaze = %{EVRD}
 Suggests: %{name}-system-mips = %{EVRD}
-Suggests: %{name}-system-nios2 = %{EVRD}
 Suggests: %{name}-system-or1k = %{EVRD}
 Suggests: %{name}-system-ppc = %{EVRD}
 Suggests: %{name}-system-riscv = %{EVRD}
@@ -404,6 +403,10 @@ Suggests: %{name}-system-x86 = %{EVRD}
 Suggests: %{name}-system-xtensa = %{EVRD}
 Suggests: %{name}-device-usb = %{EVRD}
 Requires: %{name}-img = %{EVRD}
+
+# Nios2 is no longer supported starting with 9.1
+Obsoletes: %{name}-system-nios2 < %{EVRD}
+Obsoletes: %{name}-system-nios2-core < %{EVRD}
 
 
 %description
@@ -903,21 +906,6 @@ Suggests: %{name}-system-mips = %{EVRD}
 This package provides the QEMU system emulator for MIPS systems.
 
 
-%package system-nios2
-Summary: QEMU system emulator for nios2
-Requires: %{name}-system-nios2-core = %{EVRD}
-%{requires_all_modules}
-%description system-nios2
-This package provides the QEMU system emulator for NIOS2.
-
-%package system-nios2-core
-Summary: QEMU system emulator for nios2
-Requires: %{name}-common = %{EVRD}
-Suggests: %{name}-system-nios2 = %{EVRD}
-%description system-nios2-core
-This package provides the QEMU system emulator for NIOS2.
-
-
 %package system-or1k
 Summary: QEMU system emulator for OpenRisc32
 Requires: %{name}-system-or1k-core = %{EVRD}
@@ -1074,12 +1062,12 @@ This package provides the QEMU system emulator for Renesas RX
 	#list with conf file in binfmt
 	%define static_arches aarch64_be i386 x86_64 alpha armeb hexagon hppa loongarch64 m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
 	#list without conf file in binfmt
-	%define static_wo_binfmt cris aarch64 arm nios2 trace-stap
+	%define static_wo_binfmt cris aarch64 arm trace-stap
 %else
 	#list with conf file in binfmt
 	%define static_arches aarch64 aarch64_be alpha arm armeb hexagon hppa loongarch64 m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
 	#list without conf file in binfmt
-	%define static_wo_binfmt cris i386 nios2 trace-stap x86_64
+	%define static_wo_binfmt cris i386 trace-stap x86_64
 %endif
 
 %{expand:%(for arch in %static_arches; do archstatic=${arch}; cat <<EOF
@@ -1521,6 +1509,7 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_bindir}/qemu-edid
 %{_bindir}/qemu-keymap
 %{_bindir}/qemu-trace-stap
+%{_bindir}/qemu-vmsr-helper
 %if %{with seccomp}
 %{_bindir}/qemu-pr-helper
 %{_libexecdir}/virtfs-proxy-helper
@@ -1671,7 +1660,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_bindir}/qemu-mips64el
 %{_bindir}/qemu-mipsn32
 %{_bindir}/qemu-mipsn32el
-%{_bindir}/qemu-nios2
 %{_bindir}/qemu-or1k
 %{_bindir}/qemu-ppc
 %{_bindir}/qemu-ppc64
@@ -1759,9 +1747,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/systemtap/tapset/qemu-mipsn32el.stp
 %{_datadir}/systemtap/tapset/qemu-mipsn32el-log.stp
 %{_datadir}/systemtap/tapset/qemu-mipsn32el-simpletrace.stp
-%{_datadir}/systemtap/tapset/qemu-nios2.stp
-%{_datadir}/systemtap/tapset/qemu-nios2-log.stp
-%{_datadir}/systemtap/tapset/qemu-nios2-simpletrace.stp
 %{_datadir}/systemtap/tapset/qemu-or1k.stp
 %{_datadir}/systemtap/tapset/qemu-or1k-log.stp
 %{_datadir}/systemtap/tapset/qemu-or1k-simpletrace.stp
@@ -1915,15 +1900,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_mandir}/man1/qemu-system-mipsel.1*
 %{_mandir}/man1/qemu-system-mips64el.1*
 %{_mandir}/man1/qemu-system-mips64.1*
-
-
-%files system-nios2
-%{_libdir}/qemu/accel-qtest-nios2.so
-
-%files system-nios2-core
-%{_bindir}/qemu-system-nios2
-%{_datadir}/systemtap/tapset/qemu-system-nios2*.stp
-%{_mandir}/man1/qemu-system-nios2.1*
 
 
 %files system-or1k
