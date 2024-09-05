@@ -1428,10 +1428,12 @@ make check V=1 || :
 make check V=1
 %endif
 
+%ifarch %{x86_64}
 %if 0%{?hostqemu:1}
 # Sanity-check current kernel can boot on this qemu.
 # The results are advisory only.
 qemu-sanity-check --qemu=%{?hostqemu} ||:
+%endif
 %endif
 
 %endif
