@@ -186,7 +186,7 @@ Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
 License:	GPLv2 and BSD and MIT and CC-BY
-URL:		http://www.qemu.org/
+URL:		https://www.qemu.org/
 
 Source0: https://download.qemu.org/%{name}-%{version}%{?beta:-%{beta}}.tar.xz
 Source1: qemu.rpmlintrc
