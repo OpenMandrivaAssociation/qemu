@@ -177,11 +177,11 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-#define beta rc3
+%define beta rc0
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	9.1.1
+Version:	9.2.0
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
@@ -387,7 +387,6 @@ Suggests: %{name}-system-aarch64 = %{EVRD}
 Suggests: %{name}-system-alpha = %{EVRD}
 Suggests: %{name}-system-arm = %{EVRD}
 Suggests: %{name}-system-avr = %{EVRD}
-Suggests: %{name}-system-cris = %{EVRD}
 Suggests: %{name}-system-loongarch64 = %{EVRD}
 Suggests: %{name}-system-m68k = %{EVRD}
 Suggests: %{name}-system-microblaze = %{EVRD}
@@ -407,6 +406,9 @@ Requires: %{name}-img = %{EVRD}
 # Nios2 is no longer supported starting with 9.1
 Obsoletes: %{name}-system-nios2 < %{EVRD}
 Obsoletes: %{name}-system-nios2-core < %{EVRD}
+# Cris is no longer supported starting with 9.2
+Obsoletes: %{name}-system-cris < %{EVRD}
+Obsoletes: %{name}-system-cris-core < %{EVRD}
 
 
 %description
@@ -816,21 +818,6 @@ Suggests: %{name}-system-avr = %{EVRD}
 This package provides the QEMU system emulator for AVR boards.
 
 
-%package system-cris
-Summary: QEMU system emulator for CRIS
-Requires: %{name}-system-cris-core = %{EVRD}
-%{requires_all_modules}
-%description system-cris
-This package provides the system emulator for CRIS systems.
-
-%package system-cris-core
-Summary: QEMU system emulator for CRIS
-Requires: %{name}-common = %{EVRD}
-Suggests: %{name}-system-cris = %{EVRD}
-%description system-cris-core
-This package provides the system emulator for CRIS boards.
-
-
 %package system-hppa
 Summary: QEMU system emulator for HPPA
 Requires: %{name}-system-hppa-core = %{EVRD}
@@ -1062,12 +1049,12 @@ This package provides the QEMU system emulator for Renesas RX
 	#list with conf file in binfmt
 	%define static_arches aarch64_be i386 x86_64 alpha armeb hexagon hppa loongarch64 m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
 	#list without conf file in binfmt
-	%define static_wo_binfmt cris aarch64 arm trace-stap
+	%define static_wo_binfmt aarch64 arm trace-stap
 %else
 	#list with conf file in binfmt
 	%define static_arches aarch64 aarch64_be alpha arm armeb hexagon hppa loongarch64 m68k microblaze microblazeel mips mips64 mips64el mipsel mipsn32 mipsn32el or1k ppc ppc64 ppc64le riscv32 riscv64 s390x sh4 sh4eb sparc sparc32plus sparc64 xtensa xtensaeb
 	#list without conf file in binfmt
-	%define static_wo_binfmt cris i386 trace-stap x86_64
+	%define static_wo_binfmt i386 trace-stap x86_64
 %endif
 
 %{expand:%(for arch in %static_arches; do archstatic=${arch}; cat <<EOF
@@ -1501,7 +1488,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/%{name}/vhost-user/50-qemu-gpu.json
 %{_mandir}/man1/qemu.1*
 %{_mandir}/man1/qemu-trace-stap.1*
-%{_mandir}/man1/virtfs-proxy-helper.1*
 %{_mandir}/man7/qemu-block-drivers.7*
 %{_mandir}/man7/qemu-cpu-models.7*
 %{_mandir}/man7/qemu-ga-ref.7*
@@ -1514,7 +1500,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_bindir}/qemu-vmsr-helper
 %if %{with seccomp}
 %{_bindir}/qemu-pr-helper
-%{_libexecdir}/virtfs-proxy-helper
 %endif
 %{_bindir}/qemu-storage-daemon
 %{_unitdir}/qemu-pr-helper.service
@@ -1649,7 +1634,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_bindir}/qemu-alpha
 %{_bindir}/qemu-arm
 %{_bindir}/qemu-armeb
-%{_bindir}/qemu-cris
 %{_bindir}/qemu-hexagon
 %{_bindir}/qemu-hppa
 %{_bindir}/qemu-loongarch64
@@ -1698,9 +1682,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/systemtap/tapset/qemu-armeb.stp
 %{_datadir}/systemtap/tapset/qemu-armeb-log.stp
 %{_datadir}/systemtap/tapset/qemu-armeb-simpletrace.stp
-%{_datadir}/systemtap/tapset/qemu-cris.stp
-%{_datadir}/systemtap/tapset/qemu-cris-log.stp
-%{_datadir}/systemtap/tapset/qemu-cris-simpletrace.stp
 %{_datadir}/systemtap/tapset/qemu-hexagon.stp
 %{_datadir}/systemtap/tapset/qemu-hexagon-log.stp
 %{_datadir}/systemtap/tapset/qemu-hexagon-simpletrace.stp
@@ -1836,15 +1817,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_mandir}/man1/qemu-system-arm.1*
 
 
-%files system-cris
-%{_libdir}/qemu/accel-qtest-cris.so
-
-%files system-cris-core
-%{_bindir}/qemu-system-cris
-%{_datadir}/systemtap/tapset/qemu-system-cris*.stp
-%{_mandir}/man1/qemu-system-cris.1*
-
-
 %files system-hppa
 %{_libdir}/qemu/accel-qtest-hppa.so
 
@@ -1955,7 +1927,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_mandir}/man1/qemu-system-s390x.1*
 %{_libdir}/qemu/hw-s390x-virtio-gpu-ccw.so
 %{_datadir}/%{name}/s390-ccw.img
-%{_datadir}/%{name}/s390-netboot.img
 
 
 %files system-sh4
