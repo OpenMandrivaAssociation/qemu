@@ -1497,7 +1497,9 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_bindir}/qemu-edid
 %{_bindir}/qemu-keymap
 %{_bindir}/qemu-trace-stap
+%ifarch %{x86_64}
 %{_bindir}/qemu-vmsr-helper
+%endif
 %if %{with seccomp}
 %{_bindir}/qemu-pr-helper
 %endif
