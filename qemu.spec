@@ -177,12 +177,12 @@
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-#define beta rc3
+%define beta rc1
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	9.2.0
-Release:	%{?beta:0.%{beta}.}2
+Version:	10.0.0
+Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
 License:	GPLv2 and BSD and MIT and CC-BY
@@ -370,7 +370,9 @@ BuildRequires:	python-sphinx_rtd_theme
 # qemu 4.0: Used by test suite ./scripts/tap-driver.pl
 BuildRequires:	perl-Test-Harness
 # Required for making python shebangs versioned
-BuildRequires:	python3-devel
+BuildRequires:	python-devel
+BuildRequires:	python%{pyver}dist(pycotap)
+BuildRequires:	python%{pyver}dist(meson)
 BuildRequires:	pkgconfig(glib-2.0)
 BuildRequires:	glib2-static-devel
 
@@ -1484,6 +1486,8 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/%{name}/firmware/*.json
 %{_datadir}/%{name}/qemu-nsis.bmp
 %{_datadir}/%{name}/multiboot_dma.bin
+%{_datadir}/%{name}/npcm8xx_bootrom.bin
+%{_datadir}/%{name}/pnv-pnor.bin
 %dir %{_datadir}/%{name}/vhost-user
 %{_datadir}/%{name}/vhost-user/50-qemu-gpu.json
 %{_mandir}/man1/qemu.1*
@@ -1515,6 +1519,7 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %if %{have_spice}
 %{_libdir}/qemu/hw-display-qxl.so
 %endif
+%{_libdir}/qemu/hw-uefi-vars.so
 %{_libdir}/qemu/hw-usb-redirect.so
 %{_libdir}/qemu/hw-usb-smartcard.so
 %{_mandir}/man1/qemu-storage-daemon.1*
@@ -1969,8 +1974,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %files system-x86
 %{_libdir}/qemu/accel-qtest-i386.so
 %{_libdir}/qemu/accel-qtest-x86_64.so
-%{_libdir}/qemu/accel-tcg-i386.so
-%{_libdir}/qemu/accel-tcg-x86_64.so
 
 %files system-x86-core
 %{_bindir}/qemu-system-i386
