@@ -144,13 +144,8 @@
 %define requires_char_spice %{nil}
 %endif
 
-%global requires_all_modules \
+%global requires_important_modules \
 %{requires_block_curl} \
-%{requires_block_dmg} \
-%{requires_block_gluster} \
-%{requires_block_iscsi} \
-%{requires_block_nfs} \
-%{requires_block_rbd} \
 %{requires_block_ssh} \
 %{requires_audio_alsa} \
 %{requires_audio_oss} \
@@ -158,19 +153,29 @@
 %{requires_audio_pipewire} \
 %{requires_audio_sdl} \
 %{requires_audio_dbus} \
-%{requires_ui_egl_headless} \
-%{requires_ui_opengl} \
-%{requires_ui_dbus} \
-%{requires_device_display_virtio_gpu} \
-%{requires_device_display_virtio_gpu_pci} \
-%{requires_device_display_virtio_vga} \
 %{requires_ui_curses} \
+%{requires_ui_egl_headless} \
+%{requires_ui_dbus} \
+Recommends: %{name}-device-display-virtio-gpu = %{EVRD} \
+Recommends: %{name}-device-display-virtio-gpu-pci = %{EVRD} \
+Recommends: %{name}-device-display-virtio-vga = %{EVRD} \
+Recommends: %{name}-device-display-qxl = %{EVRD} \
+Recommends: %{name}-ui-opengl = %{EVRD} \
+Recommends: %{name}-ui-sdl = %{EVRD}
+
+%global requires_all_modules \
+%{requires_important_modules} \
+%{requires_block_rbd} \
+%{requires_block_nfs} \
 %{requires_ui_gtk} \
-%{requires_ui_sdl} \
 %{requires_ui_spice_app} \
 %{requires_ui_spice_core} \
 %{requires_char_spice} \
-%{requires_device_display_qxl}
+%{requires_block_dmg} \
+%{requires_block_gluster} \
+%{requires_ui_opengl} \
+%{requires_ui_sdl} \
+%{requires_block_iscsi}
 
 # Modules which can be conditionally built
 %global obsoletes_some_modules \
@@ -182,7 +187,7 @@
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
 Version:	10.0.0
-Release:	%{?beta:0.%{beta}.}1
+Release:	%{?beta:0.%{beta}.}2
 Group:		Emulators
 Epoch:		1
 License:	GPLv2 and BSD and MIT and CC-BY
@@ -761,7 +766,7 @@ static binaries
 %package system-aarch64
 Summary: QEMU system emulator for AArch64
 Requires: %{name}-system-aarch64-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-aarch64
 This package provides the QEMU system emulator for AArch64.
 
@@ -779,7 +784,7 @@ This package provides the QEMU system emulator for AArch64.
 %package system-alpha
 Summary: QEMU system emulator for Alpha
 Requires: %{name}-system-alpha-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-alpha
 This package provides the QEMU system emulator for Alpha systems.
 
@@ -794,7 +799,7 @@ This package provides the QEMU system emulator for Alpha systems.
 %package system-arm
 Summary: QEMU system emulator for ARM
 Requires: %{name}-system-arm-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-arm
 This package provides the QEMU system emulator for ARM systems.
 
@@ -808,7 +813,7 @@ This package provides the QEMU system emulator for ARM boards.
 %package system-avr
 Summary: QEMU system emulator for ARM
 Requires: %{name}-system-avr-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-avr
 This package provides the QEMU system emulator for AVR systems.
 
@@ -823,7 +828,7 @@ This package provides the QEMU system emulator for AVR boards.
 %package system-hppa
 Summary: QEMU system emulator for HPPA
 Requires: %{name}-system-hppa-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-hppa
 This package provides the QEMU system emulator for HPPA.
 
@@ -838,7 +843,7 @@ This package provides the QEMU system emulator for HPPA.
 %package system-loongarch64
 Summary: QEMU system emulator for LoongArch64
 Requires: %{name}-system-loongarch64-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-loongarch64
 This package provides the QEMU system emulator for LoongArch64 boards.
 
@@ -853,7 +858,7 @@ This package provides the QEMU system emulator for ColdFire boards.
 %package system-m68k
 Summary: QEMU system emulator for ColdFire (m68k)
 Requires: %{name}-system-m68k-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-m68k
 This package provides the QEMU system emulator for ColdFire boards.
 
@@ -868,7 +873,7 @@ This package provides the QEMU system emulator for ColdFire boards.
 %package system-microblaze
 Summary: QEMU system emulator for Microblaze
 Requires: %{name}-system-microblaze-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-microblaze
 This package provides the QEMU system emulator for Microblaze boards.
 
@@ -883,7 +888,7 @@ This package provides the QEMU system emulator for Microblaze boards.
 %package system-mips
 Summary: QEMU system emulator for MIPS
 Requires: %{name}-system-mips-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-mips
 This package provides the QEMU system emulator for MIPS systems.
 
@@ -899,7 +904,7 @@ This package provides the QEMU system emulator for MIPS systems.
 Summary: QEMU system emulator for OpenRisc32
 Requires: %{name}-system-or1k-core = %{EVRD}
 Obsoletes: %{name}-system-or32 < 2:2.9.0
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-or1k
 This package provides the QEMU system emulator for OpenRisc32 boards.
 
@@ -915,7 +920,7 @@ This package provides the QEMU system emulator for OpenRisc32 boards.
 %package system-ppc
 Summary: QEMU system emulator for PPC
 Requires: %{name}-system-ppc-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-ppc
 This package provides the QEMU system emulator for PPC and PPC64 systems.
 
@@ -932,7 +937,7 @@ This package provides the QEMU system emulator for PPC and PPC64 systems.
 %package system-riscv
 Summary: QEMU system emulator for RISC-V
 Requires: %{name}-system-riscv-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-riscv
 This package provides the QEMU system emulator for RISC-V systems.
 
@@ -947,7 +952,7 @@ This package provides the QEMU system emulator for RISC-V systems.
 %package system-s390x
 Summary: QEMU system emulator for S390
 Requires: %{name}-system-s390x-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-s390x
 This package provides the QEMU system emulator for S390 systems.
 
@@ -962,7 +967,7 @@ This package provides the QEMU system emulator for S390 systems.
 %package system-sh4
 Summary: QEMU system emulator for SH4
 Requires: %{name}-system-sh4-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-sh4
 This package provides the QEMU system emulator for SH4 boards.
 
@@ -977,7 +982,7 @@ This package provides the QEMU system emulator for SH4 boards.
 %package system-sparc
 Summary: QEMU system emulator for SPARC
 Requires: %{name}-system-sparc-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-sparc
 This package provides the QEMU system emulator for SPARC and SPARC64 systems.
 
@@ -992,7 +997,7 @@ This package provides the QEMU system emulator for SPARC and SPARC64 systems.
 %package system-tricore
 Summary: QEMU system emulator for tricore
 Requires: %{name}-system-tricore-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-tricore
 This package provides the QEMU system emulator for Tricore.
 
@@ -1007,7 +1012,7 @@ This package provides the QEMU system emulator for Tricore.
 %package system-x86
 Summary: QEMU system emulator for x86
 Requires: %{name}-system-x86-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-x86
 This package provides the QEMU system emulator for x86. When being run in a x86
 machine that supports it, this package also provides the KVM virtualization
@@ -1031,7 +1036,7 @@ platform.
 %package system-xtensa
 Summary: QEMU system emulator for Xtensa
 Requires: %{name}-system-xtensa-core = %{EVRD}
-%{requires_all_modules}
+%{requires_important_modules}
 %description system-xtensa
 This package provides the QEMU system emulator for Xtensa boards.
 
