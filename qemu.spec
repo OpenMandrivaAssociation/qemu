@@ -186,8 +186,8 @@ Recommends: %{name}-ui-sdl = %{EVRD}
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	10.0.3
-Release:	%{?beta:0.%{beta}.}2
+Version:	10.1.1
+Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
 License:	GPLv2 and BSD and MIT and CC-BY
@@ -1867,7 +1867,7 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/systemtap/tapset/qemu-system-microblaze*.stp
 %{_mandir}/man1/qemu-system-microblaze.1*
 %{_mandir}/man1/qemu-system-microblazeel.1*
-%{_datadir}/%{name}/petalogix*.dtb
+%{_datadir}/%{name}/dtb/petalogix*.dtb
 
 
 %files system-mips
@@ -1907,8 +1907,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/systemtap/tapset/qemu-system-ppc*.stp
 %{_mandir}/man1/qemu-system-ppc.1*
 %{_mandir}/man1/qemu-system-ppc64.1*
-%{_datadir}/%{name}/bamboo.dtb
-%{_datadir}/%{name}/canyonlands.dtb
 %{_datadir}/%{name}/qemu_vga.ndrv
 %{_datadir}/%{name}/skiboot.lid
 %{_datadir}/%{name}/u-boot.e500
@@ -1916,6 +1914,8 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %ifarch %{power64}
 %{_sysconfdir}/security/limits.d/95-kvm-ppc64-memlock.conf
 %endif
+%{_datadir}/%{name}/dtb/bamboo.dtb
+%{_datadir}/%{name}/dtb/canyonlands.dtb
 
 
 %files system-riscv
@@ -2000,6 +2000,7 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/%{name}/slof.bin
 %{_datadir}/qemu/vgabios-bochs-display.bin
 %{_datadir}/qemu/vgabios-ramfb.bin
+%{_datadir}/qemu/ast27x0_bootrom.bin
 
 %{_datadir}/%{name}/pvh.bin
 %if 0%{?need_qemu_kvm}
