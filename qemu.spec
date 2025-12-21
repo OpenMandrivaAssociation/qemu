@@ -217,6 +217,7 @@ Patch0:	qemu-6.1.0-fix-disable-gnutls.patch
 #Patch1: qemu-7.1.0-rc1-glibc-2.36.patch
 #Patch2: qemu-7.2.0-compile.patch
 
+BuildRequires:	make
 BuildRequires: %mklibname zstd -s -d
 BuildRequires: meson
 # documentation deps
