@@ -186,7 +186,7 @@ Recommends: %{name}-ui-sdl = %{EVRD}
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	10.1.1
+Version:	10.2.1
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
@@ -213,7 +213,6 @@ Source20: kvm-x86.modprobe.conf
 # /etc/security/limits.d/95-kvm-ppc64-memlock.conf
 Source21: 95-kvm-ppc64-memlock.conf
 
-Patch0:	qemu-6.1.0-fix-disable-gnutls.patch
 #Patch1: qemu-7.1.0-rc1-glibc-2.36.patch
 #Patch2: qemu-7.2.0-compile.patch
 
@@ -1911,12 +1910,14 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/%{name}/qemu_vga.ndrv
 %{_datadir}/%{name}/skiboot.lid
 %{_datadir}/%{name}/u-boot.e500
-%{_datadir}/%{name}/u-boot-sam460-20100605.bin
+%{_datadir}/%{name}/u-boot-sam460.bin
 %ifarch %{power64}
 %{_sysconfdir}/security/limits.d/95-kvm-ppc64-memlock.conf
 %endif
 %{_datadir}/%{name}/dtb/bamboo.dtb
 %{_datadir}/%{name}/dtb/canyonlands.dtb
+%{_datadir}/%{name}/dtb/pegasos1.dtb
+%{_datadir}/%{name}/dtb/pegasos2.dtb
 
 
 %files system-riscv
