@@ -186,7 +186,7 @@ Recommends: %{name}-ui-sdl = %{EVRD}
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	10.2.1
+Version:	11.0.3
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
