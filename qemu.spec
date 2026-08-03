@@ -389,6 +389,10 @@ BuildRequires:	perl-Test-Harness
 BuildRequires:	python-devel
 BuildRequires:	python%{pyver}dist(pycotap)
 BuildRequires:	python%{pyver}dist(meson)
+# configure/mkvenv tooling group (pythondeps.toml); offline — no PyPI
+BuildRequires:	python%{pyver}dist(wheel)
+BuildRequires:	python%{pyver}dist(setuptools)
+BuildRequires:	python%{pyver}dist(pip)
 BuildRequires:	pkgconfig(glib-2.0)
 BuildRequires:	glib2-static-devel
 
@@ -1184,6 +1188,7 @@ export SKIP_DOCKER_BUILD=1
         --with-pkgversion=%{name}-%{version}-%{release} \
         --disable-strip \
         --disable-werror \
+        --disable-download \
         --enable-kvm \
 	--enable-docs \
 %ifarch s390 %{mips64}
@@ -1192,7 +1197,7 @@ export SKIP_DOCKER_BUILD=1
         --enable-trace-backends=$tracebackends \
         --extra-ldflags="$extraldflags -Wl,-z,relro -Wl,-z,now" \
         --extra-cflags="%{optflags} -O3 -gdwarf-3" \
-        "$@" || cat config.log
+        "$@" || { cat config.log; exit 1; }
     sed -i -e 's| -Wl,--no-undefined||g' config-host.mak
 }
 
