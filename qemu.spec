@@ -223,6 +223,7 @@ Patch10: qemu-add-qt-display.patch
 BuildRequires:	make
 # hexagon idef-parser (and static glib) need -latomic
 BuildRequires:	atomic-devel
+BuildRequires:	%mklibname atomic -s -d
 BuildRequires: %mklibname zstd -s -d
 BuildRequires: meson
 # documentation deps
