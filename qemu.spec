@@ -221,6 +221,8 @@ Source21: 95-kvm-ppc64-memlock.conf
 Patch10: qemu-add-qt-display.patch
 
 BuildRequires:	make
+# hexagon idef-parser (and static glib) need -latomic
+BuildRequires:	atomic-devel
 BuildRequires: %mklibname zstd -s -d
 BuildRequires: meson
 # documentation deps
