@@ -1,0 +1,3749 @@
+diff -Nru -x '*.1~' qemu-11.1.0-rc2/meson.build qemu-11.1.0-rc2/meson.build
+--- qemu-11.1.0-rc2/meson.build	2026-07-29 22:24:56.000000000 +0200
++++ qemu-11.1.0-rc2/meson.build	2026-08-03 16:10:52.434826344 +0200
+@@ -1912,6 +1912,27 @@
+ gtkx11 = not_found
+ vte = not_found
+ 
++qt = not_found
++if not get_option('qt').auto() or have_system
++  # Qt UI is C++; enable the C++ compiler when Qt is requested/available.
++  if 'cpp' not in all_languages
++    if add_languages('cpp', required: get_option('qt').enabled(), native: false)
++      all_languages += ['cpp']
++      cxx = meson.get_compiler('cpp')
++    endif
++  endif
++  qt6_widgets = dependency('Qt6Widgets', method: 'pkg-config',
++                           required: get_option('qt'))
++  qt6_opengl = dependency('Qt6OpenGLWidgets', method: 'pkg-config',
++                          required: get_option('qt'))
++  if qt6_widgets.found() and qt6_opengl.found() and 'cpp' in all_languages
++    qt = declare_dependency(dependencies: [qt6_widgets, qt6_opengl],
++                            version: qt6_widgets.version())
++  elif get_option('qt').enabled()
++    error('Qt UI requires Qt6Widgets, Qt6OpenGLWidgets, and a C++ compiler')
++  endif
++endif
++
+ if get_option('gtk') \
+              .disable_auto_if(not have_system) \
+              .require(pixman.found(),
+@@ -2452,6 +2473,7 @@
+ config_host_data.set('CONFIG_GBM', gbm.found())
+ config_host_data.set('CONFIG_GIO', gio.found())
+ config_host_data.set('CONFIG_GTK', gtk.found())
++config_host_data.set('CONFIG_QT', qt.found())
+ config_host_data.set('CONFIG_VTE', vte.found())
+ config_host_data.set('CONFIG_HEXAGON_IDEF_PARSER', get_option('hexagon_idef_parser'))
+ config_host_data.set('CONFIG_LIBATTR', have_old_libattr)
+@@ -4898,6 +4920,7 @@
+ summary_info += {'SDL support':       sdl}
+ summary_info += {'SDL image support': sdl_image}
+ summary_info += {'GTK support':       gtk}
++summary_info += {'Qt support':        qt}
+ summary_info += {'pixman':            pixman}
+ summary_info += {'VTE support':       vte}
+ summary_info += {'PNG support':       png}
+diff -Nru -x '*.1~' qemu-11.1.0-rc2/meson_options.txt qemu-11.1.0-rc2/meson_options.txt
+--- qemu-11.1.0-rc2/meson_options.txt	2026-07-29 22:24:56.000000000 +0200
++++ qemu-11.1.0-rc2/meson_options.txt	2026-08-03 16:10:52.437161552 +0200
+@@ -214,6 +214,8 @@
+        description: 'Enable RDMA-based migration')
+ option('gtk', type : 'feature', value : 'auto',
+        description: 'GTK+ user interface')
++option('qt', type : 'feature', value : 'auto',
++       description: 'Qt user interface')
+ option('sdl', type : 'feature', value : 'auto',
+        description: 'SDL user interface')
+ option('sdl_image', type : 'feature', value : 'auto',
+diff -Nru -x '*.1~' qemu-11.1.0-rc2/qapi/ui.json qemu-11.1.0-rc2/qapi/ui.json
+--- qemu-11.1.0-rc2/qapi/ui.json	2026-07-29 22:24:56.000000000 +0200
++++ qemu-11.1.0-rc2/qapi/ui.json	2026-08-03 16:10:52.441161597 +0200
+@@ -1356,6 +1356,37 @@
+                 '*scale'             : 'number'  } }
+ 
+ ##
++# @DisplayQT:
++#
++# QT display options.
++#
++# @grab-on-hover: Grab keyboard input on mouse hover.
++#
++# @zoom-to-fit: Zoom guest display to fit into the host window.  When
++#     turned off the host window will be resized instead.  Defaults to
++#     "on" when UI info is supported, otherwise "off".
++#
++# @show-tabs: Display the tab bar for switching between graphical and
++#     console interfaces.  Defaults to "off".
++#
++# @show-menubar: Display the main window menubar.  Defaults to "on".
++#
++# @keep-aspect-ratio: Keep the guest aspect ratio when scaling.
++#     Defaults to "on".
++#
++# @scale: Set preferred scale of the display.  Defaults to 1.0.
++#
++# Since: 11.1
++##
++{ 'struct'  : 'DisplayQT',
++  'data'    : { '*grab-on-hover'     : 'bool',
++                '*zoom-to-fit'       : 'bool',
++                '*show-tabs'         : 'bool',
++                '*show-menubar'      : 'bool',
++                '*keep-aspect-ratio' : 'bool',
++                '*scale'             : 'number'  } }
++
++##
+ # @DisplayEGLHeadless:
+ #
+ # EGL headless display options.
+@@ -1496,6 +1527,8 @@
+ #
+ # @gtk: The GTK user interface.
+ #
++# @qt: The Qt user interface.  (Since 11.1)
++#
+ # @sdl: The SDL user interface.
+ #
+ # @egl-headless: No user interface, offload GL operations to a local
+@@ -1524,6 +1557,7 @@
+     { 'name': 'default' },
+     { 'name': 'none' },
+     { 'name': 'gtk', 'if': 'CONFIG_GTK' },
++    { 'name': 'qt', 'if': 'CONFIG_QT' },
+     { 'name': 'sdl', 'if': 'CONFIG_SDL' },
+     { 'name': 'egl-headless', 'if': 'CONFIG_OPENGL' },
+     { 'name': 'curses', 'if': 'CONFIG_CURSES' },
+@@ -1562,6 +1596,7 @@
+   'discriminator' : 'type',
+   'data'    : {
+       'gtk': { 'type': 'DisplayGTK', 'if': 'CONFIG_GTK' },
++      'qt': { 'type': 'DisplayQT', 'if': 'CONFIG_QT' },
+       'cocoa': { 'type': 'DisplayCocoa', 'if': 'CONFIG_COCOA' },
+       'curses': { 'type': 'DisplayCurses', 'if': 'CONFIG_CURSES' },
+       'egl-headless': { 'type': 'DisplayEGLHeadless',
+diff -Nru -x '*.1~' qemu-11.1.0-rc2/ui/meson.build qemu-11.1.0-rc2/ui/meson.build
+--- qemu-11.1.0-rc2/ui/meson.build	2026-07-29 22:24:56.000000000 +0200
++++ qemu-11.1.0-rc2/ui/meson.build	2026-08-03 16:10:52.445161643 +0200
+@@ -161,6 +161,12 @@
+   ui_modules += {'gtk' : gtk_ss}
+ endif
+ 
++if qt.found()
++  qt_ss = ss.source_set()
++  qt_ss.add(qt, pixman, opengl, files('qt.c', 'qt-app.cpp'))
++  ui_modules += {'qt' : qt_ss}
++endif
++
+ if sdl.found()
+   sdl_ss = ss.source_set()
+   sdl_ss.add(sdl, sdl_image, pixman, glib, files(
+diff -Nru -x '*.1~' qemu-11.1.0-rc2/ui/qt-app.cpp qemu-11.1.0-rc2/ui/qt-app.cpp
+--- qemu-11.1.0-rc2/ui/qt-app.cpp	1970-01-01 01:00:00.000000000 +0100
++++ qemu-11.1.0-rc2/ui/qt-app.cpp	2026-08-03 16:10:52.453161734 +0200
+@@ -0,0 +1,1638 @@
++/*
++ * QEMU Qt UI -- application / widgets (no QEMU headers)
++ *
++ * Copyright (c) 2026 OpenMandriva
++ *
++ * This work is licensed under the terms of the GNU GPL, version 2 or later.
++ * See the COPYING file in the top-level directory.
++ */
++
++#define QT_NO_KEYWORDS
++
++#include "qt-app.h"
++
++#include <clocale>
++#include <cstdlib>
++#include <cstring>
++
++#include <QApplication>
++#include <QGuiApplication>
++#include <QCoreApplication>
++#include <QMainWindow>
++#include <QMenuBar>
++#include <QMenu>
++#include <QAction>
++#include <QActionGroup>
++#include <QTabWidget>
++#include <QTabBar>
++#include <QWidget>
++#include <QPainter>
++#include <QImage>
++#include <QKeyEvent>
++#include <QMouseEvent>
++#include <QWheelEvent>
++#include <QCloseEvent>
++#include <QEnterEvent>
++#include <QFocusEvent>
++#include <QResizeEvent>
++#include <QEvent>
++#include <QCursor>
++#include <QPixmap>
++#include <QImage>
++#include <QLocale>
++#include <QSurfaceFormat>
++#include <QOpenGLWidget>
++#include <QOpenGLContext>
++#include <QOpenGLFunctions>
++#include <QtGui/qopenglcontext_platform.h>
++#include <QOffscreenSurface>
++#include <QEventLoop>
++#include <QMetaObject>
++#include <QWindow>
++#include <QSizePolicy>
++#include <QtMath>
++#include <vector>
++#include <cstdio>
++
++/*
++ * Do not include epoxy/gl.h or epoxy/egl.h here: Qt's qopengl* headers
++ * already pull in GL/gl.h / qopenglext.h and epoxy hard-errors on that.
++ * QEGLContext gives us the native handles we need.
++ */
++
++/* pixman format codes we care about (avoid pulling pixman headers) */
++#define QT_PIXMAN_x8r8g8b8 0x20028888
++#define QT_PIXMAN_a8r8g8b8 0x20038888
++#define QT_PIXMAN_r5g6b5   0x10020565
++
++struct QtVcWidget {
++    class DisplayWidget *widget;
++    class GLDisplayWidget *gl_widget;
++    QWidget *as_qwidget;
++    QMainWindow *detached;
++    int index;
++    bool graphic;
++    bool use_gl;
++    double scale_x;
++    double scale_y;
++    bool free_scale;
++    bool keep_aspect;
++    char *label;
++    /* Host arrow hidden (absolute tablet / grab); guest shape takes priority. */
++    bool prefer_blank;
++    /* Guest asked to hide the cursor (mouse_set on=0). */
++    bool guest_cursor_hidden;
++    bool mouse_grabbed;
++    QCursor *guest_cursor;
++};
++
++struct QtApp {
++    QApplication *app;
++    bool owns_app;
++    QMainWindow *window;
++    QTabWidget *tabs;
++    QMenuBar *menu_bar;
++    QMenu *view_menu;
++    QActionGroup *vc_group;
++    QAction *pause_action;
++    QAction *grab_action;
++    QAction *fullscreen_action;
++    QAction *show_tabs_action;
++    QAction *show_menubar_action;
++    QAction *zoom_fit_action;
++    /* Master GL context: valid before any QOpenGLWidget is realized. */
++    QOpenGLContext *gl_master;
++    QOffscreenSurface *gl_surface;
++    QtAppCallbacks cb;
++    QtAppOptions opts;
++    std::vector<QtVcWidget *> vcs;
++};
++
++static QtApp *g_app;
++
++/* -------------------------------------------------------------------------- */
++
++class DisplayWidget : public QWidget
++{
++public:
++    DisplayWidget(QtApp *app, QtVcWidget *vc, QWidget *parent = nullptr)
++        : QWidget(parent), m_app(app), m_vc(vc)
++    {
++        setAttribute(Qt::WA_OpaquePaintEvent);
++        setAttribute(Qt::WA_NoSystemBackground);
++        setFocusPolicy(Qt::StrongFocus);
++        setMouseTracking(true);
++        setMinimumSize(160, 100);
++        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
++    }
++
++    void setImage(const QImage &img)
++    {
++        m_image = img;
++        update();
++    }
++
++    void setScales(double sx, double sy, bool free_scale, bool keep_aspect)
++    {
++        m_vc->scale_x = sx;
++        m_vc->scale_y = sy;
++        m_vc->free_scale = free_scale;
++        m_vc->keep_aspect = keep_aspect;
++        update();
++    }
++
++protected:
++    void paintEvent(QPaintEvent *) override
++    {
++        QPainter p(this);
++        p.fillRect(rect(), Qt::black);
++        if (m_image.isNull()) {
++            return;
++        }
++        int fbw = m_image.width();
++        int fbh = m_image.height();
++        double sx = m_vc->scale_x;
++        double sy = m_vc->scale_y;
++        int ww = width();
++        int wh = height();
++
++        if (m_vc->free_scale || m_app->window->isFullScreen()) {
++            if (m_vc->keep_aspect) {
++                double s = qMin((double)ww / fbw, (double)wh / fbh);
++                sx = sy = s;
++            } else {
++                sx = (double)ww / fbw;
++                sy = (double)wh / fbh;
++            }
++        }
++        int dw = qRound(fbw * sx);
++        int dh = qRound(fbh * sy);
++        int ox = (ww - dw) / 2;
++        int oy = (wh - dh) / 2;
++        p.setRenderHint(QPainter::SmoothPixmapTransform, sx != 1.0 || sy != 1.0);
++        p.drawImage(QRect(ox, oy, dw, dh), m_image);
++    }
++
++    void keyPressEvent(QKeyEvent *ev) override { handleKey(ev, true); }
++    void keyReleaseEvent(QKeyEvent *ev) override { handleKey(ev, false); }
++    /*
++     * QWidget::event() consumes Tab/Backtab for focus chain navigation
++     * before keyPressEvent runs.  Return false so Tab reaches the guest
++     * (shell completion, etc.) like GTK/SDL.
++     */
++    bool focusNextPrevChild(bool next) override
++    {
++        (void)next;
++        return false;
++    }
++    void mouseMoveEvent(QMouseEvent *ev) override { handleMouseMove(ev); }
++    void mousePressEvent(QMouseEvent *ev) override { handleMouseButton(ev, true); }
++    void mouseReleaseEvent(QMouseEvent *ev) override { handleMouseButton(ev, false); }
++    void wheelEvent(QWheelEvent *ev) override
++    {
++        if (m_app->cb.on_mouse_wheel) {
++            QPoint d = ev->angleDelta();
++            m_app->cb.on_mouse_wheel(m_app->cb.opaque, m_vc->index, d.x(), d.y());
++        }
++        ev->accept();
++    }
++    void enterEvent(QEnterEvent *ev) override
++    {
++        QWidget::enterEvent(ev);
++        if (m_app->cb.on_hover) {
++            m_app->cb.on_hover(m_app->cb.opaque, m_vc->index, true);
++        }
++    }
++    void leaveEvent(QEvent *ev) override
++    {
++        QWidget::leaveEvent(ev);
++        /* Re-center if relative grab somehow let the pointer leave. */
++        if (m_vc && m_vc->mouse_grabbed) {
++            QPoint c = mapToGlobal(rect().center());
++            QCursor::setPos(c);
++        }
++        if (m_app->cb.on_hover) {
++            m_app->cb.on_hover(m_app->cb.opaque, m_vc->index, false);
++        }
++    }
++    void focusOutEvent(QFocusEvent *ev) override
++    {
++        QWidget::focusOutEvent(ev);
++        if (m_app->cb.on_focus_out) {
++            m_app->cb.on_focus_out(m_app->cb.opaque, m_vc->index);
++        }
++    }
++
++private:
++    void handleKey(QKeyEvent *ev, bool down)
++    {
++        /* Ctrl+Alt hotkeys (also work while input is grabbed) */
++        if (down && !ev->isAutoRepeat() &&
++            (ev->modifiers() & Qt::ControlModifier) &&
++            (ev->modifiers() & Qt::AltModifier)) {
++            switch (ev->key()) {
++            case Qt::Key_G:
++                if (m_app->grab_action) {
++                    m_app->grab_action->toggle();
++                }
++                ev->accept();
++                return;
++            case Qt::Key_F:
++                if (m_app->fullscreen_action) {
++                    m_app->fullscreen_action->toggle();
++                }
++                ev->accept();
++                return;
++            case Qt::Key_M:
++                if (m_app->show_menubar_action) {
++                    m_app->show_menubar_action->toggle();
++                }
++                ev->accept();
++                return;
++            case Qt::Key_Q:
++                if (m_app->cb.on_quit) {
++                    m_app->cb.on_quit(m_app->cb.opaque);
++                }
++                ev->accept();
++                return;
++            case Qt::Key_1: case Qt::Key_2: case Qt::Key_3:
++            case Qt::Key_4: case Qt::Key_5: case Qt::Key_6:
++            case Qt::Key_7: case Qt::Key_8: case Qt::Key_9: {
++                int n = ev->key() - Qt::Key_1;
++                if (n >= 0 && n < (int)m_app->vcs.size()) {
++                    qt_app_set_current_vc(m_app, m_app->vcs[n]->index);
++                    qt_vc_set_focus(m_app->vcs[n]);
++                }
++                ev->accept();
++                return;
++            }
++            case Qt::Key_Plus:
++            case Qt::Key_Equal:
++                if (m_app->cb.on_zoom_in) {
++                    m_app->cb.on_zoom_in(m_app->cb.opaque);
++                }
++                ev->accept();
++                return;
++            case Qt::Key_Minus:
++                if (m_app->cb.on_zoom_out) {
++                    m_app->cb.on_zoom_out(m_app->cb.opaque);
++                }
++                ev->accept();
++                return;
++            case Qt::Key_0:
++                if (m_app->cb.on_zoom_fixed) {
++                    m_app->cb.on_zoom_fixed(m_app->cb.opaque);
++                }
++                ev->accept();
++                return;
++            default:
++                break;
++            }
++        }
++
++        if (!m_app->cb.on_key) {
++            return;
++        }
++        QByteArray text = ev->text().toUtf8();
++        m_app->cb.on_key(m_app->cb.opaque, m_vc->index,
++                         (int)ev->nativeScanCode(), (int)ev->key(), down,
++                         !text.isEmpty() && down, text.constData());
++        ev->accept();
++    }
++
++    /*
++     * Pass raw widget coordinates; letterbox → guest mapping is done in
++     * qt.c together with the GL path (needs guest FB size / scanout).
++     */
++    void handleMouseMove(QMouseEvent *ev)
++    {
++        if (!m_app->cb.on_mouse_move) {
++            return;
++        }
++        m_app->cb.on_mouse_move(m_app->cb.opaque, m_vc->index,
++                                (int)ev->position().x(),
++                                (int)ev->position().y(),
++                                (int)ev->buttons(), width(), height());
++        ev->accept();
++    }
++
++    void handleMouseButton(QMouseEvent *ev, bool down)
++    {
++        if (!m_app->cb.on_mouse_button) {
++            return;
++        }
++        m_app->cb.on_mouse_button(m_app->cb.opaque, m_vc->index,
++                                  (int)ev->position().x(),
++                                  (int)ev->position().y(),
++                                  (int)ev->buttons(), down, width(), height());
++        ev->accept();
++    }
++
++    void resizeEvent(QResizeEvent *ev) override
++    {
++        QWidget::resizeEvent(ev);
++        if (m_app->cb.on_resize) {
++            m_app->cb.on_resize(m_app->cb.opaque, m_vc->index,
++                                width(), height());
++        }
++    }
++
++    QtApp *m_app;
++    QtVcWidget *m_vc;
++    QImage m_image;
++};
++
++class GLDisplayWidget : public QOpenGLWidget
++{
++public:
++    GLDisplayWidget(QtApp *app, QtVcWidget *vc, QWidget *parent = nullptr)
++        : QOpenGLWidget(parent), m_app(app), m_vc(vc)
++    {
++        setFocusPolicy(Qt::StrongFocus);
++        setMouseTracking(true);
++        setMinimumSize(160, 100);
++        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
++        /*
++         * NoPartialUpdate is faster but can leave the compositor-facing
++         * buffer empty: the guest is visible on screen (direct present) yet
++         * Spectacle/grim/etc. capture a black rectangle.  PartialUpdate keeps
++         * the FBO so the window surface tools sample still has pixels.
++         */
++        setUpdateBehavior(QOpenGLWidget::PartialUpdate);
++        setFormat(QSurfaceFormat::defaultFormat());
++        /*
++         * Opaque fills still matter if paintGL covers only part of the FBO
++         * (wrong DPR) — otherwise the desktop shows through when moving.
++         */
++        setAttribute(Qt::WA_OpaquePaintEvent, true);
++        setAttribute(Qt::WA_NoSystemBackground, true);
++        setAutoFillBackground(false);
++        /*
++         * Texture sharing with the master/offscreen context relies on
++         * Qt::AA_ShareOpenGLContexts (set before QApplication).  QOpenGLWidget
++         * creates its context on first makeCurrent()/show().
++         */
++    }
++
++    bool ensureContext()
++    {
++        if (!isValid()) {
++            /*
++             * Force native window creation so QOpenGLWidget can build its
++             * context.  Safe to call before the top-level window is visible.
++             */
++            winId();
++            if (windowHandle()) {
++                windowHandle()->create();
++            }
++        }
++        makeCurrent();
++        if (QOpenGLContext *cur = QOpenGLContext::currentContext()) {
++            if (cur->isValid()) {
++                return true;
++            }
++        }
++        /* Widget context not ready yet — master offscreen is enough for epoxy. */
++        if (m_app && m_app->gl_master && m_app->gl_surface) {
++            return m_app->gl_master->makeCurrent(m_app->gl_surface) &&
++                   QOpenGLContext::currentContext() != nullptr;
++        }
++        return false;
++    }
++
++protected:
++    void initializeGL() override
++    {
++        /* Widget context is current; epoxy can resolve entry points. */
++    }
++
++    void paintGL() override
++    {
++        /*
++         * QOpenGLWidget only presents what is drawn here.  The widget FBO is
++         * already bound (it is not GL FBO 0).  Hand off to QEMU so it can
++         * blit the guest texture / surface into this framebuffer.
++         */
++        if (m_app->cb.on_gl_paint) {
++            m_app->cb.on_gl_paint(m_app->cb.opaque, m_vc->index);
++        } else if (QOpenGLContext *ctx = QOpenGLContext::currentContext()) {
++            QOpenGLFunctions *f = ctx->functions();
++            if (f) {
++                f->glClearColor(0.f, 0.f, 0.f, 1.f);
++                f->glClear(GL_COLOR_BUFFER_BIT);
++            }
++        }
++    }
++
++    void keyPressEvent(QKeyEvent *ev) override { relayKey(ev, true); }
++    void keyReleaseEvent(QKeyEvent *ev) override { relayKey(ev, false); }
++    /* See DisplayWidget — do not steal Tab for host focus navigation. */
++    bool focusNextPrevChild(bool next) override
++    {
++        (void)next;
++        return false;
++    }
++    void mouseMoveEvent(QMouseEvent *ev) override
++    {
++        if (m_app->cb.on_mouse_move) {
++            m_app->cb.on_mouse_move(m_app->cb.opaque, m_vc->index,
++                                    (int)ev->position().x(),
++                                    (int)ev->position().y(),
++                                    (int)ev->buttons(), width(), height());
++        }
++        ev->accept();
++    }
++    void mousePressEvent(QMouseEvent *ev) override { relayBtn(ev, true); }
++    void mouseReleaseEvent(QMouseEvent *ev) override { relayBtn(ev, false); }
++    void wheelEvent(QWheelEvent *ev) override
++    {
++        if (m_app->cb.on_mouse_wheel) {
++            QPoint d = ev->angleDelta();
++            m_app->cb.on_mouse_wheel(m_app->cb.opaque, m_vc->index, d.x(), d.y());
++        }
++        ev->accept();
++    }
++    void enterEvent(QEnterEvent *ev) override
++    {
++        QOpenGLWidget::enterEvent(ev);
++        if (m_app->cb.on_hover) {
++            m_app->cb.on_hover(m_app->cb.opaque, m_vc->index, true);
++        }
++    }
++    void leaveEvent(QEvent *ev) override
++    {
++        QOpenGLWidget::leaveEvent(ev);
++        if (m_vc && m_vc->mouse_grabbed) {
++            QPoint c = mapToGlobal(rect().center());
++            QCursor::setPos(c);
++        }
++        if (m_app->cb.on_hover) {
++            m_app->cb.on_hover(m_app->cb.opaque, m_vc->index, false);
++        }
++    }
++    void focusOutEvent(QFocusEvent *ev) override
++    {
++        QOpenGLWidget::focusOutEvent(ev);
++        if (m_app->cb.on_focus_out) {
++            m_app->cb.on_focus_out(m_app->cb.opaque, m_vc->index);
++        }
++    }
++    void resizeEvent(QResizeEvent *ev) override
++    {
++        QOpenGLWidget::resizeEvent(ev);
++        if (m_app->cb.on_resize) {
++            m_app->cb.on_resize(m_app->cb.opaque, m_vc->index,
++                                width(), height());
++        }
++    }
++
++private:
++    void relayKey(QKeyEvent *ev, bool down)
++    {
++        /* Reuse the same hotkey path as the 2D widget via a temp DisplayWidget
++         * pattern: handle Ctrl+Alt here too. */
++        if (down && !ev->isAutoRepeat() &&
++            (ev->modifiers() & Qt::ControlModifier) &&
++            (ev->modifiers() & Qt::AltModifier)) {
++            switch (ev->key()) {
++            case Qt::Key_G:
++                if (m_app->grab_action) {
++                    m_app->grab_action->toggle();
++                }
++                ev->accept();
++                return;
++            case Qt::Key_F:
++                if (m_app->fullscreen_action) {
++                    m_app->fullscreen_action->toggle();
++                }
++                ev->accept();
++                return;
++            case Qt::Key_Q:
++                if (m_app->cb.on_quit) {
++                    m_app->cb.on_quit(m_app->cb.opaque);
++                }
++                ev->accept();
++                return;
++            case Qt::Key_Plus:
++            case Qt::Key_Equal:
++                if (m_app->cb.on_zoom_in) {
++                    m_app->cb.on_zoom_in(m_app->cb.opaque);
++                }
++                ev->accept();
++                return;
++            case Qt::Key_Minus:
++                if (m_app->cb.on_zoom_out) {
++                    m_app->cb.on_zoom_out(m_app->cb.opaque);
++                }
++                ev->accept();
++                return;
++            case Qt::Key_0:
++                if (m_app->cb.on_zoom_fixed) {
++                    m_app->cb.on_zoom_fixed(m_app->cb.opaque);
++                }
++                ev->accept();
++                return;
++            default:
++                break;
++            }
++        }
++        if (m_app->cb.on_key) {
++            QByteArray text = ev->text().toUtf8();
++            m_app->cb.on_key(m_app->cb.opaque, m_vc->index,
++                             (int)ev->nativeScanCode(), (int)ev->key(), down,
++                             !text.isEmpty() && down, text.constData());
++        }
++        ev->accept();
++    }
++    void relayBtn(QMouseEvent *ev, bool down)
++    {
++        if (m_app->cb.on_mouse_button) {
++            m_app->cb.on_mouse_button(m_app->cb.opaque, m_vc->index,
++                                      (int)ev->position().x(),
++                                      (int)ev->position().y(),
++                                      (int)ev->buttons(), down,
++                                      width(), height());
++        }
++        ev->accept();
++    }
++
++    QtApp *m_app;
++    QtVcWidget *m_vc;
++};
++
++class QtQemuMainWindow : public QMainWindow
++{
++public:
++    explicit QtQemuMainWindow(QtApp *app) : QMainWindow(nullptr), m_app(app)
++    {
++        setAttribute(Qt::WA_DeleteOnClose, false);
++    }
++
++protected:
++    void closeEvent(QCloseEvent *ev) override
++    {
++        bool allow = true;
++        if (m_app->cb.on_window_close) {
++            m_app->cb.on_window_close(m_app->cb.opaque, &allow);
++        }
++        if (allow) {
++            if (m_app->cb.on_quit) {
++                m_app->cb.on_quit(m_app->cb.opaque);
++            }
++            ev->accept();
++        } else {
++            ev->ignore();
++        }
++    }
++
++private:
++    QtApp *m_app;
++};
++
++/* -------------------------------------------------------------------------- */
++
++static void setup_menus(QtApp *app)
++{
++    QMenuBar *mb = app->window->menuBar();
++    app->menu_bar = mb;
++
++    QMenu *machine = mb->addMenu(QObject::tr("&Machine"));
++    app->pause_action = machine->addAction(QObject::tr("&Pause"));
++    app->pause_action->setCheckable(true);
++    QObject::connect(app->pause_action, &QAction::triggered, [app]() {
++        if (app->cb.on_pause_toggle) {
++            app->cb.on_pause_toggle(app->cb.opaque);
++        }
++    });
++    machine->addSeparator();
++    QObject::connect(machine->addAction(QObject::tr("&Reset")),
++                     &QAction::triggered, [app]() {
++        if (app->cb.on_reset) {
++            app->cb.on_reset(app->cb.opaque);
++        }
++    });
++    QObject::connect(machine->addAction(QObject::tr("Power &Down")),
++                     &QAction::triggered, [app]() {
++        if (app->cb.on_powerdown) {
++            app->cb.on_powerdown(app->cb.opaque);
++        }
++    });
++    machine->addSeparator();
++    QAction *quit = machine->addAction(QObject::tr("&Quit"));
++    quit->setShortcut(QKeySequence(QStringLiteral("Ctrl+Alt+Q")));
++    QObject::connect(quit, &QAction::triggered, [app]() {
++        if (app->cb.on_quit) {
++            app->cb.on_quit(app->cb.opaque);
++        }
++    });
++
++    app->view_menu = mb->addMenu(QObject::tr("&View"));
++    app->fullscreen_action =
++        app->view_menu->addAction(QObject::tr("&Fullscreen"));
++    app->fullscreen_action->setCheckable(true);
++    app->fullscreen_action->setShortcut(
++        QKeySequence(QStringLiteral("Ctrl+Alt+F")));
++    QObject::connect(app->fullscreen_action, &QAction::toggled, [app](bool on) {
++        if (app->cb.on_fullscreen) {
++            app->cb.on_fullscreen(app->cb.opaque, on);
++        }
++        if (on) {
++            app->window->showFullScreen();
++            app->tabs->tabBar()->setVisible(false);
++            app->menu_bar->hide();
++        } else {
++            app->window->showNormal();
++            if (app->show_tabs_action->isChecked()) {
++                app->tabs->tabBar()->setVisible(true);
++            }
++            if (app->show_menubar_action->isChecked()) {
++                app->menu_bar->show();
++            }
++        }
++    });
++
++    app->view_menu->addSeparator();
++
++    QAction *zin = app->view_menu->addAction(QObject::tr("Zoom &In"));
++    zin->setShortcut(QKeySequence(QStringLiteral("Ctrl+Alt++")));
++    QObject::connect(zin, &QAction::triggered, [app]() {
++        if (app->cb.on_zoom_in) {
++            app->cb.on_zoom_in(app->cb.opaque);
++        }
++    });
++    QAction *zout = app->view_menu->addAction(QObject::tr("Zoom &Out"));
++    zout->setShortcut(QKeySequence(QStringLiteral("Ctrl+Alt+-")));
++    QObject::connect(zout, &QAction::triggered, [app]() {
++        if (app->cb.on_zoom_out) {
++            app->cb.on_zoom_out(app->cb.opaque);
++        }
++    });
++    QAction *zfix = app->view_menu->addAction(QObject::tr("Best &Fit"));
++    zfix->setShortcut(QKeySequence(QStringLiteral("Ctrl+Alt+0")));
++    QObject::connect(zfix, &QAction::triggered, [app]() {
++        if (app->cb.on_zoom_fixed) {
++            app->cb.on_zoom_fixed(app->cb.opaque);
++        }
++    });
++    app->zoom_fit_action =
++        app->view_menu->addAction(QObject::tr("Zoom To &Fit"));
++    app->zoom_fit_action->setCheckable(true);
++    app->zoom_fit_action->setChecked(app->opts.zoom_to_fit);
++    QObject::connect(app->zoom_fit_action, &QAction::toggled, [app](bool on) {
++        if (app->cb.on_zoom_fit) {
++            app->cb.on_zoom_fit(app->cb.opaque, on);
++        }
++    });
++
++    app->view_menu->addSeparator();
++
++    QAction *goh = app->view_menu->addAction(QObject::tr("Grab On &Hover"));
++    goh->setCheckable(true);
++    goh->setChecked(app->opts.grab_on_hover);
++    QObject::connect(goh, &QAction::toggled, [app](bool on) {
++        if (app->cb.on_grab_on_hover) {
++            app->cb.on_grab_on_hover(app->cb.opaque, on);
++        }
++    });
++
++    app->grab_action = app->view_menu->addAction(QObject::tr("&Grab Input"));
++    app->grab_action->setCheckable(true);
++    app->grab_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+Alt+G")));
++    QObject::connect(app->grab_action, &QAction::toggled, [app](bool on) {
++        if (app->cb.on_grab) {
++            app->cb.on_grab(app->cb.opaque, on);
++        }
++    });
++
++    app->view_menu->addSeparator();
++    app->vc_group = new QActionGroup(app->window);
++    app->vc_group->setExclusive(true);
++    app->view_menu->addSeparator();
++
++    app->show_tabs_action =
++        app->view_menu->addAction(QObject::tr("Show &Tabs"));
++    app->show_tabs_action->setCheckable(true);
++    app->show_tabs_action->setChecked(app->opts.show_tabs);
++    QObject::connect(app->show_tabs_action, &QAction::toggled, [app](bool on) {
++        app->tabs->tabBar()->setVisible(on && !app->window->isFullScreen());
++        if (app->cb.on_show_tabs) {
++            app->cb.on_show_tabs(app->cb.opaque, on);
++        }
++    });
++
++    QAction *detach = app->view_menu->addAction(QObject::tr("Detach Tab"));
++    QObject::connect(detach, &QAction::triggered, [app]() {
++        if (app->cb.on_detach_tab) {
++            app->cb.on_detach_tab(app->cb.opaque);
++        }
++    });
++
++    app->show_menubar_action =
++        app->view_menu->addAction(QObject::tr("Show Menubar"));
++    app->show_menubar_action->setCheckable(true);
++    app->show_menubar_action->setChecked(app->opts.show_menubar);
++    app->show_menubar_action->setShortcut(
++        QKeySequence(QStringLiteral("Ctrl+Alt+M")));
++    QObject::connect(app->show_menubar_action, &QAction::toggled,
++                     [app](bool on) {
++        if (!app->window->isFullScreen()) {
++            app->menu_bar->setVisible(on);
++        }
++        if (app->cb.on_show_menubar) {
++            app->cb.on_show_menubar(app->cb.opaque, on);
++        }
++    });
++    if (!app->opts.show_menubar) {
++        mb->hide();
++    }
++}
++
++/* -------------------------------------------------------------------------- */
++
++static void setup_gl_format(QSurfaceFormat *fmt, bool gl_es)
++{
++    fmt->setDepthBufferSize(24);
++    fmt->setStencilBufferSize(8);
++    /*
++     * Keep an alpha channel.  Some Wayland/X11 screenshot paths sample an
++     * RGBA window buffer; an XRGB-only GL config often captures as solid black
++     * even though on-screen presentation looks fine.  We always clear alpha=1.
++     */
++    fmt->setAlphaBufferSize(8);
++    fmt->setSwapBehavior(QSurfaceFormat::DoubleBuffer);
++    fmt->setSwapInterval(0);
++    if (gl_es) {
++        fmt->setRenderableType(QSurfaceFormat::OpenGLES);
++        fmt->setVersion(3, 0);
++    } else {
++        fmt->setRenderableType(QSurfaceFormat::OpenGL);
++        fmt->setProfile(QSurfaceFormat::CoreProfile);
++        fmt->setVersion(3, 3);
++    }
++}
++
++static bool create_master_gl_context(QtApp *app, const QtAppOptions *opts,
++                                     QOpenGLContext *share_with)
++{
++    QSurfaceFormat fmt;
++    setup_gl_format(&fmt, opts->gl_es);
++    QSurfaceFormat::setDefaultFormat(fmt);
++
++    app->gl_surface = new QOffscreenSurface();
++    app->gl_surface->setFormat(fmt);
++    app->gl_surface->create();
++    if (!app->gl_surface->isValid()) {
++        std::fprintf(stderr, "qt: failed to create offscreen GL surface\n");
++        return false;
++    }
++
++    app->gl_master = new QOpenGLContext();
++    app->gl_master->setFormat(fmt);
++    /*
++     * Share with the QOpenGLWidget context when available so virgl textures
++     * (created on guest contexts that share master) are visible when paintGL
++     * blits them on the widget context.
++     */
++    if (share_with) {
++        app->gl_master->setShareContext(share_with);
++    }
++    if (!app->gl_master->create()) {
++        /* Fallback to GLES if core desktop GL fails */
++        if (!opts->gl_es) {
++            setup_gl_format(&fmt, true);
++            QSurfaceFormat::setDefaultFormat(fmt);
++            app->gl_surface->destroy();
++            app->gl_surface->setFormat(fmt);
++            app->gl_surface->create();
++            app->gl_master->setFormat(fmt);
++            if (share_with) {
++                app->gl_master->setShareContext(share_with);
++            }
++        }
++        if (!app->gl_master->create()) {
++            std::fprintf(stderr, "qt: failed to create master OpenGL context\n");
++            return false;
++        }
++    }
++
++    if (!app->gl_master->makeCurrent(app->gl_surface)) {
++        std::fprintf(stderr, "qt: failed to activate master OpenGL context\n");
++        return false;
++    }
++
++    /* Touch the context so epoxy can resolve its dispatch tables. */
++    auto *funcs = app->gl_master->functions();
++    if (funcs) {
++        funcs->initializeOpenGLFunctions();
++    }
++
++    return QOpenGLContext::currentContext() != nullptr;
++}
++
++QtApp *qt_app_create(const QtAppOptions *opts, const QtAppCallbacks *cb)
++{
++    static int argc = 1;
++    static char prog[] = "qemu";
++    static char *argv[] = { prog, nullptr };
++
++    auto *app = new QtApp();
++    g_app = app;
++    app->cb = *cb;
++    app->opts = *opts;
++    app->owns_app = false;
++    app->gl_master = nullptr;
++    app->gl_surface = nullptr;
++
++    /*
++     * Prefer the XCB (X11) platform when the user has not chosen one and a
++     * DISPLAY is available (typical on desktop Wayland via XWayland).
++     *
++     * QWidget::grabMouse() and QCursor::setPos() are no-ops on the Wayland
++     * QPA — relative mouse (FPS / grab-the-cursor games) cannot confine the
++     * pointer, so the host cursor escapes and ends up dragging the window.
++     * X11 grab + warp works.  Override with QT_QPA_PLATFORM=wayland if needed.
++     */
++    if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM") &&
++        qEnvironmentVariableIsSet("DISPLAY")) {
++        qputenv("QT_QPA_PLATFORM", "xcb");
++    }
++
++    /*
++     * Prefer EGL over GLX so epoxy and QEMU's dmabuf helpers work.  Must be
++     * set before QApplication is constructed.  Harmless on Wayland (EGL).
++     */
++    if (opts->use_opengl) {
++        qputenv("QT_XCB_GL_INTEGRATION", "xcb_egl");
++        /*
++         * Share textures/FBOs between the master context (used for guest GL
++         * before widgets exist) and every QOpenGLWidget context.
++         */
++        QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
++    }
++
++    QLocale::setDefault(QLocale::c());
++
++    if (!QApplication::instance()) {
++        if (opts->use_opengl) {
++            QSurfaceFormat fmt;
++            setup_gl_format(&fmt, opts->gl_es);
++            QSurfaceFormat::setDefaultFormat(fmt);
++        }
++        app->app = new QApplication(argc, argv);
++        app->owns_app = true;
++        setlocale(LC_NUMERIC, "C");
++    } else {
++        app->app = qobject_cast<QApplication *>(QApplication::instance());
++    }
++    QApplication::setApplicationName(QStringLiteral("qemu"));
++    QApplication::setDesktopFileName(QStringLiteral("qemu"));
++
++    if (QGuiApplication::platformName() == QLatin1String("wayland")) {
++        static bool warned;
++        if (!warned) {
++            warned = true;
++            std::fprintf(stderr,
++                "qt: Wayland QPA: mouse grab/warp unavailable - relative "
++                "mouse (game cursor grab) will not confine the pointer. "
++                "Restart with QT_QPA_PLATFORM=xcb (XWayland) for games.\n");
++        }
++    }
++
++    /*
++     * Create the master context now (before any widgets).  With
++     * AA_ShareOpenGLContexts, later QOpenGLWidget contexts join the same
++     * share group.  Guest/virgl contexts share with master explicitly.
++     */
++    if (opts->use_opengl && !create_master_gl_context(app, opts, nullptr)) {
++        std::fprintf(stderr, "qt: OpenGL initialization failed\n");
++    }
++
++    app->window = new QtQemuMainWindow(app);
++    app->window->setWindowTitle(
++        opts->window_title ? QString::fromUtf8(opts->window_title)
++                           : QStringLiteral("QEMU"));
++
++    app->tabs = new QTabWidget(app->window);
++    app->tabs->setDocumentMode(true);
++    app->tabs->tabBar()->setVisible(opts->show_tabs);
++    app->window->setCentralWidget(app->tabs);
++
++    QObject::connect(app->tabs, &QTabWidget::currentChanged, [app](int index) {
++        if (index < 0 || !app->cb.on_switch_vc) {
++            return;
++        }
++        for (QtVcWidget *vc : app->vcs) {
++            if (app->tabs->indexOf(vc->as_qwidget) == index) {
++                app->cb.on_switch_vc(app->cb.opaque, vc->index);
++                break;
++            }
++        }
++    });
++
++    setup_menus(app);
++
++    if (opts->full_screen) {
++        app->fullscreen_action->setChecked(true);
++    }
++
++    /*
++     * Size the window so the *central display* is ~1024x768, not the outer
++     * frame.  resize(w,h) on QMainWindow includes the menu bar; if we ignore
++     * that, the guest is told a height that is menubar-pixels too large and
++     * the bottom of the guest (LXQt panel) is clipped.
++     */
++    {
++        const int content_w = 1024;
++        const int content_h = 768;
++        app->window->resize(content_w, content_h);
++        /* After menus exist, grow the frame so central area keeps content_h. */
++        int menu_h = app->menu_bar && app->menu_bar->isVisible()
++                         ? app->menu_bar->sizeHint().height()
++                         : 0;
++        if (menu_h > 0) {
++            app->window->resize(content_w, content_h + menu_h);
++        }
++    }
++    return app;
++}
++
++void qt_app_destroy(QtApp *app)
++{
++    if (!app) {
++        return;
++    }
++    for (QtVcWidget *vc : app->vcs) {
++        free(vc->label);
++        delete vc->guest_cursor;
++        vc->guest_cursor = nullptr;
++        delete vc;
++    }
++    if (app->gl_master) {
++        app->gl_master->doneCurrent();
++        delete app->gl_master;
++        app->gl_master = nullptr;
++    }
++    delete app->gl_surface;
++    app->gl_surface = nullptr;
++    delete app->window;
++    if (app->owns_app) {
++        delete app->app;
++    }
++    if (g_app == app) {
++        g_app = nullptr;
++    }
++    delete app;
++}
++
++void qt_app_show(QtApp *app)
++{
++    app->window->show();
++    /* Realize GL widgets first so they own a real QOpenGLContext. */
++    app->app->processEvents(QEventLoop::ExcludeUserInputEvents);
++    for (QtVcWidget *vc : app->vcs) {
++        if (vc->gl_widget) {
++            qt_vc_gl_realize(vc);
++        }
++    }
++
++    if (app->opts.use_opengl && app->gl_master) {
++        for (QtVcWidget *vc : app->vcs) {
++            if (vc->gl_widget && vc->gl_widget->context() &&
++                vc->gl_widget->context()->isValid() &&
++                !QOpenGLContext::areSharing(app->gl_master,
++                                            vc->gl_widget->context())) {
++                std::fprintf(stderr,
++                             "qt: warning: display widget GL context is not "
++                             "sharing with master — guest scanout may be blank\n");
++                break;
++            }
++        }
++    }
++
++    /*
++     * Correct outer window size so the central display area is the size we
++     * advertised (menubar/frame chrome is outside that).  Without this the
++     * guest mode matches a too-tall guess and the LXQt panel is clipped.
++     */
++    if (app->tabs) {
++        const QSize want(1024, 768);
++        const QSize have = app->tabs->size();
++        if (have.width() > 0 && have.height() > 0) {
++            app->window->resize(app->window->size() + (want - have));
++            app->app->processEvents(QEventLoop::ExcludeUserInputEvents);
++        }
++    }
++    /*
++     * Layout is final only after show+processEvents.  Re-push sizes so
++     * virtio-gpu ui_info matches the real central-widget area.
++     */
++    qt_app_notify_sizes(app);
++}
++
++void qt_app_notify_sizes(QtApp *app)
++{
++    if (!app || !app->cb.on_resize) {
++        return;
++    }
++    for (QtVcWidget *vc : app->vcs) {
++        if (!vc->as_qwidget) {
++            continue;
++        }
++        int w = vc->as_qwidget->width();
++        int h = vc->as_qwidget->height();
++        if (w > 0 && h > 0) {
++            app->cb.on_resize(app->cb.opaque, vc->index, w, h);
++        }
++    }
++}
++
++bool qt_app_gl_ready(QtApp *app)
++{
++    return app && app->gl_master && app->gl_master->isValid();
++}
++
++void *qt_app_gl_get_egl_display(QtApp *app)
++{
++    return qt_app_gl_egl_display(app);
++}
++
++static QNativeInterface::QEGLContext *qt_qegl(QOpenGLContext *ctx)
++{
++    if (!ctx || !ctx->isValid()) {
++        return nullptr;
++    }
++    return ctx->nativeInterface<QNativeInterface::QEGLContext>();
++}
++
++static QOpenGLContext *qt_pick_share_qctx(QtVcWidget *vc)
++{
++    if (vc && vc->gl_widget && vc->gl_widget->context() &&
++        vc->gl_widget->context()->isValid()) {
++        return vc->gl_widget->context();
++    }
++    if (g_app && g_app->gl_master && g_app->gl_master->isValid()) {
++        return g_app->gl_master;
++    }
++    return nullptr;
++}
++
++bool qt_app_gl_has_egl(QtApp *app)
++{
++    if (!app || !app->gl_master) {
++        return false;
++    }
++    /* Force the master current so the native EGL interface is populated. */
++    if (app->gl_surface) {
++        app->gl_master->makeCurrent(app->gl_surface);
++    }
++    return qt_qegl(app->gl_master) != nullptr;
++}
++
++void *qt_app_gl_egl_display(QtApp *app)
++{
++    if (!app || !app->gl_master) {
++        return nullptr;
++    }
++    if (app->gl_surface) {
++        app->gl_master->makeCurrent(app->gl_surface);
++    }
++    if (auto *iface = qt_qegl(app->gl_master)) {
++        return iface->display();
++    }
++    return nullptr;
++}
++
++void *qt_app_gl_egl_config(QtApp *app)
++{
++    if (!app || !app->gl_master) {
++        return nullptr;
++    }
++    if (app->gl_surface) {
++        app->gl_master->makeCurrent(app->gl_surface);
++    }
++    if (auto *iface = qt_qegl(app->gl_master)) {
++        return iface->config();
++    }
++    return nullptr;
++}
++
++void *qt_vc_gl_share_egl_context(QtVcWidget *vc)
++{
++    QOpenGLContext *qctx = qt_pick_share_qctx(vc);
++    if (!qctx) {
++        return nullptr;
++    }
++    /*
++     * Ensure the context has been made current at least once so Qt builds
++     * the QEGLContext native interface.
++     */
++    if (g_app && g_app->gl_surface && qctx == g_app->gl_master) {
++        qctx->makeCurrent(g_app->gl_surface);
++    } else if (vc && vc->gl_widget && qctx == vc->gl_widget->context()) {
++        vc->gl_widget->makeCurrent();
++    }
++    if (auto *iface = qt_qegl(qctx)) {
++        return iface->nativeContext();
++    }
++    return nullptr;
++}
++
++void qt_app_process_events(QtApp *app)
++{
++    if (app && app->app) {
++        /*
++         * Drain the queue (including paint events scheduled via update()).
++         * A 1ms budget is too short and left the GL widget black under load.
++         */
++        app->app->processEvents(QEventLoop::AllEvents);
++    }
++}
++
++void qt_app_set_caption(QtApp *app, const char *title)
++{
++    app->window->setWindowTitle(QString::fromUtf8(title));
++}
++
++void qt_app_set_pause_checked(QtApp *app, bool paused)
++{
++    app->pause_action->blockSignals(true);
++    app->pause_action->setChecked(paused);
++    app->pause_action->blockSignals(false);
++}
++
++void qt_app_set_grab_checked(QtApp *app, bool grabbed)
++{
++    app->grab_action->blockSignals(true);
++    app->grab_action->setChecked(grabbed);
++    app->grab_action->blockSignals(false);
++}
++
++void qt_app_set_fullscreen(QtApp *app, bool on)
++{
++    app->fullscreen_action->setChecked(on);
++}
++
++void qt_app_set_menubar_visible(QtApp *app, bool on)
++{
++    app->show_menubar_action->setChecked(on);
++}
++
++void qt_app_set_tabs_visible(QtApp *app, bool on)
++{
++    app->show_tabs_action->setChecked(on);
++}
++
++QtVcWidget *qt_app_add_vc(QtApp *app, int index, const char *label, bool graphic)
++{
++    auto *vc = new QtVcWidget();
++    memset(static_cast<void *>(vc), 0, sizeof(QtVcWidget));
++    /* re-init non-trivial fields after memset */
++    vc->index = index;
++    vc->graphic = graphic;
++    vc->use_gl = app->opts.use_opengl && graphic;
++    vc->scale_x = 1.0;
++    vc->scale_y = 1.0;
++    vc->keep_aspect = true;
++    vc->label = label ? strdup(label) : strdup("vga");
++    vc->detached = nullptr;
++
++    if (vc->use_gl) {
++        vc->gl_widget = new GLDisplayWidget(app, vc);
++        vc->widget = nullptr;
++        vc->as_qwidget = vc->gl_widget;
++    } else {
++        vc->widget = new DisplayWidget(app, vc);
++        vc->gl_widget = nullptr;
++        vc->as_qwidget = vc->widget;
++    }
++
++    app->tabs->addTab(vc->as_qwidget, QString::fromUtf8(vc->label));
++    app->vcs.push_back(vc);
++
++    QAction *act = app->view_menu->addAction(
++        QStringLiteral("%1. %2").arg(index + 1).arg(QString::fromUtf8(vc->label)));
++    act->setCheckable(true);
++    act->setActionGroup(app->vc_group);
++    if (index == 0) {
++        act->setChecked(true);
++    }
++    if (index < 9) {
++        act->setShortcut(
++            QKeySequence(QStringLiteral("Ctrl+Alt+%1").arg(index + 1)));
++    }
++    QObject::connect(act, &QAction::triggered, [app, vc]() {
++        qt_app_set_current_vc(app, vc->index);
++        qt_vc_set_focus(vc);
++        if (app->cb.on_switch_vc) {
++            app->cb.on_switch_vc(app->cb.opaque, vc->index);
++        }
++    });
++
++    return vc;
++}
++
++void qt_app_set_current_vc(QtApp *app, int index)
++{
++    for (QtVcWidget *vc : app->vcs) {
++        if (vc->index == index && !vc->detached) {
++            app->tabs->setCurrentWidget(vc->as_qwidget);
++            break;
++        }
++    }
++}
++
++int qt_app_current_vc(QtApp *app)
++{
++    QWidget *w = app->tabs->currentWidget();
++    for (QtVcWidget *vc : app->vcs) {
++        if (vc->as_qwidget == w) {
++            return vc->index;
++        }
++    }
++    return 0;
++}
++
++void qt_vc_set_framebuffer(QtVcWidget *vc, const void *data,
++                           int width, int height, int stride,
++                           uint32_t pixman_format)
++{
++    if (!vc || !vc->widget || !data || width <= 0 || height <= 0) {
++        return;
++    }
++
++    QImage::Format fmt = QImage::Format_RGB32;
++    if (pixman_format == QT_PIXMAN_r5g6b5) {
++        fmt = QImage::Format_RGB16;
++    }
++
++    QImage img(static_cast<const uchar *>(data), width, height, stride, fmt);
++    vc->widget->setImage(img.copy());
++}
++
++void qt_vc_update(QtVcWidget *vc)
++{
++    if (vc && vc->as_qwidget) {
++        vc->as_qwidget->update();
++    }
++}
++
++void qt_vc_set_scales(QtVcWidget *vc, double sx, double sy,
++                      bool free_scale, bool keep_aspect)
++{
++    if (!vc) {
++        return;
++    }
++    vc->scale_x = sx;
++    vc->scale_y = sy;
++    vc->free_scale = free_scale;
++    vc->keep_aspect = keep_aspect;
++    if (vc->widget) {
++        vc->widget->setScales(sx, sy, free_scale, keep_aspect);
++    } else {
++        qt_vc_update(vc);
++    }
++}
++
++void qt_vc_set_min_size(QtVcWidget *vc, int w, int h)
++{
++    if (vc && vc->as_qwidget) {
++        vc->as_qwidget->setMinimumSize(w, h);
++    }
++}
++
++static QCursor qt_vc_current_cursor(QtVcWidget *vc)
++{
++    if (vc->guest_cursor_hidden) {
++        return QCursor(Qt::BlankCursor);
++    }
++    if (vc->guest_cursor) {
++        return *vc->guest_cursor;
++    }
++    /*
++     * Absolute tablet used to force BlankCursor with no guest shape →
++     * invisible pointer.  Fall back to a normal arrow so the UI is usable
++     * even if the guest never defines a cursor bitmap.
++     */
++    if (vc->prefer_blank) {
++        return QCursor(Qt::ArrowCursor);
++    }
++    return QCursor(Qt::ArrowCursor);
++}
++
++static void qt_vc_apply_cursor(QtVcWidget *vc)
++{
++    if (!vc || !vc->as_qwidget) {
++        return;
++    }
++    QCursor cur = qt_vc_current_cursor(vc);
++    /*
++     * grabMouse() installs its own cursor that setCursor() does not replace.
++     * Re-grab with the new shape when a grab is active.
++     */
++    if (vc->mouse_grabbed) {
++        vc->as_qwidget->releaseMouse();
++        vc->as_qwidget->grabMouse(cur);
++    } else {
++        vc->as_qwidget->setCursor(cur);
++    }
++}
++
++void qt_vc_set_cursor_blank(QtVcWidget *vc, bool blank)
++{
++    if (!vc) {
++        return;
++    }
++    vc->prefer_blank = blank;
++    qt_vc_apply_cursor(vc);
++}
++
++void qt_vc_set_guest_cursor_hidden(QtVcWidget *vc, bool hidden)
++{
++    if (!vc) {
++        return;
++    }
++    vc->guest_cursor_hidden = hidden;
++    qt_vc_apply_cursor(vc);
++}
++
++void qt_vc_set_guest_cursor(QtVcWidget *vc, const uint32_t *rgba,
++                            int width, int height, int hot_x, int hot_y)
++{
++    if (!vc) {
++        return;
++    }
++
++    delete vc->guest_cursor;
++    vc->guest_cursor = nullptr;
++
++    if (rgba && width > 0 && height > 0) {
++        /*
++         * virtio-gpu / pixman cursor pixels are ARGB32 (LE bytes B,G,R,A).
++         * Copy — the guest may free the buffer after this returns.
++         */
++        QImage img(reinterpret_cast<const uchar *>(rgba),
++                   width, height, width * 4, QImage::Format_ARGB32);
++        QPixmap pm = QPixmap::fromImage(img.copy());
++        if (hot_x < 0) {
++            hot_x = 0;
++        }
++        if (hot_y < 0) {
++            hot_y = 0;
++        }
++        if (hot_x >= width) {
++            hot_x = width - 1;
++        }
++        if (hot_y >= height) {
++            hot_y = height - 1;
++        }
++        vc->guest_cursor = new QCursor(pm, hot_x, hot_y);
++        vc->guest_cursor_hidden = false;
++    }
++
++    qt_vc_apply_cursor(vc);
++}
++
++void qt_vc_grab_keyboard(QtVcWidget *vc, bool grab)
++{
++    if (!vc || !vc->as_qwidget) {
++        return;
++    }
++    if (grab) {
++        vc->as_qwidget->grabKeyboard();
++        vc->as_qwidget->setFocus(Qt::OtherFocusReason);
++    } else {
++        vc->as_qwidget->releaseKeyboard();
++    }
++}
++
++void qt_vc_grab_mouse(QtVcWidget *vc, bool grab, bool blank_cursor)
++{
++    if (!vc || !vc->as_qwidget) {
++        return;
++    }
++    if (grab) {
++        vc->prefer_blank = blank_cursor;
++        vc->mouse_grabbed = true;
++        /*
++         * Blank the cursor for relative grab so the host arrow does not
++         * sit on top of the guest's idea of a grabbed pointer.  Also push
++         * an override cursor in case grabMouse is ignored (Wayland).
++         */
++        QCursor cur = blank_cursor ? QCursor(Qt::BlankCursor)
++                                   : qt_vc_current_cursor(vc);
++        vc->as_qwidget->setCursor(cur);
++        QGuiApplication::setOverrideCursor(cur);
++        vc->as_qwidget->grabMouse(cur);
++        vc->as_qwidget->setFocus(Qt::OtherFocusReason);
++        /* Seed at center so the first relative delta is small. */
++        QPoint c = vc->as_qwidget->mapToGlobal(
++            vc->as_qwidget->rect().center());
++        QCursor::setPos(c);
++    } else {
++        vc->mouse_grabbed = false;
++        vc->as_qwidget->releaseMouse();
++        while (QGuiApplication::overrideCursor()) {
++            QGuiApplication::restoreOverrideCursor();
++        }
++        qt_vc_apply_cursor(vc);
++    }
++}
++
++void qt_vc_set_focus(QtVcWidget *vc)
++{
++    if (vc && vc->as_qwidget) {
++        vc->as_qwidget->setFocus(Qt::OtherFocusReason);
++    }
++}
++
++bool qt_vc_warp_pointer_if_needed(QtVcWidget *vc, int x, int y)
++{
++    if (!vc || !vc->as_qwidget || !vc->mouse_grabbed) {
++        return false;
++    }
++    QWidget *w = vc->as_qwidget;
++    const int ww = w->width();
++    const int wh = w->height();
++    if (ww < 3 || wh < 3) {
++        return false;
++    }
++    /*
++     * With an X11 grab, motion can be reported outside the widget.  Warp
++     * back to the center before the pointer hits an "invisible wall" at
++     * the screen edge (same idea as GTK gd_motion_event).
++     */
++    if (x > 0 && x < ww - 1 && y > 0 && y < wh - 1) {
++        return false;
++    }
++    QPoint c = w->mapToGlobal(QPoint(ww / 2, wh / 2));
++    QCursor::setPos(c);
++    return true;
++}
++
++static QOpenGLContext *share_context_for(QtVcWidget *vc)
++{
++    if (!vc) {
++        return g_app ? g_app->gl_master : nullptr;
++    }
++    if (vc->gl_widget && vc->gl_widget->context() &&
++        vc->gl_widget->context()->isValid()) {
++        return vc->gl_widget->context();
++    }
++    return (g_app && g_app->gl_master) ? g_app->gl_master : nullptr;
++}
++
++bool qt_vc_gl_realize(QtVcWidget *vc)
++{
++    if (!vc) {
++        return false;
++    }
++    if (vc->gl_widget) {
++        if (vc->gl_widget->ensureContext()) {
++            return true;
++        }
++    }
++    /* Fall back to master offscreen context */
++    if (g_app && g_app->gl_master && g_app->gl_surface) {
++        return g_app->gl_master->makeCurrent(g_app->gl_surface);
++    }
++    return false;
++}
++
++bool qt_vc_gl_make_current(QtVcWidget *vc)
++{
++    if (!vc) {
++        return false;
++    }
++
++    /* Prefer the widget context once it exists (for on-screen FBO). */
++    if (vc->gl_widget) {
++        if (vc->gl_widget->ensureContext()) {
++            return true;
++        }
++    }
++
++    /* Before the widget is realized, use the master offscreen context. */
++    if (g_app && g_app->gl_master && g_app->gl_surface) {
++        if (g_app->gl_master->makeCurrent(g_app->gl_surface) &&
++            QOpenGLContext::currentContext()) {
++            return true;
++        }
++    }
++    return false;
++}
++
++void qt_vc_gl_done_current(QtVcWidget *vc)
++{
++    if (QOpenGLContext *cur = QOpenGLContext::currentContext()) {
++        cur->doneCurrent();
++    }
++    (void)vc;
++}
++
++void qt_vc_gl_request_update(QtVcWidget *vc)
++{
++    if (vc && vc->gl_widget) {
++        vc->gl_widget->update();
++    }
++}
++
++unsigned qt_vc_gl_default_framebuffer(QtVcWidget *vc)
++{
++    if (vc && vc->gl_widget) {
++        return vc->gl_widget->defaultFramebufferObject();
++    }
++    return 0;
++}
++
++void qt_vc_gl_fb_size(QtVcWidget *vc, int *fb_w, int *fb_h)
++{
++    if (!vc || !vc->gl_widget || !fb_w || !fb_h) {
++        if (fb_w) {
++            *fb_w = 0;
++        }
++        if (fb_h) {
++            *fb_h = 0;
++        }
++        return;
++    }
++    /*
++     * Must match QOpenGLWidget's FBO exactly.  Using only width()/height()
++     * (logical pixels) paints into the bottom portion of a HiDPI FBO; the
++     * rest stays uncleared → transparent, “upper half only”, see-through
++     * when dragging the window.
++     */
++    const qreal dpr = vc->gl_widget->devicePixelRatioF();
++    *fb_w = qMax(1, qRound(vc->gl_widget->width() * dpr));
++    *fb_h = qMax(1, qRound(vc->gl_widget->height() * dpr));
++}
++
++void *qt_vc_gl_context(QtVcWidget *vc)
++{
++    QOpenGLContext *ctx = share_context_for(vc);
++    return ctx;
++}
++
++int qt_vc_widget_width(QtVcWidget *vc)
++{
++    return vc && vc->as_qwidget ? vc->as_qwidget->width() : 0;
++}
++
++int qt_vc_widget_height(QtVcWidget *vc)
++{
++    return vc && vc->as_qwidget ? vc->as_qwidget->height() : 0;
++}
++
++double qt_vc_device_pixel_ratio(QtVcWidget *vc)
++{
++    return vc && vc->as_qwidget ? vc->as_qwidget->devicePixelRatioF() : 1.0;
++}
++
++void qt_vc_detach(QtApp *app, QtVcWidget *vc)
++{
++    if (!vc || vc->detached) {
++        return;
++    }
++    int idx = app->tabs->indexOf(vc->as_qwidget);
++    if (idx < 0) {
++        return;
++    }
++    app->tabs->removeTab(idx);
++    auto *dw = new QMainWindow();
++    dw->setWindowTitle(QString::fromUtf8(vc->label));
++    dw->setCentralWidget(vc->as_qwidget);
++    vc->as_qwidget->show();
++    dw->resize(640, 480);
++    dw->show();
++    vc->detached = dw;
++
++    class Guard : public QObject {
++    public:
++        Guard(QtApp *a, QtVcWidget *v) : QObject(v->detached), app(a), vc(v)
++        {
++            v->detached->installEventFilter(this);
++        }
++        bool eventFilter(QObject *obj, QEvent *ev) override
++        {
++            if (obj == vc->detached && ev->type() == QEvent::Close) {
++                qt_vc_reattach(app, vc);
++            }
++            return QObject::eventFilter(obj, ev);
++        }
++        QtApp *app;
++        QtVcWidget *vc;
++    };
++    new Guard(app, vc);
++}
++
++void qt_vc_reattach(QtApp *app, QtVcWidget *vc)
++{
++    if (!vc || !vc->detached) {
++        return;
++    }
++    QMainWindow *dw = vc->detached;
++    vc->as_qwidget->setParent(nullptr);
++    app->tabs->addTab(vc->as_qwidget, QString::fromUtf8(vc->label));
++    vc->as_qwidget->show();
++    vc->detached = nullptr;
++    dw->deleteLater();
++}
+diff -Nru -x '*.1~' qemu-11.1.0-rc2/ui/qt-app.h qemu-11.1.0-rc2/ui/qt-app.h
+--- qemu-11.1.0-rc2/ui/qt-app.h	1970-01-01 01:00:00.000000000 +0100
++++ qemu-11.1.0-rc2/ui/qt-app.h	2026-08-03 16:10:52.457161780 +0200
+@@ -0,0 +1,154 @@
++/*
++ * Qt UI application layer (C API for use from QEMU C code)
++ *
++ * Copyright (c) 2026 OpenMandriva
++ *
++ * This work is licensed under the terms of the GNU GPL, version 2 or later.
++ * See the COPYING file in the top-level directory.
++ */
++#ifndef UI_QT_APP_H
++#define UI_QT_APP_H
++
++#include <stdbool.h>
++#include <stdint.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++typedef struct QtApp QtApp;
++typedef struct QtVcWidget QtVcWidget;
++
++typedef struct QtAppCallbacks {
++    void *opaque;
++    void (*on_quit)(void *opaque);
++    void (*on_pause_toggle)(void *opaque);
++    void (*on_reset)(void *opaque);
++    void (*on_powerdown)(void *opaque);
++    void (*on_fullscreen)(void *opaque, bool on);
++    void (*on_grab)(void *opaque, bool on);
++    void (*on_grab_on_hover)(void *opaque, bool on);
++    void (*on_zoom_in)(void *opaque);
++    void (*on_zoom_out)(void *opaque);
++    void (*on_zoom_fixed)(void *opaque);
++    void (*on_zoom_fit)(void *opaque, bool on);
++    void (*on_show_tabs)(void *opaque, bool on);
++    void (*on_show_menubar)(void *opaque, bool on);
++    void (*on_detach_tab)(void *opaque);
++    void (*on_switch_vc)(void *opaque, int index);
++    void (*on_key)(void *opaque, int vc_index, int native_scancode,
++                    int qkey, bool down, bool is_text, const char *text);
++    void (*on_mouse_move)(void *opaque, int vc_index, int x, int y,
++                          int buttons, int widget_w, int widget_h);
++    void (*on_mouse_button)(void *opaque, int vc_index, int x, int y,
++                            int buttons, bool down, int widget_w, int widget_h);
++    void (*on_mouse_wheel)(void *opaque, int vc_index, int dx, int dy);
++    void (*on_hover)(void *opaque, int vc_index, bool enter);
++    void (*on_focus_out)(void *opaque, int vc_index);
++    void (*on_window_close)(void *opaque, bool *allow);
++    /*
++     * Called from QOpenGLWidget::paintGL() with the widget context current
++     * and its framebuffer already bound.  Must draw the guest frame here.
++     */
++    void (*on_gl_paint)(void *opaque, int vc_index);
++    /*
++     * Widget size changed (logical pixels).  Used to push QemuUIInfo so
++     * virtio-gpu / the guest can match the host window geometry.
++     */
++    void (*on_resize)(void *opaque, int vc_index, int width, int height);
++} QtAppCallbacks;
++
++typedef struct QtAppOptions {
++    bool full_screen;
++    bool show_menubar;
++    bool show_tabs;
++    bool grab_on_hover;
++    bool zoom_to_fit;
++    bool show_cursor;
++    bool use_opengl;
++    bool gl_es;
++    const char *window_title;
++} QtAppOptions;
++
++QtApp *qt_app_create(const QtAppOptions *opts, const QtAppCallbacks *cb);
++void qt_app_destroy(QtApp *app);
++void qt_app_show(QtApp *app);
++void qt_app_process_events(QtApp *app);
++void qt_app_set_caption(QtApp *app, const char *title);
++void qt_app_set_pause_checked(QtApp *app, bool paused);
++void qt_app_set_grab_checked(QtApp *app, bool grabbed);
++void qt_app_set_fullscreen(QtApp *app, bool on);
++void qt_app_set_menubar_visible(QtApp *app, bool on);
++void qt_app_set_tabs_visible(QtApp *app, bool on);
++
++/* Virtual console / display widget */
++QtVcWidget *qt_app_add_vc(QtApp *app, int index, const char *label,
++                          bool graphic);
++void qt_app_set_current_vc(QtApp *app, int index);
++int qt_app_current_vc(QtApp *app);
++
++/* 2D path: push a host-endian x8r8g8b8 (or similar) image */
++void qt_vc_set_framebuffer(QtVcWidget *vc, const void *data,
++                           int width, int height, int stride,
++                           uint32_t pixman_format);
++void qt_vc_update(QtVcWidget *vc);
++void qt_vc_set_scales(QtVcWidget *vc, double sx, double sy,
++                      bool free_scale, bool keep_aspect);
++void qt_vc_set_min_size(QtVcWidget *vc, int w, int h);
++void qt_vc_set_cursor_blank(QtVcWidget *vc, bool blank);
++/*
++ * Install a guest-defined cursor (32-bit RGBA, row-major).  Pass
++ * width/height <= 0 to clear and fall back to blank/arrow policy.
++ */
++void qt_vc_set_guest_cursor(QtVcWidget *vc, const uint32_t *rgba,
++                            int width, int height, int hot_x, int hot_y);
++/* Guest MOVE/UPDATE_CURSOR with resource_id==0 hides the pointer. */
++void qt_vc_set_guest_cursor_hidden(QtVcWidget *vc, bool hidden);
++void qt_vc_grab_keyboard(QtVcWidget *vc, bool grab);
++void qt_vc_grab_mouse(QtVcWidget *vc, bool grab, bool blank_cursor);
++void qt_vc_set_focus(QtVcWidget *vc);
++/*
++ * Relative-mode pointer confinement (GTK-style).  If the cursor is on/past
++ * the widget edge, warp it to the center.  Returns true if a warp happened
++ * (caller must drop last-position tracking so the synthetic move is ignored).
++ */
++bool qt_vc_warp_pointer_if_needed(QtVcWidget *vc, int x, int y);
++
++/* OpenGL path */
++bool qt_app_gl_ready(QtApp *app);
++bool qt_vc_gl_make_current(QtVcWidget *vc);
++void qt_vc_gl_done_current(QtVcWidget *vc);
++void qt_vc_gl_request_update(QtVcWidget *vc);
++bool qt_vc_gl_realize(QtVcWidget *vc);
++void *qt_vc_gl_context(QtVcWidget *vc); /* QOpenGLContext* */
++/*
++ * Guest/virgl GL uses raw EGL contexts (surfaceless makeCurrent), sharing
++ * with Qt's native EGL context — same model as GTK egl / spice.  Do not
++ * create QOpenGLContext objects for the guest; that freezes under virgl.
++ */
++bool qt_app_gl_has_egl(QtApp *app);
++/* EGLDisplay / EGLConfig / EGLContext as void* for the C side. */
++void *qt_app_gl_egl_display(QtApp *app);
++void *qt_app_gl_egl_config(QtApp *app);
++/* Share context: prefer the console widget, else the master offscreen. */
++void *qt_vc_gl_share_egl_context(QtVcWidget *vc);
++/* QOpenGLWidget::defaultFramebufferObject() — not GL's FBO 0 */
++unsigned qt_vc_gl_default_framebuffer(QtVcWidget *vc);
++/* Device-pixel size of the widget FBO (width/height * DPR, rounded). */
++void qt_vc_gl_fb_size(QtVcWidget *vc, int *fb_w, int *fb_h);
++int qt_vc_widget_width(QtVcWidget *vc);
++int qt_vc_widget_height(QtVcWidget *vc);
++double qt_vc_device_pixel_ratio(QtVcWidget *vc);
++/* Push current widget sizes to on_resize (after layout settles). */
++void qt_app_notify_sizes(QtApp *app);
++void *qt_app_gl_get_egl_display(QtApp *app);
++
++/* Detach / reattach tab */
++void qt_vc_detach(QtApp *app, QtVcWidget *vc);
++void qt_vc_reattach(QtApp *app, QtVcWidget *vc);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* UI_QT_APP_H */
+diff -Nru -x '*.1~' qemu-11.1.0-rc2/ui/qt.c qemu-11.1.0-rc2/ui/qt.c
+--- qemu-11.1.0-rc2/ui/qt.c	1970-01-01 01:00:00.000000000 +0100
++++ qemu-11.1.0-rc2/ui/qt.c	2026-08-03 16:10:52.449161688 +0200
+@@ -0,0 +1,1804 @@
++/*
++ * QEMU Qt UI -- QEMU display backend glue
++ *
++ * Copyright (c) 2026 OpenMandriva
++ *
++ * This work is licensed under the terms of the GNU GPL, version 2 or later.
++ * See the COPYING file in the top-level directory.
++ */
++
++#include "qemu/osdep.h"
++#include "qemu/module.h"
++#include "qemu/main-loop.h"
++#include "qemu/error-report.h"
++#include "qemu/cutils.h"
++#include "qapi/error.h"
++#include "qapi/qapi-commands-control.h"
++#include "qapi/qapi-commands-machine.h"
++#include "qapi/qapi-commands-misc.h"
++#include "system/runstate.h"
++#include "system/system.h"
++#include "standard-headers/linux/input-event-codes.h"
++#include "ui/console.h"
++#include "ui/input.h"
++#include "ui/kbd-state.h"
++#include "qemu-main.h"
++#include "qt-app.h"
++
++#if defined(CONFIG_OPENGL)
++#include "ui/egl-helpers.h"
++#include "ui/egl-context.h"
++#include "ui/shader.h"
++#ifdef CONFIG_GBM
++#include "ui/dmabuf.h"
++#endif
++#include <epoxy/egl.h>
++#endif
++
++#define QT_MAX_VCS 10
++#define QT_SCALE_MIN  0.25
++#define QT_SCALE_MAX  4.0
++#define QT_SCALE_STEP 0.25
++
++typedef struct QtDisplayState QtDisplayState;
++
++typedef struct QtConsole {
++    QtDisplayState *s;
++    char *label;
++    int index;
++    QtVcWidget *widget;
++    DisplayGLCtx dgc;
++    DisplayChangeListener dcl;
++    QKbdState *kbd;
++    DisplaySurface *ds;
++    double preferred_scale;
++    double scale_x;
++    double scale_y;
++    int updates;
++    bool opengl;
++#if defined(CONFIG_OPENGL)
++    QemuGLShader *gls;
++    int x, y, w, h;
++    egl_fb guest_fb;
++    egl_fb win_fb;
++    egl_fb cursor_fb;
++    int cursor_x, cursor_y; /* guest FB coordinates (hotspot) */
++    bool y0_top;
++    bool scanout_mode;
++    bool has_dmabuf;
++    /* Texture must be (re)built in the widget context (paintGL). */
++    bool tex_upload_full;
++#endif
++} QtConsole;
++
++struct QtDisplayState {
++    QtApp *app;
++    DisplayOptions *opts;
++    int nb_vcs;
++    QtConsole vc[QT_MAX_VCS];
++
++    int button_mask;
++    bool last_set;
++    int last_x;
++    int last_y;
++    QtConsole *kbd_owner;
++    QtConsole *ptr_owner;
++
++    bool full_screen;
++    bool free_scale;
++    bool keep_aspect_ratio;
++    bool grab_on_hover;
++    bool show_cursor;
++    bool external_pause_update;
++
++    Notifier mouse_mode_notifier;
++};
++
++static QtConsole *qt_vc_by_index(QtDisplayState *s, int index)
++{
++    for (int i = 0; i < s->nb_vcs; i++) {
++        if (s->vc[i].index == index) {
++            return &s->vc[i];
++        }
++    }
++    return NULL;
++}
++
++static QtConsole *qt_vc_current(QtDisplayState *s)
++{
++    if (!s->app) {
++        return s->nb_vcs ? &s->vc[0] : NULL;
++    }
++    return qt_vc_by_index(s, qt_app_current_vc(s->app));
++}
++
++static void qt_update_caption(QtDisplayState *s)
++{
++    char *title;
++    const char *status = "";
++    const char *grab = "";
++
++    if (!runstate_is_running()) {
++        status = " [Paused]";
++        s->external_pause_update = true;
++        qt_app_set_pause_checked(s->app, true);
++        s->external_pause_update = false;
++    } else {
++        s->external_pause_update = true;
++        qt_app_set_pause_checked(s->app, false);
++        s->external_pause_update = false;
++    }
++    if (s->ptr_owner || s->kbd_owner) {
++        grab = " - Press Ctrl+Alt+G to release grab";
++    }
++    if (qemu_name) {
++        title = g_strdup_printf("QEMU (%s)%s%s", qemu_name, status, grab);
++    } else {
++        title = g_strdup_printf("QEMU%s%s", status, grab);
++    }
++    qt_app_set_caption(s->app, title);
++    g_free(title);
++}
++
++static void qt_release_modifiers(QtDisplayState *s)
++{
++    for (int i = 0; i < s->nb_vcs; i++) {
++        if (s->vc[i].kbd) {
++            qkbd_state_lift_all_keys(s->vc[i].kbd);
++        }
++    }
++}
++
++static void qt_ungrab_keyboard(QtDisplayState *s)
++{
++    if (!s->kbd_owner) {
++        return;
++    }
++    qt_vc_grab_keyboard(s->kbd_owner->widget, false);
++    qt_release_modifiers(s);
++    s->kbd_owner = NULL;
++    qt_update_caption(s);
++}
++
++static void qt_grab_keyboard(QtConsole *vc)
++{
++    QtDisplayState *s = vc->s;
++    if (s->kbd_owner == vc) {
++        return;
++    }
++    if (s->kbd_owner) {
++        qt_ungrab_keyboard(s);
++    }
++    qt_vc_grab_keyboard(vc->widget, true);
++    s->kbd_owner = vc;
++    qt_update_caption(s);
++}
++
++static void qt_ungrab_pointer(QtDisplayState *s)
++{
++    if (!s->ptr_owner) {
++        return;
++    }
++    qt_vc_grab_mouse(s->ptr_owner->widget, false, false);
++    s->ptr_owner = NULL;
++    qt_app_set_grab_checked(s->app, false);
++    qt_update_caption(s);
++    QtConsole *vc = qt_vc_current(s);
++    if (vc) {
++        qt_vc_set_cursor_blank(vc->widget,
++            !s->show_cursor && qemu_input_is_absolute(vc->dcl.con));
++    }
++}
++
++static void qt_grab_pointer(QtConsole *vc)
++{
++    QtDisplayState *s = vc->s;
++    if (s->ptr_owner == vc) {
++        return;
++    }
++    if (s->ptr_owner) {
++        qt_ungrab_pointer(s);
++    }
++    qt_vc_grab_mouse(vc->widget, true, !s->show_cursor);
++    s->ptr_owner = vc;
++    qt_app_set_grab_checked(s->app, true);
++    qt_update_caption(s);
++}
++
++static void qt_set_grab(QtDisplayState *s, bool on)
++{
++    QtConsole *vc = qt_vc_current(s);
++    if (!vc || !qemu_console_is_graphic(vc->dcl.con)) {
++        return;
++    }
++    if (on) {
++        qt_grab_keyboard(vc);
++        qt_grab_pointer(vc);
++    } else {
++        qt_ungrab_keyboard(s);
++        qt_ungrab_pointer(s);
++    }
++}
++
++static void qt_update_windowsize(QtConsole *vc)
++{
++    if (!vc->ds || vc->s->full_screen || vc->s->free_scale) {
++        return;
++    }
++    int w = surface_width(vc->ds) * vc->scale_x;
++    int h = surface_height(vc->ds) * vc->scale_y;
++    qt_vc_set_min_size(vc->widget, w, h);
++    qt_vc_set_scales(vc->widget, vc->scale_x, vc->scale_y,
++                     vc->s->free_scale, vc->s->keep_aspect_ratio);
++}
++
++/* ---- callbacks from Qt ---- */
++
++static void cb_quit(void *opaque)
++{
++    (void)opaque;
++    qmp_quit(NULL);
++}
++
++static void cb_pause(void *opaque)
++{
++    QtDisplayState *s = opaque;
++    if (s->external_pause_update) {
++        return;
++    }
++    if (runstate_is_running()) {
++        qmp_stop(NULL);
++    } else {
++        qmp_cont(NULL);
++    }
++    qt_update_caption(s);
++}
++
++static void cb_reset(void *opaque)
++{
++    (void)opaque;
++    qmp_system_reset(NULL);
++}
++
++static void cb_powerdown(void *opaque)
++{
++    (void)opaque;
++    qmp_system_powerdown(NULL);
++}
++
++static void cb_fullscreen(void *opaque, bool on)
++{
++    QtDisplayState *s = opaque;
++    s->full_screen = on;
++    if (on) {
++        QtConsole *vc = qt_vc_current(s);
++        if (vc && qemu_console_is_graphic(vc->dcl.con)) {
++            qt_set_grab(s, true);
++        }
++    } else {
++        QtConsole *vc = qt_vc_current(s);
++        if (vc) {
++            vc->scale_x = vc->preferred_scale;
++            vc->scale_y = vc->preferred_scale;
++            qt_update_windowsize(vc);
++        }
++    }
++    qt_update_caption(s);
++}
++
++static void cb_grab(void *opaque, bool on)
++{
++    qt_set_grab(opaque, on);
++}
++
++static void cb_grab_on_hover(void *opaque, bool on)
++{
++    QtDisplayState *s = opaque;
++    s->grab_on_hover = on;
++    if (!on) {
++        qt_ungrab_keyboard(s);
++    }
++}
++
++static void cb_zoom_in(void *opaque)
++{
++    QtConsole *vc = qt_vc_current(opaque);
++    if (vc && vc->scale_x < QT_SCALE_MAX) {
++        vc->scale_x += QT_SCALE_STEP;
++        vc->scale_y += QT_SCALE_STEP;
++        vc->s->free_scale = false;
++        qt_update_windowsize(vc);
++        qt_vc_update(vc->widget);
++    }
++}
++
++static void cb_zoom_out(void *opaque)
++{
++    QtConsole *vc = qt_vc_current(opaque);
++    if (vc && vc->scale_x > QT_SCALE_MIN) {
++        vc->scale_x -= QT_SCALE_STEP;
++        vc->scale_y -= QT_SCALE_STEP;
++        vc->s->free_scale = false;
++        qt_update_windowsize(vc);
++        qt_vc_update(vc->widget);
++    }
++}
++
++static void cb_zoom_fixed(void *opaque)
++{
++    QtConsole *vc = qt_vc_current(opaque);
++    if (!vc) {
++        return;
++    }
++    vc->scale_x = vc->preferred_scale;
++    vc->scale_y = vc->preferred_scale;
++    vc->s->free_scale = false;
++    qt_update_windowsize(vc);
++    qt_vc_update(vc->widget);
++}
++
++static void cb_zoom_fit(void *opaque, bool on)
++{
++    QtDisplayState *s = opaque;
++    s->free_scale = on;
++    QtConsole *vc = qt_vc_current(s);
++    if (vc) {
++        if (!on) {
++            vc->scale_x = vc->preferred_scale;
++            vc->scale_y = vc->preferred_scale;
++        }
++        qt_update_windowsize(vc);
++        qt_vc_set_scales(vc->widget, vc->scale_x, vc->scale_y,
++                         s->free_scale, s->keep_aspect_ratio);
++        qt_vc_update(vc->widget);
++    }
++}
++
++static void cb_show_tabs(void *opaque, bool on)
++{
++    (void)opaque;
++    (void)on;
++}
++
++static void cb_show_menubar(void *opaque, bool on)
++{
++    (void)opaque;
++    (void)on;
++}
++
++static void cb_detach(void *opaque)
++{
++    QtDisplayState *s = opaque;
++    QtConsole *vc = qt_vc_current(s);
++    if (vc) {
++        qt_vc_detach(s->app, vc->widget);
++    }
++}
++
++static void cb_switch_vc(void *opaque, int index)
++{
++    QtDisplayState *s = opaque;
++    qt_release_modifiers(s);
++    QtConsole *vc = qt_vc_by_index(s, index);
++    if (vc) {
++        qt_vc_set_focus(vc->widget);
++    }
++}
++
++/*
++ * Map Qt nativeScanCode to a Linux input keycode.
++ *
++ * On X11, Qt reports the X keycode (linux + 8), same as the GTK
++ * "xorgevdev" path.  On Wayland it is typically already a linux code;
++ * treating codes >= 8 as X-style still yields a usable mapping for the
++ * common range.
++ */
++static unsigned int qt_native_to_linux(int native)
++{
++    if (native < 0) {
++        return KEY_RESERVED;
++    }
++    if (native < 8) {
++        return KEY_RESERVED;
++    }
++    return (unsigned int)native - 8;
++}
++
++static void cb_key(void *opaque, int vc_index, int native_scancode,
++                   int qkey, bool down, bool is_text, const char *text)
++{
++    QtDisplayState *s = opaque;
++    QtConsole *vc = qt_vc_by_index(s, vc_index);
++    unsigned int lnx;
++
++    if (!vc || !vc->kbd) {
++        return;
++    }
++
++    (void)qkey;
++
++    /* Qt::Key_Pause */
++    if (qkey == 0x01000008) {
++        lnx = KEY_PAUSE;
++    } else {
++        lnx = qt_native_to_linux(native_scancode);
++    }
++
++    if (lnx != KEY_RESERVED) {
++        qkbd_state_key_event(vc->kbd, lnx, down);
++    }
++
++    if (down && QEMU_IS_TEXT_CONSOLE(vc->dcl.con)) {
++        QemuTextConsole *tc = QEMU_TEXT_CONSOLE(vc->dcl.con);
++        bool ctrl = qkbd_state_modifier_get(vc->kbd, QKBD_MOD_CTRL);
++
++        if (lnx == KEY_ENTER) {
++            qemu_text_console_put_keysym(tc, '\n');
++        } else if (is_text && text && text[0]) {
++            qemu_text_console_put_string(tc, text, strlen(text));
++        } else if (lnx != KEY_RESERVED) {
++            qemu_text_console_put_linux(tc, lnx, ctrl);
++        }
++    }
++}
++
++static void qt_guest_fb_size(QtConsole *vc, int *fbw, int *fbh)
++{
++#if defined(CONFIG_OPENGL)
++    if (vc->opengl && vc->scanout_mode && vc->w > 0 && vc->h > 0) {
++        *fbw = vc->w;
++        *fbh = vc->h;
++        return;
++    }
++#endif
++    if (vc->ds) {
++        *fbw = surface_width(vc->ds);
++        *fbh = surface_height(vc->ds);
++        return;
++    }
++    *fbw = 640;
++    *fbh = 480;
++}
++
++/*
++ * Map widget (top-left) coordinates through the letterboxed guest image
++ * into guest framebuffer coordinates.
++ */
++static void qt_map_mouse(QtConsole *vc, int x, int y, int ww, int wh,
++                         int *gx, int *gy)
++{
++    int fbw, fbh, dw, dh, ox, oy;
++    double sx, sy, s;
++
++    qt_guest_fb_size(vc, &fbw, &fbh);
++    if (ww < 1) {
++        ww = 1;
++    }
++    if (wh < 1) {
++        wh = 1;
++    }
++
++    if (vc->s->free_scale || vc->s->full_screen) {
++        if (vc->s->keep_aspect_ratio) {
++            s = MIN((double)ww / fbw, (double)wh / fbh);
++            sx = sy = s;
++        } else {
++            sx = (double)ww / fbw;
++            sy = (double)wh / fbh;
++        }
++    } else {
++        sx = vc->scale_x;
++        sy = vc->scale_y;
++    }
++    if (sx < 1e-6) {
++        sx = 1.0;
++    }
++    if (sy < 1e-6) {
++        sy = 1.0;
++    }
++    dw = MAX(1, (int)(fbw * sx));
++    dh = MAX(1, (int)(fbh * sy));
++    ox = (ww - dw) / 2;
++    oy = (wh - dh) / 2;
++
++    *gx = (int)((x - ox) / sx);
++    *gy = (int)((y - oy) / sy);
++    if (*gx < 0) {
++        *gx = 0;
++    }
++    if (*gy < 0) {
++        *gy = 0;
++    }
++    if (*gx >= fbw) {
++        *gx = fbw - 1;
++    }
++    if (*gy >= fbh) {
++        *gy = fbh - 1;
++    }
++}
++
++static void qt_send_buttons(QtConsole *vc, int buttons)
++{
++    static uint32_t bmap[INPUT_BUTTON__MAX] = {
++        [INPUT_BUTTON_LEFT]   = 1,  /* Qt::LeftButton = 1 */
++        [INPUT_BUTTON_RIGHT]  = 2,  /* Qt::RightButton = 2 */
++        [INPUT_BUTTON_MIDDLE] = 4,  /* Qt::MiddleButton = 4 */
++    };
++    static uint32_t prev;
++
++    if (prev != (uint32_t)buttons) {
++        qemu_input_update_buttons(vc->dcl.con, bmap, prev, buttons);
++        prev = buttons;
++    }
++}
++
++static void cb_mouse_move(void *opaque, int vc_index, int x, int y,
++                          int buttons, int widget_w, int widget_h)
++{
++    QtDisplayState *s = opaque;
++    QtConsole *vc = qt_vc_by_index(s, vc_index);
++    int gx, gy;
++    int fbw, fbh;
++
++    if (!vc || !qemu_console_is_graphic(vc->dcl.con)) {
++        return;
++    }
++
++    qt_send_buttons(vc, buttons);
++
++    if (qemu_input_is_absolute(vc->dcl.con)) {
++        /*
++         * Absolute tablet: do NOT grabMouse().  grabMouse() freezes the
++         * cursor shape at grab time; later dpy_cursor_define cannot update
++         * it, which left users with a permanent BlankCursor.
++         */
++        qt_map_mouse(vc, x, y, widget_w, widget_h, &gx, &gy);
++        qt_guest_fb_size(vc, &fbw, &fbh);
++        qemu_input_queue_abs(vc->dcl.con, INPUT_AXIS_X, gx, 0, fbw);
++        qemu_input_queue_abs(vc->dcl.con, INPUT_AXIS_Y, gy, 0, fbh);
++        qemu_input_event_sync();
++        return;
++    }
++
++    /* Relative: only while host grab is active (click or Ctrl+Alt+G). */
++    if (s->ptr_owner != vc) {
++        return;
++    }
++
++    /*
++     * Deltas are in widget pixels (not letterboxed guest coords) so edge
++     * warping stays consistent with the coordinates Qt reports.
++     */
++    if (s->last_set) {
++        qemu_input_queue_rel(vc->dcl.con, INPUT_AXIS_X, x - s->last_x);
++        qemu_input_queue_rel(vc->dcl.con, INPUT_AXIS_Y, y - s->last_y);
++        qemu_input_event_sync();
++    }
++    s->last_x = x;
++    s->last_y = y;
++    s->last_set = true;
++
++    /*
++     * Warp to center when the pointer hits the widget edge so relative
++     * motion never stalls (and so the host cursor cannot wander onto the
++     * title bar and start a window drag).
++     */
++    if (qt_vc_warp_pointer_if_needed(vc->widget, x, y)) {
++        s->last_set = false;
++    }
++}
++
++static void cb_mouse_button(void *opaque, int vc_index, int x, int y,
++                            int buttons, bool down, int widget_w, int widget_h)
++{
++    QtDisplayState *s = opaque;
++    QtConsole *vc = qt_vc_by_index(s, vc_index);
++    int gx, gy;
++    int fbw, fbh;
++
++    if (!vc || !qemu_console_is_graphic(vc->dcl.con)) {
++        return;
++    }
++    /* Qt::LeftButton = 1 — relative mode needs an explicit grab. */
++    if (down && !s->ptr_owner && !qemu_input_is_absolute(vc->dcl.con) &&
++        (buttons & 1)) {
++        s->last_set = false;
++        qt_set_grab(s, true);
++        /* Swallow the grab click (same as GTK); next events go to guest. */
++        return;
++    }
++    if (!qemu_input_is_absolute(vc->dcl.con) && s->ptr_owner != vc) {
++        return;
++    }
++
++    qt_send_buttons(vc, buttons);
++
++    if (qemu_input_is_absolute(vc->dcl.con)) {
++        qt_map_mouse(vc, x, y, widget_w, widget_h, &gx, &gy);
++        qt_guest_fb_size(vc, &fbw, &fbh);
++        qemu_input_queue_abs(vc->dcl.con, INPUT_AXIS_X, gx, 0, fbw);
++        qemu_input_queue_abs(vc->dcl.con, INPUT_AXIS_Y, gy, 0, fbh);
++    }
++    /* Relative mode: buttons only (motion is separate); still sync. */
++    qemu_input_event_sync();
++}
++
++/*
++ * Tell the guest (virtio-gpu ui_info) the *display widget* size (not the
++ * outer QMainWindow).  The menu bar must not be included, or the guest
++ * desktop is taller than the drawable area and the panel is clipped.
++ */
++static void qt_set_ui_size(QtConsole *vc, int width, int height, bool delay)
++{
++    QemuUIInfo info;
++
++    if (!vc || !vc->dcl.con) {
++        return;
++    }
++    if (!qemu_console_ui_info_supported(vc->dcl.con)) {
++        return;
++    }
++    if (width < 1 || height < 1) {
++        return;
++    }
++
++    /*
++     * Match GTK: when not free-scaling, report guest-logical size
++     * (widget / scale).  With free_scale / zoom-to-fit, report the widget
++     * size so the guest can resize to the window.
++     */
++    if (!vc->s->free_scale && !vc->s->full_screen) {
++        if (vc->scale_x > 1e-6) {
++            width = (int)(width / vc->scale_x);
++        }
++        if (vc->scale_y > 1e-6) {
++            height = (int)(height / vc->scale_y);
++        }
++    }
++
++    info = *qemu_console_get_ui_info(vc->dcl.con);
++    info.width = width;
++    info.height = height;
++    qemu_console_set_ui_info(vc->dcl.con, &info, delay);
++}
++
++static void cb_resize(void *opaque, int vc_index, int width, int height)
++{
++    QtDisplayState *s = opaque;
++    QtConsole *vc = qt_vc_by_index(s, vc_index);
++
++    if (!vc) {
++        return;
++    }
++    /* Debounce interactive resizes; still one second of settle like GTK. */
++    qt_set_ui_size(vc, width, height, true);
++}
++
++static void cb_mouse_wheel(void *opaque, int vc_index, int dx, int dy)
++{
++    QtDisplayState *s = opaque;
++    QtConsole *vc = qt_vc_by_index(s, vc_index);
++    InputButton btn;
++    if (!vc || !qemu_console_is_graphic(vc->dcl.con)) {
++        return;
++    }
++    if (dy > 0) {
++        btn = INPUT_BUTTON_WHEEL_UP;
++    } else if (dy < 0) {
++        btn = INPUT_BUTTON_WHEEL_DOWN;
++    } else if (dx < 0) {
++        btn = INPUT_BUTTON_WHEEL_RIGHT;
++    } else if (dx > 0) {
++        btn = INPUT_BUTTON_WHEEL_LEFT;
++    } else {
++        return;
++    }
++    qemu_input_queue_btn(vc->dcl.con, btn, true);
++    qemu_input_event_sync();
++    qemu_input_queue_btn(vc->dcl.con, btn, false);
++    qemu_input_event_sync();
++}
++
++static void cb_hover(void *opaque, int vc_index, bool enter)
++{
++    QtDisplayState *s = opaque;
++    QtConsole *vc = qt_vc_by_index(s, vc_index);
++    if (!vc || !s->grab_on_hover) {
++        return;
++    }
++    if (enter) {
++        qt_grab_keyboard(vc);
++    } else {
++        qt_ungrab_keyboard(s);
++    }
++}
++
++static void cb_focus_out(void *opaque, int vc_index)
++{
++    (void)vc_index;
++    qt_release_modifiers(opaque);
++}
++
++static void cb_window_close(void *opaque, bool *allow)
++{
++    QtDisplayState *s = opaque;
++    *allow = !s->opts->has_window_close || s->opts->window_close;
++}
++
++/* ---- 2D display listener ---- */
++
++static void qt_2d_update(DisplayChangeListener *dcl,
++                         int x, int y, int w, int h)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++    (void)x;
++    (void)y;
++    (void)w;
++    (void)h;
++    if (!vc->ds || !vc->widget) {
++        return;
++    }
++    qt_vc_set_framebuffer(vc->widget, surface_data(vc->ds),
++                          surface_width(vc->ds), surface_height(vc->ds),
++                          surface_stride(vc->ds),
++                          surface_format(vc->ds));
++}
++
++static void qt_2d_switch(DisplayChangeListener *dcl, DisplaySurface *surf)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++    vc->ds = surf;
++    if (!surf) {
++        return;
++    }
++    qt_update_windowsize(vc);
++    qt_2d_update(dcl, 0, 0, surface_width(surf), surface_height(surf));
++}
++
++static void qt_2d_refresh(DisplayChangeListener *dcl)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++    qemu_console_hw_update(dcl->con);
++    qt_app_process_events(vc->s->app);
++}
++
++static bool qt_2d_check_format(DisplayChangeListener *dcl,
++                               pixman_format_code_t format)
++{
++    (void)dcl;
++    return format == PIXMAN_x8r8g8b8 ||
++           format == PIXMAN_a8r8g8b8 ||
++           format == PIXMAN_x8b8g8r8 ||
++           format == PIXMAN_a8b8g8r8 ||
++           format == PIXMAN_b8g8r8x8 ||
++           format == PIXMAN_b8g8r8a8 ||
++           format == PIXMAN_r5g6b5;
++}
++
++static void qt_cursor_define(DisplayChangeListener *dcl, QEMUCursor *c)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++
++    /*
++     * virtio-gpu feeds the classic cursor path (set_cursor + set_mouse),
++     * not only dpy_gl_cursor_dmabuf.  Install a host QCursor so the pointer
++     * is visible under absolute tablet (which hides the system arrow).
++     */
++    if (!c || c->width == 0 || c->height == 0) {
++        qt_vc_set_guest_cursor(vc->widget, NULL, 0, 0, 0, 0);
++        return;
++    }
++    qt_vc_set_guest_cursor(vc->widget, c->data, c->width, c->height,
++                           c->hot_x, c->hot_y);
++}
++
++static void qt_mouse_set(DisplayChangeListener *dcl, int x, int y, bool on)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++    (void)x;
++    (void)y;
++    /*
++     * virtio-gpu passes resource_id as "on": 0 hides the cursor, non-zero
++     * shows the bitmap from the last dpy_cursor_define.
++     */
++    qt_vc_set_guest_cursor_hidden(vc->widget, !on);
++}
++
++static const DisplayChangeListenerOps qt_dcl_2d_ops = {
++    .dpy_name             = "qt-2d",
++    .dpy_refresh          = qt_2d_refresh,
++    .dpy_gfx_update       = qt_2d_update,
++    .dpy_gfx_switch       = qt_2d_switch,
++    .dpy_gfx_check_format = qt_2d_check_format,
++    .dpy_mouse_set        = qt_mouse_set,
++    .dpy_cursor_define    = qt_cursor_define,
++};
++
++#if defined(CONFIG_OPENGL)
++/*
++ * QOpenGLWidget only presents what is drawn inside paintGL(), and its
++ * default FBO is not GL FBO 0.  All guest presentation runs from the
++ * on_gl_paint callback; GL object creation for the 2D path also happens
++ * there so textures/FBOs belong to the widget context.
++ */
++
++static void qt_gl_widget_size(QtConsole *vc, int *ww, int *wh)
++{
++    /* Device-pixel FBO size — must match QOpenGLWidget's backing store. */
++    qt_vc_gl_fb_size(vc->widget, ww, wh);
++    if (*ww <= 0) {
++        *ww = vc->ds ? surface_width(vc->ds) : 640;
++    }
++    if (*wh <= 0) {
++        *wh = vc->ds ? surface_height(vc->ds) : 480;
++    }
++}
++
++static bool qt_gl_surface_format(DisplaySurface *ds,
++                                 GLenum *glformat, GLenum *gltype)
++{
++    switch (surface_format(ds)) {
++    case PIXMAN_BE_b8g8r8x8:
++    case PIXMAN_BE_b8g8r8a8:
++        *glformat = GL_BGRA;
++        *gltype = GL_UNSIGNED_BYTE;
++        return true;
++    case PIXMAN_BE_x8r8g8b8:
++    case PIXMAN_BE_a8r8g8b8:
++        *glformat = GL_RGBA;
++        *gltype = GL_UNSIGNED_BYTE;
++        return true;
++    case PIXMAN_r5g6b5:
++        *glformat = GL_RGB;
++        *gltype = GL_UNSIGNED_SHORT_5_6_5;
++        return true;
++    default:
++        return false;
++    }
++}
++
++/*
++ * Upload the 2D guest surface into a GL texture.  Avoid
++ * surface_gl_create_texture(): it calls glEnable(GL_TEXTURE_2D), which is
++ * invalid in core profiles and has left drivers in a bad state.
++ * Caller must hold the widget context (paintGL).
++ *
++ * Note on orientation: glTexImage2D treats the first memory row as the
++ * *bottom* of the GL texture.  Guest/pixman first row is the *top* of the
++ * screen, so presentation must flip Y (see qt_gl_paint).
++ */
++static bool qt_gl_upload_surface(QtConsole *vc)
++{
++    DisplaySurface *ds = vc->ds;
++    GLenum glformat, gltype;
++    int gw, gh, rowlen;
++    GLint tex_w = 0, tex_h = 0;
++
++    if (!ds || !qt_gl_surface_format(ds, &glformat, &gltype)) {
++        return false;
++    }
++
++    gw = surface_width(ds);
++    gh = surface_height(ds);
++    if (gw <= 0 || gh <= 0) {
++        return false;
++    }
++    rowlen = surface_stride(ds) / surface_bytes_per_pixel(ds);
++
++    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
++    glPixelStorei(GL_UNPACK_ROW_LENGTH, rowlen);
++
++    if (ds->texture) {
++        glBindTexture(GL_TEXTURE_2D, ds->texture);
++        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &tex_w);
++        glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &tex_h);
++        if (tex_w != gw || tex_h != gh) {
++            glDeleteTextures(1, &ds->texture);
++            ds->texture = 0;
++        }
++    }
++
++    if (!ds->texture) {
++        GLuint tex = 0;
++        glGenTextures(1, &tex);
++        glBindTexture(GL_TEXTURE_2D, tex);
++        /* LINEAR matches SDL/GTK scaled presentation better than NEAREST. */
++        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
++        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
++        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
++        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
++        /*
++         * xRGB guest formats often have alpha = 0.  Force A=1 when sampling
++         * so blits cannot make the window transparent.
++         */
++        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ONE);
++        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, gw, gh, 0,
++                     glformat, gltype, surface_data(ds));
++        ds->texture = tex;
++    } else {
++        glBindTexture(GL_TEXTURE_2D, ds->texture);
++        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, gw, gh,
++                        glformat, gltype, surface_data(ds));
++    }
++
++    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
++    vc->tex_upload_full = false;
++    return ds->texture != 0;
++}
++
++/* Letterbox guest (gw x gh) into widget (ww x wh); offsets from bottom-left. */
++static void qt_gl_letterbox(int ww, int wh, int gw, int gh,
++                            int *vx, int *vy, int *vw, int *vh)
++{
++    float sx, sy, s;
++
++    if (gw <= 0 || gh <= 0) {
++        *vx = 0;
++        *vy = 0;
++        *vw = ww;
++        *vh = wh;
++        return;
++    }
++    sx = (float)ww / (float)gw;
++    sy = (float)wh / (float)gh;
++    s = sx < sy ? sx : sy;
++    *vw = MAX(1, (int)(gw * s));
++    *vh = MAX(1, (int)(gh * s));
++    *vx = (ww - *vw) / 2;
++    *vy = (wh - *vh) / 2; /* bottom-left origin, same as glBlitFramebuffer */
++}
++
++static bool qt_gl_ensure_resources(QtConsole *vc)
++{
++    if (!qemu_egl_display) {
++        qemu_egl_display = eglGetCurrentDisplay();
++    }
++    if (!vc->gls) {
++        vc->gls = qemu_gl_init_shader();
++        vc->has_dmabuf = qemu_egl_has_dmabuf();
++    }
++    return vc->gls != NULL;
++}
++
++static void qt_set_scanout_mode(QtConsole *vc, bool scanout)
++{
++    if (vc->scanout_mode == scanout) {
++        return;
++    }
++    vc->scanout_mode = scanout;
++    if (!vc->scanout_mode) {
++        /* Drop scanout FBO name; paintGL recreates if needed. No GL calls. */
++        vc->guest_fb.texture = 0;
++        vc->guest_fb.framebuffer = 0;
++        if (vc->ds) {
++            vc->tex_upload_full = true;
++        }
++    }
++}
++
++static void qt_gl_update(DisplayChangeListener *dcl,
++                         int x, int y, int w, int h)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++    (void)x;
++    (void)y;
++    (void)w;
++    (void)h;
++    vc->tex_upload_full = true;
++    vc->updates++;
++    qt_vc_gl_request_update(vc->widget);
++}
++
++static void qt_gl_switch(DisplayChangeListener *dcl, DisplaySurface *surf)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++
++    /*
++     * Do NOT clear scanout_mode here.  virtio-gpu-gl routinely calls
++     * qemu_console_set_surface(con, NULL) when using GL scanout, which
++     * installs the "Display output is not active." placeholder and invokes
++     * dpy_gfx_switch.  GTK keeps scanout running across that.
++     * Scanout ends only via dpy_gl_scanout_disable.
++     */
++    if (vc->ds) {
++        vc->ds->texture = 0;
++    }
++    vc->ds = surf;
++    if (surf) {
++        surf->texture = 0;
++        if (!vc->scanout_mode) {
++            qt_update_windowsize(vc);
++            /*
++             * Do not force a 2D repaint of the placeholder while GL scanout
++             * is (or will be) the real path — that flashed "not active".
++             */
++            if (!surface_is_placeholder(surf)) {
++                vc->tex_upload_full = true;
++                vc->updates++;
++            }
++        }
++    }
++    if (!vc->scanout_mode) {
++        qt_vc_gl_request_update(vc->widget);
++    }
++}
++
++/*
++ * Blit a guest texture region into the widget FBO.
++ * src_* are in the READ texture/FBO; flip_y swaps the source Y range
++ * (needed when guest top-left does not match GL bottom-left).
++ */
++/*
++ * Guest surfaces are often xRGB (undefined / zero alpha).  glBlitFramebuffer
++ * copies that alpha into the widget FBO; with an RGBA window format the
++ * compositor then treats the guest as fully transparent — only pixels that
++ * happen to have alpha (e.g. parts of the TianoCore logo) show, and the rest
++ * of the QEMU window is a glass pane over the desktop.
++ */
++static void qt_gl_force_opaque_alpha(GLuint widget_fbo, int widget_w, int widget_h)
++{
++    glBindFramebuffer(GL_FRAMEBUFFER, widget_fbo);
++    glViewport(0, 0, widget_w, widget_h);
++    glDisable(GL_SCISSOR_TEST);
++    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
++    glClearColor(0.f, 0.f, 0.f, 1.f);
++    glClear(GL_COLOR_BUFFER_BIT);
++    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
++}
++
++static void qt_gl_blit_to_widget(GLuint widget_fbo,
++                                 GLuint read_fbo,
++                                 int src_x1, int src_y1, int src_x2, int src_y2,
++                                 int dst_x, int dst_y, int dst_w, int dst_h,
++                                 int widget_w, int widget_h)
++{
++    glBindFramebuffer(GL_READ_FRAMEBUFFER, read_fbo);
++    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, widget_fbo);
++    glViewport(0, 0, widget_w, widget_h);
++    /*
++     * Do not clear here — caller already cleared the full FBO.  Clearing
++     * again with a smaller viewport is harmless but wasteful.
++     */
++    {
++        bool scale = (dst_w != abs(src_x2 - src_x1)) ||
++                     (dst_h != abs(src_y2 - src_y1));
++        glBlitFramebuffer(src_x1, src_y1, src_x2, src_y2,
++                          dst_x, dst_y, dst_x + dst_w, dst_y + dst_h,
++                          GL_COLOR_BUFFER_BIT,
++                          scale ? GL_LINEAR : GL_NEAREST);
++    }
++    qt_gl_force_opaque_alpha(widget_fbo, widget_w, widget_h);
++}
++
++/* paintGL: widget context current, widget FBO already bound by Qt. */
++static void qt_gl_paint(QtConsole *vc)
++{
++    int ww, wh;
++    GLuint widget_fbo;
++    int vx, vy, vw, vh;
++
++    qt_gl_widget_size(vc, &ww, &wh);
++    widget_fbo = qt_vc_gl_default_framebuffer(vc->widget);
++    if (widget_fbo) {
++        glBindFramebuffer(GL_FRAMEBUFFER, widget_fbo);
++    }
++    /* Always clear the *entire* device-pixel FBO first (opaque). */
++    glViewport(0, 0, ww, wh);
++    glDisable(GL_SCISSOR_TEST);
++    glClearColor(0.f, 0.f, 0.f, 1.f);
++    glClear(GL_COLOR_BUFFER_BIT);
++
++    if (!qt_gl_ensure_resources(vc)) {
++        return;
++    }
++
++    /*
++     * Prefer GL scanout over the 2D surface.  While scanout is active the
++     * console surface is often the inactive placeholder — ignore it for
++     * presentation (same as GTK).
++     */
++    if (vc->scanout_mode && vc->guest_fb.texture) {
++        int fbw = vc->w > 0 ? (int)vc->w : vc->guest_fb.width;
++        int fbh = vc->h > 0 ? (int)vc->h : vc->guest_fb.height;
++        int sx = vc->x;
++        int sy = vc->y;
++        int y1, y2;
++
++        if (fbw <= 0 || fbh <= 0) {
++            return;
++        }
++
++        /*
++         * Attach the (shared) guest texture for reading.  Blit only the
++         * scanout rectangle — not the whole backing store — matching GTK.
++         *
++         * Do not touch GL_TEXTURE_SWIZZLE on guest/virgl textures (shared
++         * objects); force opaque alpha on the *destination* after blit.
++         */
++        egl_fb_setup_for_tex(&vc->guest_fb, vc->guest_fb.width,
++                             vc->guest_fb.height, vc->guest_fb.texture,
++                             false);
++
++        qt_gl_letterbox(ww, wh, fbw, fbh, &vx, &vy, &vw, &vh);
++
++        /*
++         * y0_top: guest y increases downward from the top of the image.
++         * GL blit source y increases upward from the bottom of the texture.
++         * Same rule as gd_gl_area_draw / egl_fb_blit(..., !y0_top).
++         */
++        if (vc->y0_top) {
++            y1 = sy;
++            y2 = sy + fbh;
++        } else {
++            y1 = sy + fbh;
++            y2 = sy;
++        }
++
++        qt_gl_blit_to_widget(widget_fbo, vc->guest_fb.framebuffer,
++                             sx, y1, sx + fbw, y2,
++                             vx, vy, vw, vh, ww, wh);
++
++        /* Hardware cursor plane (virtio-gpu) — same as GTK egl path. */
++        if (vc->cursor_fb.texture && vc->gls) {
++            double sx_s = (double)vw / (double)fbw;
++            double sy_s = (double)vh / (double)fbh;
++            int cur_x = vx + (int)(vc->cursor_x * sx_s);
++            /* egl_texture_blend treats y as top-down within dst->height. */
++            int cur_y = (wh - vy - vh) + (int)(vc->cursor_y * sy_s);
++            egl_fb win = {
++                .width = ww,
++                .height = wh,
++                .x = 0,
++                .y = 0,
++                .framebuffer = widget_fbo,
++            };
++            egl_texture_blend(vc->gls, &win, &vc->cursor_fb, false,
++                              cur_x, cur_y, sx_s, sy_s);
++            while (glGetError() != GL_NO_ERROR) {
++                /* drain core-profile noise from glEnable(GL_TEXTURE_2D) */
++            }
++            /* Blend may have touched alpha; keep the window opaque. */
++            qt_gl_force_opaque_alpha(widget_fbo, ww, wh);
++        }
++
++#ifdef CONFIG_GBM
++        /*
++         * Optional: create a fence for the guest without hw_gl_block.
++         * Blocking the guest for Qt EGL fences blacked out the desktop
++         * (guest running, host window black).  A flush is enough for us.
++         */
++        if (vc->guest_fb.dmabuf) {
++            glFlush();
++        }
++#endif
++        return;
++    }
++
++    if (vc->ds) {
++        int gw = surface_width(vc->ds);
++        int gh = surface_height(vc->ds);
++
++        if (!vc->ds->texture || vc->tex_upload_full) {
++            if (!qt_gl_upload_surface(vc)) {
++                return;
++            }
++        }
++
++        qt_gl_letterbox(ww, wh, gw, gh, &vx, &vy, &vw, &vh);
++
++        /*
++         * Persistent READ FBO for the surface texture.  Flip Y: first
++         * uploaded row is guest top, but GL treats it as texture bottom.
++         */
++        egl_fb_setup_for_tex(&vc->guest_fb, gw, gh, vc->ds->texture, false);
++        qt_gl_blit_to_widget(widget_fbo, vc->guest_fb.framebuffer,
++                             0, gh, gw, 0,   /* flip Y */
++                             vx, vy, vw, vh, ww, wh);
++        return;
++    }
++}
++
++static void cb_gl_paint(void *opaque, int vc_index)
++{
++    QtDisplayState *s = opaque;
++    QtConsole *vc = qt_vc_by_index(s, vc_index);
++
++    if (!vc || !vc->opengl) {
++        return;
++    }
++    qt_gl_paint(vc);
++}
++
++static void qt_gl_refresh(DisplayChangeListener *dcl)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++    qemu_console_hw_update(dcl->con);
++    /*
++     * Repaint when the guest dirtied the display, or whenever we are in
++     * scanout (cursor moves without a gfx_update).  Avoid unconditional
++     * every-tick paints — that amplified boot-time flicker.
++     */
++    if (vc->updates || vc->scanout_mode || vc->cursor_fb.texture) {
++        vc->updates = 0;
++        qt_vc_gl_request_update(vc->widget);
++    }
++    qt_app_process_events(vc->s->app);
++}
++
++static void qt_gl_scanout_disable(DisplayChangeListener *dcl)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++    vc->w = 0;
++    vc->h = 0;
++    qt_set_scanout_mode(vc, false);
++    qt_vc_gl_request_update(vc->widget);
++}
++
++static void qt_gl_scanout_texture(DisplayChangeListener *dcl,
++                                  uint32_t backing_id,
++                                  bool backing_y_0_top,
++                                  uint32_t backing_width,
++                                  uint32_t backing_height,
++                                  uint32_t x, uint32_t y,
++                                  uint32_t w, uint32_t h,
++                                  void *d3d_tex2d)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++    (void)d3d_tex2d;
++    vc->x = x;
++    vc->y = y;
++    vc->w = w;
++    vc->h = h;
++    vc->y0_top = backing_y_0_top;
++    vc->scanout_mode = true;
++    vc->guest_fb.texture = backing_id;
++    vc->guest_fb.width = backing_width;
++    vc->guest_fb.height = backing_height;
++    vc->guest_fb.delete_texture = false;
++    vc->guest_fb.framebuffer = 0; /* reattach in paint/flush (FBO not shared) */
++
++    /*
++     * Like SDL: make a context current and attach the texture now so we fail
++     * early if the tex id is not visible in our share group.
++     */
++    if (backing_id && qt_vc_gl_make_current(vc->widget)) {
++        if (!glIsTexture(backing_id)) {
++            error_report("qt: scanout texture %u is not a GL texture "
++                         "(share-group mismatch?)", backing_id);
++        } else {
++            egl_fb_setup_for_tex(&vc->guest_fb, backing_width, backing_height,
++                                 backing_id, false);
++        }
++        qt_vc_gl_done_current(vc->widget);
++    }
++    qt_vc_gl_request_update(vc->widget);
++}
++
++static void qt_gl_scanout_flush(DisplayChangeListener *dcl,
++                                uint32_t x, uint32_t y, uint32_t w, uint32_t h)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++    (void)x;
++    (void)y;
++    (void)w;
++    (void)h;
++    if (!vc->scanout_mode || !vc->guest_fb.texture) {
++        return;
++    }
++    /*
++     * Present immediately (like SDL).  Relying only on QOpenGLWidget::update()
++     * deferred paint can leave the placeholder on screen while the guest
++     * already has an active scanout.
++     */
++    if (qt_vc_gl_make_current(vc->widget)) {
++        qt_gl_paint(vc);
++        qt_vc_gl_done_current(vc->widget);
++    }
++    qt_vc_gl_request_update(vc->widget);
++}
++
++#ifdef CONFIG_GBM
++static void qt_gl_scanout_dmabuf(DisplayChangeListener *dcl,
++                                 QemuDmaBuf *dmabuf)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++    uint32_t x, y, width, height, bw, bh, texture;
++    bool y0_top;
++
++    /*
++     * Import requires a current context; use the widget context.  The
++     * resulting GL texture is then recorded for paintGL blit.
++     */
++    if (!qt_vc_gl_make_current(vc->widget)) {
++        return;
++    }
++    egl_dmabuf_import_texture(dmabuf);
++    texture = qemu_dmabuf_get_texture(dmabuf);
++    if (!texture) {
++        error_report("qt: dmabuf import failed");
++        qt_vc_gl_done_current(vc->widget);
++        return;
++    }
++    x = qemu_dmabuf_get_x(dmabuf);
++    y = qemu_dmabuf_get_y(dmabuf);
++    width = qemu_dmabuf_get_width(dmabuf);
++    height = qemu_dmabuf_get_height(dmabuf);
++    bw = qemu_dmabuf_get_backing_width(dmabuf);
++    bh = qemu_dmabuf_get_backing_height(dmabuf);
++    y0_top = qemu_dmabuf_get_y0_top(dmabuf);
++
++    qt_gl_scanout_texture(dcl, texture, y0_top, bw, bh,
++                          x, y, width, height, NULL);
++    if (qemu_dmabuf_get_allow_fences(dmabuf)) {
++        vc->guest_fb.dmabuf = dmabuf;
++    }
++    qt_vc_gl_done_current(vc->widget);
++    qt_vc_gl_request_update(vc->widget);
++}
++
++static void qt_gl_cursor_dmabuf(DisplayChangeListener *dcl,
++                                QemuDmaBuf *dmabuf, bool have_hot,
++                                uint32_t hot_x, uint32_t hot_y)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++    uint32_t bw, bh, texture;
++
++    (void)have_hot;
++    (void)hot_x;
++    (void)hot_y;
++
++    if (!dmabuf) {
++        vc->cursor_fb.texture = 0;
++        vc->cursor_fb.framebuffer = 0;
++        qt_vc_gl_request_update(vc->widget);
++        return;
++    }
++
++    if (!qt_vc_gl_make_current(vc->widget)) {
++        return;
++    }
++    egl_dmabuf_import_texture(dmabuf);
++    texture = qemu_dmabuf_get_texture(dmabuf);
++    if (!texture) {
++        qt_vc_gl_done_current(vc->widget);
++        return;
++    }
++    bw = qemu_dmabuf_get_backing_width(dmabuf);
++    bh = qemu_dmabuf_get_backing_height(dmabuf);
++    /* FBO is re-created in paintGL; only keep the shared texture id. */
++    vc->cursor_fb.texture = texture;
++    vc->cursor_fb.width = bw;
++    vc->cursor_fb.height = bh;
++    vc->cursor_fb.delete_texture = false;
++    vc->cursor_fb.framebuffer = 0;
++    qt_vc_gl_done_current(vc->widget);
++    /* Hide host pointer; guest cursor is composited in paintGL. */
++    qt_vc_set_cursor_blank(vc->widget, true);
++    qt_vc_gl_request_update(vc->widget);
++}
++
++static void qt_gl_cursor_position(DisplayChangeListener *dcl,
++                                  uint32_t pos_x, uint32_t pos_y)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++
++    vc->cursor_x = pos_x;
++    vc->cursor_y = pos_y;
++    qt_vc_gl_request_update(vc->widget);
++}
++
++static void qt_gl_release_dmabuf(DisplayChangeListener *dcl,
++                                 QemuDmaBuf *dmabuf)
++{
++    (void)dcl;
++    egl_dmabuf_release_texture(dmabuf);
++}
++
++static bool qt_gl_has_dmabuf(DisplayChangeListener *dcl)
++{
++    QtConsole *vc = container_of(dcl, QtConsole, dcl);
++
++    /*
++     * Probe once we have a current EGL display.  Returning false forever
++     * (initial zeroed flag) can break consoles that require DMABUF flags.
++     */
++    if (!vc->has_dmabuf) {
++        if (!qemu_egl_display && qt_vc_gl_make_current(vc->widget)) {
++            qemu_egl_display = eglGetCurrentDisplay();
++            qt_vc_gl_done_current(vc->widget);
++        }
++        if (qemu_egl_display) {
++            vc->has_dmabuf = qemu_egl_has_dmabuf();
++        }
++    }
++    return vc->has_dmabuf;
++}
++#endif
++
++/*
++ * Bind QEMU's global EGL state to Qt's native EGL display/config so
++ * qemu_egl_create_context / make_context_current (surfaceless) can run
++ * guest/virgl work the same way GTK and spice do.  Presentation stays on
++ * QOpenGLWidget; only guest contexts use raw EGL.
++ */
++static bool qt_gl_ensure_egl(QtConsole *vc)
++{
++    void *dpy;
++    void *cfg;
++    bool gles = false;
++
++    if (qemu_egl_display && qemu_egl_config) {
++        return true;
++    }
++
++    if (!qt_app_gl_has_egl(vc->s->app)) {
++        error_report("qt: Qt is not using EGL (set QT_XCB_GL_INTEGRATION=xcb_egl); "
++                     "guest GL requires EGL");
++        return false;
++    }
++
++    dpy = qt_app_gl_egl_display(vc->s->app);
++    cfg = qt_app_gl_egl_config(vc->s->app);
++    if (!dpy || !cfg) {
++        error_report("qt: failed to export Qt EGL display/config for guest GL");
++        return false;
++    }
++
++    if (vc->s->opts->has_gl && vc->s->opts->gl == DISPLAY_GL_MODE_ES) {
++        gles = true;
++    }
++
++    qemu_egl_display = dpy;
++    qemu_egl_config = cfg;
++    qemu_egl_mode = gles ? DISPLAY_GL_MODE_ES : DISPLAY_GL_MODE_CORE;
++
++    if (!eglBindAPI(gles ? EGL_OPENGL_ES_API : EGL_OPENGL_API)) {
++        error_report("qt: eglBindAPI failed: %s", qemu_egl_get_error_string());
++        return false;
++    }
++    return true;
++}
++
++static QEMUGLContext qt_gl_create_context(DisplayGLCtx *dgc,
++                                          QEMUGLParams *params)
++{
++    QtConsole *vc = container_of(dgc, QtConsole, dgc);
++    void *share;
++    QEMUGLContext ctx;
++
++    if (!qt_gl_ensure_egl(vc)) {
++        return NULL;
++    }
++
++    share = qt_vc_gl_share_egl_context(vc->widget);
++    if (!share) {
++        error_report("qt: no native EGL share context for guest GL");
++        return NULL;
++    }
++
++    ctx = qemu_egl_create_context(dgc, params, share);
++    if (!ctx) {
++        error_report("qt: eglCreateContext for guest failed: %s",
++                     qemu_egl_get_error_string());
++    }
++    return ctx;
++}
++
++static void qt_gl_destroy_context(DisplayGLCtx *dgc, QEMUGLContext ctx)
++{
++    qemu_egl_destroy_context(dgc, ctx);
++}
++
++static int qt_gl_make_context_current(DisplayGLCtx *dgc, QEMUGLContext ctx)
++{
++    /*
++     * Surfaceless makeCurrent — never QOpenGLContext/QOffscreenSurface.
++     * virgl issues many create/make_current pairs; the Qt path deadlocked
++     * under glxinfo / 3D clients.
++     */
++    return qemu_egl_make_context_current(dgc, ctx);
++}
++
++static bool qt_gl_is_compatible_dcl(DisplayGLCtx *dgc,
++                                    DisplayChangeListener *dcl)
++{
++    QtConsole *vc = container_of(dgc, QtConsole, dgc);
++    return dcl == &vc->dcl;
++}
++
++static const DisplayChangeListenerOps qt_dcl_gl_ops = {
++    .dpy_name                = "qt-gl",
++    .dpy_refresh             = qt_gl_refresh,
++    .dpy_gfx_update          = qt_gl_update,
++    .dpy_gfx_switch          = qt_gl_switch,
++    .dpy_gfx_check_format    = console_gl_check_format,
++    .dpy_mouse_set           = qt_mouse_set,
++    .dpy_cursor_define       = qt_cursor_define,
++    .dpy_gl_scanout_disable  = qt_gl_scanout_disable,
++    .dpy_gl_scanout_texture  = qt_gl_scanout_texture,
++#ifdef CONFIG_GBM
++    .dpy_has_dmabuf          = qt_gl_has_dmabuf,
++    .dpy_gl_scanout_dmabuf   = qt_gl_scanout_dmabuf,
++    .dpy_gl_cursor_dmabuf    = qt_gl_cursor_dmabuf,
++    .dpy_gl_cursor_position  = qt_gl_cursor_position,
++    .dpy_gl_release_dmabuf   = qt_gl_release_dmabuf,
++#endif
++    .dpy_gl_update           = qt_gl_scanout_flush,
++};
++
++static const DisplayGLCtxOps qt_gl_ctx_ops = {
++    .dpy_gl_ctx_is_compatible_dcl = qt_gl_is_compatible_dcl,
++    .dpy_gl_ctx_create            = qt_gl_create_context,
++    .dpy_gl_ctx_destroy           = qt_gl_destroy_context,
++    .dpy_gl_ctx_make_current      = qt_gl_make_context_current,
++};
++#endif /* CONFIG_OPENGL */
++
++/* ---- init ---- */
++
++static void qt_mouse_mode_change(Notifier *notify, void *data)
++{
++    QtDisplayState *s = container_of(notify, QtDisplayState, mouse_mode_notifier);
++    QtConsole *vc = qt_vc_current(s);
++    (void)data;
++    if (!vc) {
++        return;
++    }
++    if (qemu_input_is_absolute(vc->dcl.con) && s->ptr_owner) {
++        qt_ungrab_pointer(s);
++    }
++    qt_vc_set_cursor_blank(vc->widget,
++        !s->show_cursor &&
++        (s->ptr_owner == vc || qemu_input_is_absolute(vc->dcl.con)));
++}
++
++static void qt_change_runstate(void *opaque, bool running, RunState state)
++{
++    (void)running;
++    (void)state;
++    qt_update_caption(opaque);
++}
++
++static void qt_display_early_init(DisplayOptions *opts)
++{
++    assert(opts->type == DISPLAY_TYPE_QT);
++
++    if (opts->has_gl && opts->gl != DISPLAY_GL_MODE_OFF) {
++#if defined(CONFIG_OPENGL)
++        display_opengl = 1;
++#else
++        error_report("OpenGL support is not available in this QEMU build");
++        exit(1);
++#endif
++    }
++}
++
++static void qt_display_init(DisplayState *ds, DisplayOptions *opts)
++{
++    QtDisplayState *s;
++    QtAppOptions app_opts;
++    QtAppCallbacks cb;
++    int i;
++
++    (void)ds;
++    assert(opts->type == DISPLAY_TYPE_QT);
++
++    s = g_new0(QtDisplayState, 1);
++    s->opts = opts;
++
++    s->show_cursor = opts->has_show_cursor && opts->show_cursor;
++    s->keep_aspect_ratio = true;
++    if (opts->u.qt.has_keep_aspect_ratio) {
++        s->keep_aspect_ratio = opts->u.qt.keep_aspect_ratio;
++    }
++    s->grab_on_hover = opts->u.qt.has_grab_on_hover && opts->u.qt.grab_on_hover;
++
++    memset(&app_opts, 0, sizeof(app_opts));
++    app_opts.full_screen = opts->has_full_screen && opts->full_screen;
++    app_opts.show_menubar = !opts->u.qt.has_show_menubar ||
++                            opts->u.qt.show_menubar;
++    app_opts.show_tabs = opts->u.qt.has_show_tabs && opts->u.qt.show_tabs;
++    app_opts.grab_on_hover = s->grab_on_hover;
++    app_opts.zoom_to_fit = opts->u.qt.has_zoom_to_fit && opts->u.qt.zoom_to_fit;
++    app_opts.show_cursor = s->show_cursor;
++    app_opts.use_opengl = display_opengl;
++    app_opts.gl_es = opts->has_gl && opts->gl == DISPLAY_GL_MODE_ES;
++    app_opts.window_title = qemu_name;
++
++    memset(&cb, 0, sizeof(cb));
++    cb.opaque = s;
++    cb.on_quit = cb_quit;
++    cb.on_pause_toggle = cb_pause;
++    cb.on_reset = cb_reset;
++    cb.on_powerdown = cb_powerdown;
++    cb.on_fullscreen = cb_fullscreen;
++    cb.on_grab = cb_grab;
++    cb.on_grab_on_hover = cb_grab_on_hover;
++    cb.on_zoom_in = cb_zoom_in;
++    cb.on_zoom_out = cb_zoom_out;
++    cb.on_zoom_fixed = cb_zoom_fixed;
++    cb.on_zoom_fit = cb_zoom_fit;
++    cb.on_show_tabs = cb_show_tabs;
++    cb.on_show_menubar = cb_show_menubar;
++    cb.on_detach_tab = cb_detach;
++    cb.on_switch_vc = cb_switch_vc;
++    cb.on_key = cb_key;
++    cb.on_mouse_move = cb_mouse_move;
++    cb.on_mouse_button = cb_mouse_button;
++    cb.on_mouse_wheel = cb_mouse_wheel;
++    cb.on_hover = cb_hover;
++    cb.on_focus_out = cb_focus_out;
++    cb.on_window_close = cb_window_close;
++#if defined(CONFIG_OPENGL)
++    cb.on_gl_paint = cb_gl_paint;
++#endif
++    cb.on_resize = cb_resize;
++
++    s->app = qt_app_create(&app_opts, &cb);
++    if (!s->app) {
++        error_report("qt: failed to create Qt application");
++        exit(1);
++    }
++#if defined(CONFIG_OPENGL)
++    if (display_opengl && !qt_app_gl_ready(s->app)) {
++        error_report("qt: OpenGL was requested (-display qt,gl=...) but no "
++                     "usable GL context could be created");
++        exit(1);
++    }
++#endif
++
++    /*
++     * Create widgets first, show the window (realizing GL contexts), then
++     * register display listeners.  virtio-gpu-gl may call into GL during
++     * listener registration, so a current context must already exist.
++     */
++    for (i = 0;; i++) {
++        QemuConsole *con = qemu_console_lookup_by_index(i);
++        QtConsole *vc;
++        bool graphic;
++
++        if (!con) {
++            break;
++        }
++        if (s->nb_vcs >= QT_MAX_VCS) {
++            warn_report("qt: too many consoles (max %d)", QT_MAX_VCS);
++            break;
++        }
++
++        vc = &s->vc[s->nb_vcs];
++        vc->s = s;
++        vc->index = i;
++        vc->label = qemu_console_get_label(con);
++        vc->preferred_scale = 1.0;
++        if (opts->u.qt.has_scale &&
++            opts->u.qt.scale >= QT_SCALE_MIN &&
++            opts->u.qt.scale <= QT_SCALE_MAX) {
++            vc->preferred_scale = opts->u.qt.scale;
++        }
++        vc->scale_x = vc->preferred_scale;
++        vc->scale_y = vc->preferred_scale;
++        vc->kbd = qkbd_state_init(con);
++        graphic = qemu_console_is_graphic(con);
++
++#if defined(CONFIG_OPENGL)
++        vc->opengl = display_opengl && graphic;
++#else
++        vc->opengl = false;
++#endif
++        vc->widget = qt_app_add_vc(s->app, i, vc->label, graphic);
++        s->nb_vcs++;
++    }
++
++    qt_update_caption(s);
++    qt_app_show(s->app);
++    qt_app_process_events(s->app);
++
++#if defined(CONFIG_OPENGL)
++    if (display_opengl) {
++        /*
++         * Activate master / widget contexts before devices start using
++         * DisplayGLCtx.  qemu_gl_init_shader() needs a live context for epoxy.
++         */
++        for (i = 0; i < s->nb_vcs; i++) {
++            QtConsole *vc = &s->vc[i];
++            if (!vc->opengl) {
++                continue;
++            }
++            if (!qt_vc_gl_realize(vc->widget)) {
++                error_report("qt: failed to realize OpenGL context for '%s' "
++                             "(falling back to 2D)",
++                             vc->label ? vc->label : "console");
++                vc->opengl = false;
++            } else if (!qt_gl_ensure_egl(vc)) {
++                error_report("qt: EGL export failed for '%s' "
++                             "(falling back to 2D)",
++                             vc->label ? vc->label : "console");
++                vc->opengl = false;
++            } else {
++                /*
++                 * Shaders/VAOs are created on first paintGL so they belong to
++                 * the QOpenGLWidget context (not a guest/surfaceless one).
++                 */
++                vc->has_dmabuf = qemu_egl_has_dmabuf();
++            }
++            qt_vc_gl_done_current(vc->widget);
++        }
++    }
++#endif
++
++    for (i = 0; i < s->nb_vcs; i++) {
++        QtConsole *vc = &s->vc[i];
++        QemuConsole *con = qemu_console_lookup_by_index(vc->index);
++
++#if defined(CONFIG_OPENGL)
++        if (vc->opengl) {
++            vc->dgc.ops = &qt_gl_ctx_ops;
++            qemu_console_set_display_gl_ctx(con, &vc->dgc);
++            qemu_console_register_listener(con, &vc->dcl, &qt_dcl_gl_ops);
++            /* Kick an initial paint once the surface is attached. */
++            vc->updates++;
++            qt_vc_gl_request_update(vc->widget);
++        } else
++#endif
++        {
++            qemu_console_register_listener(con, &vc->dcl, &qt_dcl_2d_ops);
++        }
++    }
++
++    qt_app_process_events(s->app);
++
++    /* Default zoom-to-fit like GTK when UI info is supported */
++    if (!opts->u.qt.has_zoom_to_fit && s->nb_vcs &&
++        qemu_console_ui_info_supported(s->vc[0].dcl.con)) {
++        s->free_scale = true;
++        for (i = 0; i < s->nb_vcs; i++) {
++            qt_vc_set_scales(s->vc[i].widget, s->vc[i].scale_x,
++                             s->vc[i].scale_y, true, s->keep_aspect_ratio);
++        }
++    } else if (app_opts.zoom_to_fit) {
++        s->free_scale = true;
++    }
++
++    /*
++     * Push initial *widget* size to the guest immediately (no 1s debounce).
++     * qt_app_show() already re-notified after layout; do it again now that
++     * listeners are registered and free_scale is set.
++     */
++    qt_app_notify_sizes(s->app);
++    for (i = 0; i < s->nb_vcs; i++) {
++        QtConsole *vc = &s->vc[i];
++        int ww = qt_vc_widget_width(vc->widget);
++        int wh = qt_vc_widget_height(vc->widget);
++        if (ww > 0 && wh > 0) {
++            qt_set_ui_size(vc, ww, wh, false);
++        }
++    }
++
++    s->mouse_mode_notifier.notify = qt_mouse_mode_change;
++    qemu_add_mouse_mode_change_notifier(&s->mouse_mode_notifier);
++    qemu_add_vm_change_state_handler(qt_change_runstate, s);
++
++    if (s->nb_vcs) {
++        qt_vc_set_focus(s->vc[0].widget);
++    }
++
++    /* Qt event processing runs from dpy_refresh via processEvents(). */
++    qemu_main = NULL;
++}
++
++static QemuDisplay qemu_display_qt = {
++    .type       = DISPLAY_TYPE_QT,
++    .early_init = qt_display_early_init,
++    .init       = qt_display_init,
++};
++
++static void register_qt(void)
++{
++    qemu_display_register(&qemu_display_qt);
++}
++
++type_init(register_qt);
++
++#if defined(CONFIG_OPENGL)
++module_dep("ui-opengl");
++#endif

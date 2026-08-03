@@ -63,6 +63,7 @@
 
 %bcond_with rbd                 # disabled
 %bcond_without gtk              # enabled
+%bcond_without qt               # enabled
 %bcond_without usbredir         # enabled
 %bcond_without spice            # enabled
 %bcond_without seccomp          # enabled
@@ -123,6 +124,7 @@
 %define requires_audio_dbus Requires: %{name}-audio-dbus = %{EVRD}
 %define requires_ui_curses Requires: %{name}-ui-curses = %{EVRD}
 %define requires_ui_gtk Requires: %{name}-ui-gtk = %{EVRD}
+%define requires_ui_qt Requires: %{name}-ui-qt = %{EVRD}
 %define requires_ui_sdl Requires: %{name}-ui-sdl = %{EVRD}
 %define requires_ui_egl_headless Requires: %{name}-ui-egl-headless = %{EVRD}
 %define requires_ui_opengl Requires: %{name}-ui-opengl = %{EVRD}
@@ -168,6 +170,7 @@ Recommends: %{name}-ui-sdl = %{EVRD}
 %{requires_block_rbd} \
 %{requires_block_nfs} \
 %{requires_ui_gtk} \
+%{requires_ui_qt} \
 %{requires_ui_spice_app} \
 %{requires_ui_spice_core} \
 %{requires_char_spice} \
@@ -182,11 +185,11 @@ Recommends: %{name}-ui-sdl = %{EVRD}
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-#define beta rc4
+%define beta rc2
 
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	11.0.3
+Version:	11.1.0
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1
@@ -215,6 +218,7 @@ Source21: 95-kvm-ppc64-memlock.conf
 
 #Patch1: qemu-7.1.0-rc1-glibc-2.36.patch
 #Patch2: qemu-7.2.0-compile.patch
+Patch10: qemu-add-qt-display.patch
 
 BuildRequires:	make
 BuildRequires: %mklibname zstd -s -d
@@ -329,6 +333,13 @@ BuildRequires:	pkgconfig(vte-2.91)
 # GTK translations
 BuildRequires: gettext
 %endif
+# Qt frontend
+%if %{with qt}
+BuildRequires:	pkgconfig(Qt6Widgets)
+BuildRequires:	pkgconfig(Qt6OpenGLWidgets)
+BuildRequires:	pkgconfig(Qt6Gui)
+BuildRequires:	pkgconfig(Qt6Core)
+%endif
 # RDMA migration
 BuildRequires: rdmacm-devel
 %if %{have_xen}
@@ -394,6 +405,7 @@ Suggests: %{name}-system-aarch64 = %{EVRD}
 Suggests: %{name}-system-alpha = %{EVRD}
 Suggests: %{name}-system-arm = %{EVRD}
 Suggests: %{name}-system-avr = %{EVRD}
+Suggests: %{name}-system-hexagon = %{EVRD}
 Suggests: %{name}-system-loongarch64 = %{EVRD}
 Suggests: %{name}-system-m68k = %{EVRD}
 Suggests: %{name}-system-microblaze = %{EVRD}
@@ -621,6 +633,15 @@ Requires: %{name}-common = %{EVRD}
 %description ui-gtk
 This package provides the additional GTK UI for QEMU.
 
+%if %{with qt}
+%package  ui-qt
+Summary: QEMU Qt UI driver
+Requires: %{name}-common = %{EVRD}
+%description ui-qt
+This package provides the additional Qt UI for QEMU, including
+OpenGL support via -display qt,gl=on.
+%endif
+
 %package  ui-sdl
 Summary: QEMU SDL UI driver
 Requires: %{name}-common = %{EVRD}
@@ -823,6 +844,20 @@ Requires: %{name}-common = %{EVRD}
 Suggests: %{name}-system-avr = %{EVRD}
 %description system-avr-core
 This package provides the QEMU system emulator for AVR boards.
+
+%package system-hexagon
+Summary: QEMU system emulator for Hexagon
+Requires: %{name}-system-hexagon-core = %{EVRD}
+%{requires_important_modules}
+%description system-hexagon
+This package provides the QEMU system emulator for Hexagon.
+
+%package system-hexagon-core
+Summary: QEMU system emulator for Hexagon
+Requires: %{name}-common = %{EVRD}
+Suggests: %{name}-system-hexagon = %{EVRD}
+%description system-hexagon-core
+This package provides the QEMU system emulator for Hexagon.
 
 
 %package system-hppa
@@ -1202,6 +1237,7 @@ run_configure \
     --disable-pie \
     --disable-sdl \
     --disable-gtk \
+    --disable-qt \
     --disable-spice \
     --disable-zstd \
     --disable-tools \
@@ -1527,7 +1563,9 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_libdir}/qemu/hw-uefi-vars.so
 %{_libdir}/qemu/hw-usb-redirect.so
 %{_libdir}/qemu/hw-usb-smartcard.so
+%{_libdir}/qemu/accel-qtest.so
 %{_mandir}/man1/qemu-storage-daemon.1*
+%{_mandir}/man1/qemu-vnc.1*
 %{_mandir}/man7/qemu-storage-daemon-qmp-ref.7*
 
 %files guest-agent
@@ -1589,6 +1627,10 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_libdir}/qemu/ui-curses.so
 %files ui-gtk
 %{_libdir}/qemu/ui-gtk.so
+%if %{with qt}
+%files ui-qt
+%{_libdir}/qemu/ui-qt.so
+%endif
 %files ui-sdl
 %{_libdir}/qemu/ui-sdl.so
 %files ui-egl-headless
@@ -1992,9 +2034,7 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/%{name}/bios.bin
 %{_datadir}/%{name}/bios-256k.bin
 %{_datadir}/%{name}/kvmvapic.bin
-%{_datadir}/%{name}/linuxboot.bin
 %{_datadir}/%{name}/linuxboot_dma.bin
-%{_datadir}/%{name}/multiboot.bin
 %{_datadir}/qemu/openbios-sparc32
 %{_datadir}/qemu/openbios-sparc64
 %{_datadir}/qemu/openbios-ppc
@@ -2059,3 +2099,10 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_bindir}/qemu-system-avr
 %{_datadir}/systemtap/tapset/qemu-system-avr*.stp
 %{_mandir}/man1/qemu-system-avr.1*
+
+%files system-hexagon
+
+%files system-hexagon-core
+%{_bindir}/qemu-system-hexagon
+%{_datadir}/systemtap/tapset/qemu-system-hexagon*.stp
+%{_mandir}/man1/qemu-system-hexagon.1*
