@@ -1851,7 +1851,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-aarch64
-%{_libdir}/qemu/accel-qtest-aarch64.so
 
 %files system-aarch64-core
 %{_bindir}/qemu-system-aarch64
@@ -1860,7 +1859,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-alpha
-%{_libdir}/qemu/accel-qtest-alpha.so
 
 %files system-alpha-core
 %{_bindir}/qemu-system-alpha
@@ -1870,7 +1868,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-arm
-%{_libdir}/qemu/accel-qtest-arm.so
 
 %files system-arm-core
 %{_bindir}/qemu-system-arm
@@ -1880,7 +1877,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-hppa
-%{_libdir}/qemu/accel-qtest-hppa.so
 
 %files system-hppa-core
 %{_bindir}/qemu-system-hppa
@@ -1891,7 +1887,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-loongarch64
-%{_libdir}/qemu/accel-qtest-loongarch64.so
 
 %files system-loongarch64-core
 %{_bindir}/qemu-system-loongarch64
@@ -1899,7 +1894,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_mandir}/man1/qemu-system-loongarch64.1*
 
 %files system-m68k
-%{_libdir}/qemu/accel-qtest-m68k.so
 
 %files system-m68k-core
 %{_bindir}/qemu-system-m68k
@@ -1908,8 +1902,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-microblaze
-%{_libdir}/qemu/accel-qtest-microblaze.so
-%{_libdir}/qemu/accel-qtest-microblazeel.so
 
 %files system-microblaze-core
 %{_bindir}/qemu-system-microblaze
@@ -1921,10 +1913,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-mips
-%{_libdir}/qemu/accel-qtest-mips.so
-%{_libdir}/qemu/accel-qtest-mipsel.so
-%{_libdir}/qemu/accel-qtest-mips64.so
-%{_libdir}/qemu/accel-qtest-mips64el.so
 
 %files system-mips-core
 %{_bindir}/qemu-system-mips
@@ -1939,7 +1927,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-or1k
-%{_libdir}/qemu/accel-qtest-or1k.so
 
 %files system-or1k-core
 %{_bindir}/qemu-system-or1k
@@ -1948,8 +1935,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-ppc
-%{_libdir}/qemu/accel-qtest-ppc.so
-%{_libdir}/qemu/accel-qtest-ppc64.so
 
 %files system-ppc-core
 %{_bindir}/qemu-system-ppc
@@ -1971,8 +1956,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-riscv
-%{_libdir}/qemu/accel-qtest-riscv32.so
-%{_libdir}/qemu/accel-qtest-riscv64.so
 
 %files system-riscv-core
 %{_bindir}/qemu-system-riscv32
@@ -1983,7 +1966,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-s390x
-%{_libdir}/qemu/accel-qtest-s390x.so
 
 %files system-s390x-core
 %{_bindir}/qemu-system-s390x
@@ -1994,8 +1976,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-sh4
-%{_libdir}/qemu/accel-qtest-sh4.so
-%{_libdir}/qemu/accel-qtest-sh4eb.so
 
 %files system-sh4-core
 %{_bindir}/qemu-system-sh4
@@ -2006,8 +1986,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-sparc
-%{_libdir}/qemu/accel-qtest-sparc.so
-%{_libdir}/qemu/accel-qtest-sparc64.so
 
 %files system-sparc-core
 %{_bindir}/qemu-system-sparc
@@ -2020,7 +1998,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-tricore
-%{_libdir}/qemu/accel-qtest-tricore.so
 
 %files system-tricore-core
 %{_bindir}/qemu-system-tricore
@@ -2029,8 +2006,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-x86
-%{_libdir}/qemu/accel-qtest-i386.so
-%{_libdir}/qemu/accel-qtest-x86_64.so
 
 %files system-x86-core
 %{_bindir}/qemu-system-i386
@@ -2061,8 +2036,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 
 %files system-xtensa
-%{_libdir}/qemu/accel-qtest-xtensa.so
-%{_libdir}/qemu/accel-qtest-xtensaeb.so
 
 %files system-xtensa-core
 %{_bindir}/qemu-system-xtensa
@@ -2093,7 +2066,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/%{name}/pxe-virtio.rom
 
 %files system-rx
-%{_libdir}/qemu/accel-qtest-rx.so
 %{_bindir}/qemu-system-rx
 %{_datadir}/man/man1/qemu-system-rx.1*
 %{_datadir}/systemtap/tapset/qemu-system-rx-log.stp
@@ -2101,7 +2073,6 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_datadir}/systemtap/tapset/qemu-system-rx.stp
 
 %files system-avr
-%{_libdir}/qemu/accel-qtest-avr.so
 
 %files system-avr-core
 %{_bindir}/qemu-system-avr
