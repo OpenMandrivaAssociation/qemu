@@ -1905,10 +1905,8 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 
 %files system-microblaze-core
 %{_bindir}/qemu-system-microblaze
-%{_bindir}/qemu-system-microblazeel
 %{_datadir}/systemtap/tapset/qemu-system-microblaze*.stp
 %{_mandir}/man1/qemu-system-microblaze.1*
-%{_mandir}/man1/qemu-system-microblazeel.1*
 %{_datadir}/%{name}/dtb/petalogix*.dtb
 
 
