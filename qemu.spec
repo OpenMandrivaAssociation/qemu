@@ -185,11 +185,9 @@ Recommends: %{name}-ui-sdl = %{EVRD}
 %{obsoletes_block_gluster} \
 %{obsoletes_block_rbd}
 
-%define beta rc2
-
 Summary:	QEMU is a FAST! processor emulator
 Name:		qemu
-Version:	11.1.0
+Version:	11.1.1
 Release:	%{?beta:0.%{beta}.}1
 Group:		Emulators
 Epoch:		1

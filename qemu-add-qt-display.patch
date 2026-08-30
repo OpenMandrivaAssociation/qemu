@@ -1,6 +1,6 @@
-diff -Nru -x '*.1~' qemu-11.1.0-rc2/meson.build qemu-11.1.0-rc2/meson.build
---- qemu-11.1.0-rc2/meson.build	2026-07-29 22:24:56.000000000 +0200
-+++ qemu-11.1.0-rc2/meson.build	2026-08-03 16:10:52.434826344 +0200
+diff -Nru -x '*.1~' qemu-11.1.1/meson.build qemu-11.1.1/meson.build
+--- qemu-11.1.1/meson.build	2026-07-29 22:24:56.000000000 +0200
++++ qemu-11.1.1/meson.build	2026-08-03 16:10:52.434826344 +0200
 @@ -1912,6 +1912,27 @@
  gtkx11 = not_found
  vte = not_found
@@ -45,9 +45,9 @@ diff -Nru -x '*.1~' qemu-11.1.0-rc2/meson.build qemu-11.1.0-rc2/meson.build
  summary_info += {'pixman':            pixman}
  summary_info += {'VTE support':       vte}
  summary_info += {'PNG support':       png}
-diff -Nru -x '*.1~' qemu-11.1.0-rc2/meson_options.txt qemu-11.1.0-rc2/meson_options.txt
---- qemu-11.1.0-rc2/meson_options.txt	2026-07-29 22:24:56.000000000 +0200
-+++ qemu-11.1.0-rc2/meson_options.txt	2026-08-03 16:10:52.437161552 +0200
+diff -Nru -x '*.1~' qemu-11.1.1/meson_options.txt qemu-11.1.1/meson_options.txt
+--- qemu-11.1.1/meson_options.txt	2026-07-29 22:24:56.000000000 +0200
++++ qemu-11.1.1/meson_options.txt	2026-08-03 16:10:52.437161552 +0200
 @@ -214,6 +214,8 @@
         description: 'Enable RDMA-based migration')
  option('gtk', type : 'feature', value : 'auto',
@@ -57,9 +57,9 @@ diff -Nru -x '*.1~' qemu-11.1.0-rc2/meson_options.txt qemu-11.1.0-rc2/meson_opti
  option('sdl', type : 'feature', value : 'auto',
         description: 'SDL user interface')
  option('sdl_image', type : 'feature', value : 'auto',
-diff -Nru -x '*.1~' qemu-11.1.0-rc2/qapi/ui.json qemu-11.1.0-rc2/qapi/ui.json
---- qemu-11.1.0-rc2/qapi/ui.json	2026-07-29 22:24:56.000000000 +0200
-+++ qemu-11.1.0-rc2/qapi/ui.json	2026-08-03 16:10:52.441161597 +0200
+diff -Nru -x '*.1~' qemu-11.1.1/qapi/ui.json qemu-11.1.1/qapi/ui.json
+--- qemu-11.1.1/qapi/ui.json	2026-07-29 22:24:56.000000000 +0200
++++ qemu-11.1.1/qapi/ui.json	2026-08-03 16:10:52.441161597 +0200
 @@ -1356,6 +1356,37 @@
                  '*scale'             : 'number'  } }
  
@@ -123,9 +123,9 @@ diff -Nru -x '*.1~' qemu-11.1.0-rc2/qapi/ui.json qemu-11.1.0-rc2/qapi/ui.json
        'cocoa': { 'type': 'DisplayCocoa', 'if': 'CONFIG_COCOA' },
        'curses': { 'type': 'DisplayCurses', 'if': 'CONFIG_CURSES' },
        'egl-headless': { 'type': 'DisplayEGLHeadless',
-diff -Nru -x '*.1~' qemu-11.1.0-rc2/ui/meson.build qemu-11.1.0-rc2/ui/meson.build
---- qemu-11.1.0-rc2/ui/meson.build	2026-07-29 22:24:56.000000000 +0200
-+++ qemu-11.1.0-rc2/ui/meson.build	2026-08-03 16:10:52.445161643 +0200
+diff -Nru -x '*.1~' qemu-11.1.1/ui/meson.build qemu-11.1.1/ui/meson.build
+--- qemu-11.1.1/ui/meson.build	2026-07-29 22:24:56.000000000 +0200
++++ qemu-11.1.1/ui/meson.build	2026-08-03 16:10:52.445161643 +0200
 @@ -161,6 +161,12 @@
    ui_modules += {'gtk' : gtk_ss}
  endif
@@ -139,9 +139,9 @@ diff -Nru -x '*.1~' qemu-11.1.0-rc2/ui/meson.build qemu-11.1.0-rc2/ui/meson.buil
  if sdl.found()
    sdl_ss = ss.source_set()
    sdl_ss.add(sdl, sdl_image, pixman, glib, files(
-diff -Nru -x '*.1~' qemu-11.1.0-rc2/ui/qt-app.cpp qemu-11.1.0-rc2/ui/qt-app.cpp
---- qemu-11.1.0-rc2/ui/qt-app.cpp	1970-01-01 01:00:00.000000000 +0100
-+++ qemu-11.1.0-rc2/ui/qt-app.cpp	2026-08-03 16:10:52.453161734 +0200
+diff -Nru -x '*.1~' qemu-11.1.1/ui/qt-app.cpp qemu-11.1.1/ui/qt-app.cpp
+--- qemu-11.1.1/ui/qt-app.cpp	1970-01-01 01:00:00.000000000 +0100
++++ qemu-11.1.1/ui/qt-app.cpp	2026-08-03 16:10:52.453161734 +0200
 @@ -0,0 +1,1638 @@
 +/*
 + * QEMU Qt UI -- application / widgets (no QEMU headers)
@@ -1781,9 +1781,9 @@ diff -Nru -x '*.1~' qemu-11.1.0-rc2/ui/qt-app.cpp qemu-11.1.0-rc2/ui/qt-app.cpp
 +    vc->detached = nullptr;
 +    dw->deleteLater();
 +}
-diff -Nru -x '*.1~' qemu-11.1.0-rc2/ui/qt-app.h qemu-11.1.0-rc2/ui/qt-app.h
---- qemu-11.1.0-rc2/ui/qt-app.h	1970-01-01 01:00:00.000000000 +0100
-+++ qemu-11.1.0-rc2/ui/qt-app.h	2026-08-03 16:10:52.457161780 +0200
+diff -Nru -x '*.1~' qemu-11.1.1/ui/qt-app.h qemu-11.1.1/ui/qt-app.h
+--- qemu-11.1.1/ui/qt-app.h	1970-01-01 01:00:00.000000000 +0100
++++ qemu-11.1.1/ui/qt-app.h	2026-08-03 16:10:52.457161780 +0200
 @@ -0,0 +1,154 @@
 +/*
 + * Qt UI application layer (C API for use from QEMU C code)
@@ -1939,9 +1939,9 @@ diff -Nru -x '*.1~' qemu-11.1.0-rc2/ui/qt-app.h qemu-11.1.0-rc2/ui/qt-app.h
 +#endif
 +
 +#endif /* UI_QT_APP_H */
-diff -Nru -x '*.1~' qemu-11.1.0-rc2/ui/qt.c qemu-11.1.0-rc2/ui/qt.c
---- qemu-11.1.0-rc2/ui/qt.c	1970-01-01 01:00:00.000000000 +0100
-+++ qemu-11.1.0-rc2/ui/qt.c	2026-08-03 16:10:52.449161688 +0200
+diff -Nru -x '*.1~' qemu-11.1.1/ui/qt.c qemu-11.1.1/ui/qt.c
+--- qemu-11.1.1/ui/qt.c	1970-01-01 01:00:00.000000000 +0100
++++ qemu-11.1.1/ui/qt.c	2026-08-03 16:10:52.449161688 +0200
 @@ -0,0 +1,1804 @@
 +/*
 + * QEMU Qt UI -- QEMU display backend glue
