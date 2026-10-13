@@ -1116,7 +1116,7 @@ QEMU static binary for $archstatic
 
 %%files $archstatic-static
 %{_bindir}/qemu-$archstatic-static
-/usr/lib/binfmt.d/qemu-$archstatic-static.conf
+%{_usr}/lib/binfmt.d/qemu-$archstatic-static.conf
 
 %post -n qemu-$archstatic-static
 %{_bindir}/systemctl restart systemd-binfmt
@@ -1270,10 +1270,9 @@ popd
 
 %install
 
-%global _udevdir /lib/udev/rules.d
 %global qemudocdir %{_docdir}/%{name}
 
-mkdir -p %{buildroot}%{_udevdir}
+mkdir -p %{buildroot}%{_udevrulesdir}
 mkdir -p %{buildroot}%{_unitdir}
 mkdir -p %{buildroot}%{_sysconfdir}/qemu
 mkdir -p %{buildroot}%{_bindir}
@@ -1281,7 +1280,7 @@ mkdir -p %{buildroot}%{_bindir}
 # Install qemu-guest-agent service and udev rules
 install -p -m 0644 %{_sourcedir}/qemu-guest-agent.service %{buildroot}%{_unitdir}
 install -D -p -m 0644 %{_sourcedir}/qemu-ga.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/qemu-ga
-install -m 0644 %{_sourcedir}/99-qemu-guest-agent.rules %{buildroot}%{_udevdir}
+install -m 0644 %{_sourcedir}/99-qemu-guest-agent.rules %{buildroot}%{_udevrulesdir}
 
 mkdir -p %{buildroot}%{_sysconfdir}/qemu-ga/fsfreeze-hook.d
 install -p -m 0755 scripts/qemu-guest-agent/fsfreeze-hook %{buildroot}%{_sysconfdir}/qemu-ga
@@ -1578,7 +1577,7 @@ systemctl --system try-restart systemd-binfmt.service &>/dev/null || :
 %{_bindir}/qemu-ga
 %{_mandir}/man8/qemu-ga.8*
 %{_unitdir}/qemu-guest-agent.service
-%{_udevdir}/99-qemu-guest-agent.rules
+%{_udevrulesdir}/99-qemu-guest-agent.rules
 %config(noreplace) %{_sysconfdir}/sysconfig/qemu-ga
 %{_sysconfdir}/qemu-ga
 %ghost %{_localstatedir}/log/qga-fsfreeze-hook.log
